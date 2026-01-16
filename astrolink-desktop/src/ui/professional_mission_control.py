@@ -1254,10 +1254,14 @@ class ProfessionalMissionControl(QMainWindow):
         layout.addStretch()
 
         # Version info
-        version_label = QLabel(f"v{APP_VERSION}")
-        version_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        version_label.setStyleSheet(f"color: {Colors.TEXT_TERTIARY}; font-size: 10px;")
-        layout.addWidget(version_label)
+        version_button = QPushButton(f"v{APP_VERSION}")
+        version_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        version_button.setStyleSheet(
+            f"color: {Colors.TEXT_TERTIARY}; font-size: 10px; background: transparent; border: none;"
+        )
+        version_button.setFlat(True)
+        version_button.clicked.connect(self._on_about)
+        layout.addWidget(version_button)
 
         return sidebar
 
@@ -3024,9 +3028,19 @@ RX Bytes: {latest.rx_nb_bytes}
             self,
             "About Professional Mission Control",
             f"{APP_NAME} v{APP_VERSION} ({APP_BUILD_DATE})\n\n"
-            "Professional telemetry monitoring for LoRa missions\n\n"
-            "OpenMCT-style interface with real-time data visualization\n\n"
-            "Astrolink Team"
+            "AstroLink Team:\n"
+            "Szászfai László\n"
+            "Németh Imre\n"
+            "Nagy Marcell\n"
+            "Fodor Levente Gábor\n"
+            "Szilágyi Zsombor\n"
+            "Szilágyi Bálint\n\n"
+            "-----\n\n"
+            "mentors:\n"
+            "Sike László (coordinator)\n"
+            "Sándor Péter (tech guru)\n\n"
+            "-----\n\n"
+            "CanSat 2025/2026"
         )
 
     def toggle_fullscreen(self):

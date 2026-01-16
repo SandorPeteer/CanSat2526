@@ -4,7 +4,7 @@ REM AstroLink Mission Control - Startup Script (Windows)
 cd /d "%~dp0"
 
 echo ==========================================
-echo AstroLink Mission Control Desktop v1.0.4
+echo AstroLink Mission Control Desktop v1.0.5
 echo ==========================================
 echo.
 

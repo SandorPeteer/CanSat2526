@@ -2,7 +2,7 @@
 
 **Professional Telemetry Ground Station Application**
 
-![Version](https://img.shields.io/badge/version-1.0.4-blue)
+![Version](https://img.shields.io/badge/version-1.0.5-blue)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)
 ![Python](https://img.shields.io/badge/python-3.10%2B-green)
 ![License](https://img.shields.io/badge/license-MIT-yellow)
@@ -68,7 +68,7 @@ AstroLink Mission Control is a professional-grade telemetry visualization and gr
 #### Windows
 ```bash
 # Download from releases
-astrolink-desktop-1.0.4-windows-x64.exe
+astrolink-desktop-1.0.5-windows-x64.exe
 
 # Run installer
 # Application installed to: C:\Program Files\AstroLink
@@ -77,7 +77,7 @@ astrolink-desktop-1.0.4-windows-x64.exe
 #### macOS
 ```bash
 # Download from releases
-astrolink-desktop-1.0.4-macos.dmg
+astrolink-desktop-1.0.5-macos.dmg
 
 # Drag to Applications folder
 ```
@@ -85,11 +85,11 @@ astrolink-desktop-1.0.4-macos.dmg
 #### Linux
 ```bash
 # Download from releases
-astrolink-desktop-1.0.4-linux-x64.AppImage
+astrolink-desktop-1.0.5-linux-x64.AppImage
 
 # Make executable and run
-chmod +x astrolink-desktop-1.0.4-linux-x64.AppImage
-./astrolink-desktop-1.0.4-linux-x64.AppImage
+chmod +x astrolink-desktop-1.0.5-linux-x64.AppImage
+./astrolink-desktop-1.0.5-linux-x64.AppImage
 ```
 
 ### Option 2: From Source

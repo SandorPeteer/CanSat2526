@@ -11,7 +11,7 @@ from pathlib import Path
 # ============================================================================
 
 APP_NAME = "AstroLink Mission Control"
-APP_VERSION = os.environ.get("ASTROLINK_VERSION", "1.0.4")
+APP_VERSION = os.environ.get("ASTROLINK_VERSION", "1.0.5")
 APP_BUILD_DATE = os.environ.get(
     "ASTROLINK_BUILD_DATE", datetime.utcnow().strftime("%Y-%m-%d")
 )
