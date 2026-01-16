@@ -277,7 +277,7 @@ class SignalBarWidget(QWidget):
             self.norm_value = 0.0  # 0..1 (current)
             self.peak_norm_value = 0.0  # 0..1 (peak-hold display)
             self.stripe_color = "#ffffff"
-            self.setMinimumSize(96, 110)
+            self.setMinimumSize(64, 80)
 
         def set_zones(self, zones: List[tuple]):
             self.zones = zones
@@ -348,18 +348,18 @@ class SignalBarWidget(QWidget):
         self.smooth_timer.setInterval(50)  # 20 Hz
         self.smooth_timer.timeout.connect(self._tick)
 
-        self.setFixedWidth(120)
-        self.setFixedHeight(180)
+        self.setFixedWidth(44)
+        self.setFixedHeight(140)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(2)
+        layout.setSpacing(1)
 
         title_label = QLabel(self.title)
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title_label.setFont(QFont("Arial", 11, QFont.Weight.Bold))
-        title_label.setStyleSheet("color: #FFFFFF; background: #000000; padding: 2px;")
-        title_label.setFixedHeight(22)
+        title_label.setFont(QFont("Arial", 7, QFont.Weight.Bold))
+        title_label.setStyleSheet("color: #FFFFFF; background: #000000; padding: 0px; font-size: 7pt;")
+        title_label.setFixedHeight(14)
         layout.addWidget(title_label)
 
         panel = QFrame()
@@ -374,24 +374,24 @@ class SignalBarWidget(QWidget):
 
         self.status_label = QLabel("")
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.status_label.setFont(QFont("Arial", 11, QFont.Weight.Bold))
+        self.status_label.setFont(QFont("Arial", 9, QFont.Weight.Bold))
         self.status_label.setStyleSheet("color: #FFFFFF; background: #000000; padding: 2px;")
-        self.status_label.setFixedHeight(18)
+        self.status_label.setFixedHeight(16)
         self.status_label.setVisible(False)
         layout.addWidget(self.status_label)
 
         self.value_label = QLabel(f"{self.value:.1f}")
         self.value_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.value_label.setFont(QFont("Menlo", 12, QFont.Weight.Bold))
+        self.value_label.setFont(QFont("Menlo", 9, QFont.Weight.Bold))
         self.value_label.setStyleSheet("color: #FFFFFF; background: #000000; padding: 2px;")
-        self.value_label.setFixedHeight(24)
+        self.value_label.setFixedHeight(20)
         layout.addWidget(self.value_label)
 
         self.unit_label = QLabel(self.unit)
         self.unit_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.unit_label.setFont(QFont("Arial", 9))
+        self.unit_label.setFont(QFont("Arial", 8))
         self.unit_label.setStyleSheet("color: #BBBBBB; background: #000000; padding: 2px;")
-        self.unit_label.setFixedHeight(18)
+        self.unit_label.setFixedHeight(16)
         layout.addWidget(self.unit_label)
 
         # prepare normalized zones
@@ -591,8 +591,8 @@ class LiveGaugeWidget(QWidget):
         self.current_value = min_val
         self.target_value = min_val
 
-        self.setMinimumSize(180, 200)
-        self.setMaximumSize(220, 240)
+        self.setMinimumSize(150, 165)
+        self.setMaximumSize(190, 200)
         self._init_ui()
 
         # Smooth needle movement (similar to bar widget)
@@ -602,13 +602,13 @@ class LiveGaugeWidget(QWidget):
 
     def _init_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(4, 4, 4, 4)
-        layout.setSpacing(2)
+        layout.setContentsMargins(2, 2, 2, 2)
+        layout.setSpacing(1)
 
         # Title
         title_label = QLabel(self.title)
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        title_label.setFont(QFont("Arial", 9, QFont.Weight.Bold))
         title_label.setStyleSheet(f"color: {Colors.TEXT_PRIMARY};")
         layout.addWidget(title_label)
 
@@ -627,23 +627,24 @@ class LiveGaugeWidget(QWidget):
         # Status text (zone-based) – above value
         self.warning_label = QLabel("")
         self.warning_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.warning_label.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        self.warning_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
         self.warning_label.setVisible(False)
-        self.warning_label.setFixedHeight(18)
+        self.warning_label.setFixedHeight(16)
         self.warning_label.setStyleSheet("color: #F7C948;")
         layout.addWidget(self.warning_label)
 
         # Value label (centered in gauge)
         self.value_label = QLabel(f"{self.current_value:.1f}")
         self.value_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.value_label.setFont(QFont("Menlo", 18, QFont.Weight.Bold))
+        self.value_label.setFont(QFont("Menlo", 13, QFont.Weight.Bold))
         self.value_label.setStyleSheet(f"color: {Colors.TEXT_PRIMARY}; background: #000000; padding: 2px;")
+        self.value_label.setFixedHeight(20)
         layout.addWidget(self.value_label)
 
         # Unit label
         unit_label = QLabel(self.unit)
         unit_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        unit_label.setFont(QFont("Arial", 9))
+        unit_label.setFont(QFont("Arial", 8))
         unit_label.setStyleSheet(f"color: {Colors.TEXT_SECONDARY};")
         layout.addWidget(unit_label)
 
@@ -729,15 +730,22 @@ class LiveGaugeWidget(QWidget):
             y2 = 1.0 * np.sin(angle)
             self.gauge_plot.plot([x1, x2], [y1, y2], pen=pg.mkPen('#888888', width=2), antialias=True)
 
-        # Min/max labels
-        min_text = pg.TextItem(f"{self.min_val:.0f}", anchor=(0.5, 0.5), color='#AAAAAA')
-        min_text.setFont(QFont("Arial", 9))
-        min_text.setPos(-1.25, 0)
+        # Min/max labels (shrink + offset when values are wide)
+        min_label = f"{self.min_val:.0f}"
+        max_label = f"{self.max_val:.0f}"
+        min_font = 7 if len(min_label) >= 4 else 8
+        max_font = 7 if len(max_label) >= 4 else 8
+        min_x = -1.3 if len(min_label) >= 4 else -1.25
+        max_x = 1.3 if len(max_label) >= 4 else 1.25
+
+        min_text = pg.TextItem(min_label, anchor=(0.5, 0.5), color='#AAAAAA')
+        min_text.setFont(QFont("Arial", min_font))
+        min_text.setPos(min_x, 0)
         self.gauge_plot.addItem(min_text)
 
-        max_text = pg.TextItem(f"{self.max_val:.0f}", anchor=(0.5, 0.5), color='#AAAAAA')
-        max_text.setFont(QFont("Arial", 9))
-        max_text.setPos(1.25, 0)
+        max_text = pg.TextItem(max_label, anchor=(0.5, 0.5), color='#AAAAAA')
+        max_text.setFont(QFont("Arial", max_font))
+        max_text.setPos(max_x, 0)
         self.gauge_plot.addItem(max_text)
 
         # Center pivot point
@@ -1082,16 +1090,7 @@ class ProfessionalMissionControl(QMainWindow):
         # Setup UI
         self.setWindowTitle(f"{APP_NAME} v{APP_VERSION} - Professional Mission Control")
         self.setMinimumSize(1280, 720)
-        screen = QGuiApplication.primaryScreen()
-        if screen is not None:
-            avail = screen.availableGeometry()
-            width = min(avail.width() - 40, 1900)
-            height = min(avail.height() - 40, 1050)
-            if width < 900:
-                width = max(avail.width() - 20, 800)
-            if height < 700:
-                height = max(avail.height() - 20, 600)
-            self.resize(width, height)
+        self.resize(1280, 720)
 
         self._setup_ui()
         self._setup_timers()
@@ -1469,32 +1468,103 @@ class ProfessionalMissionControl(QMainWindow):
                 break
         self.port_combo.setCurrentIndex(chosen_idx)
 
-    def _wrap_led_with_label(self, led: QLabel, text: str) -> QWidget:
+    def _wrap_led_with_label(self, led: QLabel, text: str, dot_size: int = 11, font_size: int = 7) -> QWidget:
         box = QWidget()
         box.setStyleSheet("background: transparent; border: none;")
-        lay = QVBoxLayout(box)
+        lay = QHBoxLayout(box)
         lay.setContentsMargins(0, 0, 0, 0)
-        lay.setSpacing(0)
-        led.setStyleSheet(f"color: {Colors.STATUS_UNKNOWN}; font-size: 16pt; background: transparent; border: none;")
+        lay.setSpacing(4)
+        led.setStyleSheet(
+            f"color: {Colors.STATUS_UNKNOWN}; font-size: {dot_size}px; background: transparent; border: none;"
+        )
         led.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        lay.addWidget(led, alignment=Qt.AlignmentFlag.AlignHCenter)
+        lay.addWidget(led)
         lbl = QLabel(text)
-        lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        lbl.setStyleSheet(f"color: {Colors.TEXT_SECONDARY}; font-size: 8pt;")
+        lbl.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        lbl.setStyleSheet(f"color: {Colors.TEXT_SECONDARY}; font-size: {font_size}pt;")
         lay.addWidget(lbl)
         return box
+
+    def _create_meta_box(self) -> QWidget:
+        meta_box = QWidget()
+        meta_box.setStyleSheet("background: transparent; border: none;")
+        meta_box.setFixedWidth(160)
+        meta_layout = QVBoxLayout(meta_box)
+        meta_layout.setContentsMargins(2, 2, 2, 2)
+        meta_layout.setSpacing(2)
+
+        meta_title = QLabel("RF STATS")
+        meta_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        meta_title.setStyleSheet(f"color: {Colors.TEXT_PRIMARY}; font-weight: bold; font-size: 9pt;")
+        meta_layout.addWidget(meta_title)
+
+        self.radio_meta_label = QLabel("No RF meta frames yet.")
+        self.radio_meta_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        self.radio_meta_label.setWordWrap(True)
+        self.radio_meta_label.setStyleSheet(
+            f"""
+            color: {Colors.TEXT_PRIMARY};
+            font-family: Menlo;
+            font-size: 8pt;
+            background-color: {Colors.BG_PRIMARY};
+            border: none;
+            border-radius: 4px;
+            padding: 3px;
+            """
+        )
+        self.radio_meta_label.setMinimumWidth(0)
+        self.radio_meta_label.setMinimumHeight(86)
+        self.radio_meta_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        meta_layout.addWidget(self.radio_meta_label, 1)
+
+        led_row = QWidget()
+        led_layout = QHBoxLayout(led_row)
+        led_layout.setContentsMargins(0, 0, 0, 0)
+        led_layout.setSpacing(10)
+        self.meta_arrival_led = QLabel("●")
+        self.meta_arrival_led.setToolTip("META arrival pulse")
+        self.meta_link_led = QLabel("●")
+        self.meta_link_led.setToolTip("LOCK (avg gap based)")
+        for led in (self.meta_arrival_led, self.meta_link_led):
+            led.setStyleSheet("color: #2A4A34; font-size: 11px; background: transparent; border: none;")
+        led_layout.addStretch()
+        led_layout.addWidget(self._wrap_led_with_label(self.meta_arrival_led, "META"))
+        led_layout.addWidget(self._wrap_led_with_label(self.meta_link_led, "LOCK"))
+        led_layout.addStretch()
+        meta_layout.addWidget(led_row)
+
+        return meta_box
+
+    def _create_bar_column(self) -> QWidget:
+        widget = QWidget()
+        layout = QHBoxLayout(widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(4)
+        bar_width = 44
+        for gauge in (self.rssi_gauge, self.snr_gauge, self.link_gauge):
+            gauge.setFixedWidth(bar_width)
+            gauge.setMaximumHeight(150)
+            layout.addWidget(gauge)
+        bar_block_width = bar_width * 3 + layout.spacing() * 2
+        widget.setFixedWidth(bar_block_width)
+        widget.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+        layout.addStretch()
+        return widget
 
     def _create_dashboard_view(self) -> QWidget:
         """Create main dashboard view with gauges and charts"""
         widget = QWidget()
 
         layout = QGridLayout(widget)
-        layout.setContentsMargins(12, 8, 12, 12)  # Less top margin - toolbar handles spacing
-        layout.setSpacing(12)
+        layout.setContentsMargins(4, 3, 4, 4)
+        layout.setSpacing(4)
 
         # Row 0: Signal Quality Gauges
         signal_panel = self._create_panel_container("📡 SIGNAL QUALITY")
-        signal_layout = QHBoxLayout()
+        signal_row = QWidget()
+        signal_row_layout = QHBoxLayout(signal_row)
+        signal_row_layout.setContentsMargins(0, 0, 0, 0)
+        signal_row_layout.setSpacing(4)
 
         self.rssi_gauge = SignalBarWidget(
             "RSSI", "dBm", -164, 0,
@@ -1522,80 +1592,27 @@ class ProfessionalMissionControl(QMainWindow):
                 (200, 500, "#ff4b4b"),
             ]
         )
+        self.fei_gauge.setFixedWidth(160)
         self.link_gauge = SignalBarWidget(
-            "Link Score", "%", 0, 100,
+            "LINK", "%", 0, 100,
             zones=[(0, 50, "#ff4b4b"),
                    (50, 70, "#e4c748"),
                    (70, 85, "#5ec27f"),
                    (85, 100, "#5cae64")]
         )
 
-        bars_layout = QHBoxLayout()
-        bars_layout.setSpacing(10)
-        bars_layout.addWidget(self.rssi_gauge)
-        bars_layout.addWidget(self.snr_gauge)
-        bars_layout.addWidget(self.link_gauge)
-
-        signal_layout.addLayout(bars_layout)
-
-        # Wrap gauges + meta box horizontally so the info sits beside the bars
-        signal_row = QHBoxLayout()
-        signal_row.setSpacing(12)
-        signal_row.addLayout(signal_layout)
-
-        # RF stats (small framed block)
-        meta_box = QFrame()
-        meta_box.setFrameShape(QFrame.Shape.StyledPanel)
-        meta_box.setStyleSheet(f"border: 1px solid {Colors.BORDER}; background: {Colors.BG_SECONDARY};")
-        meta_box.setFixedHeight(150)
-        meta_box.setMinimumWidth(190)
-        meta_box.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
-        meta_layout = QVBoxLayout(meta_box)
-        meta_layout.setContentsMargins(6, 6, 6, 6)
-        meta_layout.setSpacing(2)
-
-        meta_title = QLabel("RF STATS")
-        meta_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-        meta_title.setStyleSheet(f"color: {Colors.TEXT_SECONDARY}; font-weight: bold; font-size: 9pt;")
-        meta_layout.addWidget(meta_title)
-
-        self.radio_meta_label = QLabel("No RF meta frames yet.")
-        self.radio_meta_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-        self.radio_meta_label.setWordWrap(True)
-        self.radio_meta_label.setStyleSheet(
-            f"color: {Colors.TEXT_PRIMARY}; font-family: Menlo; font-size: 8pt;"
-        )
-        self.radio_meta_label.setMinimumWidth(0)
-        self.radio_meta_label.setMaximumHeight(90)
-        self.radio_meta_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        meta_layout.addWidget(self.radio_meta_label)
-
-        leds_row = QHBoxLayout()
-        leds_row.setContentsMargins(0, 6, 0, 0)
-        leds_row.setSpacing(18)
-        # Meta arrival LED (blink on each meta)
-        self.meta_arrival_led = QLabel("●")
-        self.meta_arrival_led.setToolTip("META arrival pulse")
-        leds_row.addWidget(self._wrap_led_with_label(self.meta_arrival_led, "META"), 0, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-        # Link state LED (blue steady when within avg window, red blink on fault)
-        self.meta_link_led = QLabel("●")
-        self.meta_link_led.setToolTip("LOCK (avg gap based)")
-        leds_row.addWidget(self._wrap_led_with_label(self.meta_link_led, "LOCK"), 0, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-        leds_row.addStretch()
-        meta_layout.addLayout(leds_row)
-
-        signal_layout.addWidget(meta_box, 0)
-        signal_layout.addStretch()
-
-        signal_row.addWidget(self.fei_gauge)
-        signal_row.addStretch()
-
-        signal_panel.layout().addLayout(signal_row)
+        signal_row_layout.addWidget(self._create_bar_column())
+        signal_row_layout.addWidget(self._create_meta_box())
+        signal_row_layout.addWidget(self.fei_gauge)
+        signal_row_layout.addStretch()
+        signal_panel.layout().addWidget(signal_row)
         layout.addWidget(signal_panel, 0, 0, 1, 2)
 
         # Row 0: Telemetry Gauges
         telem_panel = self._create_panel_container("🌡️ TELEMETRY")
-        telem_layout = QHBoxLayout()
+        telem_splitter = QSplitter(Qt.Orientation.Horizontal)
+        telem_splitter.setHandleWidth(2)
+        telem_splitter.setChildrenCollapsible(False)
 
         self.temp_gauge = LiveGaugeWidget(
             "Temperature", "°C", -40, 85,
@@ -1632,12 +1649,14 @@ class ProfessionalMissionControl(QMainWindow):
             ]
         )
 
-        telem_layout.addWidget(self.temp_gauge)
-        telem_layout.addWidget(self.hum_gauge)
-        telem_layout.addWidget(self.press_gauge)
-        telem_layout.addStretch()
-
-        telem_panel.layout().addLayout(telem_layout)
+        for gauge in (self.temp_gauge, self.hum_gauge, self.press_gauge):
+            gauge.setFixedWidth(160)
+            gauge.setMaximumHeight(190)
+            telem_splitter.addWidget(gauge)
+        telem_splitter.setStretchFactor(0, 1)
+        telem_splitter.setStretchFactor(1, 1)
+        telem_splitter.setStretchFactor(2, 1)
+        telem_panel.layout().addWidget(telem_splitter)
         layout.addWidget(telem_panel, 0, 2, 1, 2)
 
         # Row 1: Frame Status strip
@@ -1872,28 +1891,25 @@ class ProfessionalMissionControl(QMainWindow):
 
         return widget
 
-    def _create_panel_container(self, title: str) -> QGroupBox:
-        """Create a styled panel container"""
-        panel = QGroupBox(title)
+    def _create_panel_container(self, title: str) -> QFrame:
+        """Create compact panel container with minimal chrome"""
+        panel = QFrame()
+        panel.setFrameShape(QFrame.Shape.StyledPanel)
         panel.setStyleSheet(f"""
-            QGroupBox {{
-                font-weight: bold;
-                font-size: 12px;
-                color: {Colors.STATUS_NOMINAL};
-                border: 2px solid {Colors.BORDER};
-                border-radius: 6px;
-                margin-top: 12px;
-                padding-top: 12px;
+            QFrame {{
                 background-color: {Colors.BG_SECONDARY};
-            }}
-            QGroupBox::title {{
-                subcontrol-origin: margin;
-                left: 12px;
-                padding: 0 6px;
+                border: 1px solid {Colors.BORDER_SUBTLE};
+                border-radius: 4px;
             }}
         """)
         layout = QVBoxLayout(panel)
-        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setContentsMargins(4, 4, 4, 4)
+        layout.setSpacing(3)
+
+        header = QLabel(title.upper())
+        header.setFont(QFont("Arial", 9))
+        header.setStyleSheet(f"color: {Colors.TEXT_SECONDARY};")
+        layout.addWidget(header)
         return panel
 
     def _create_status_box(self, label: str, value: str, color: str) -> QWidget:
@@ -2088,8 +2104,8 @@ class ProfessionalMissionControl(QMainWindow):
 
         # Reset meta panel and LEDs
         self.radio_meta_label.setText("No RF meta frames yet.")
-        self.meta_arrival_led.setStyleSheet("color: #2A4A34; font-size: 16pt; background: transparent; border: none;")
-        self.meta_link_led.setStyleSheet("color: #1F374C; font-size: 16pt; background: transparent; border: none;")
+        self.meta_arrival_led.setStyleSheet("color: #2A4A34; font-size: 11px; background: transparent; border: none;")
+        self.meta_link_led.setStyleSheet("color: #1F374C; font-size: 11px; background: transparent; border: none;")
 
         # Clear frame strip and inspector
         self.frame_strip.items = []
@@ -2406,20 +2422,20 @@ Raw Data ({len(frame.raw_data)} bytes):
             # LED1: meta arrival pulse (zöld pár tizedmásodpercig)
             now_t = time.time()
             if now_t - self.last_meta_arrival_flash < 0.6:
-                self.meta_arrival_led.setStyleSheet("color: #32FF6A; font-size: 16pt; background: transparent; border: none;")
+                self.meta_arrival_led.setStyleSheet("color: #32FF6A; font-size: 11px; background: transparent; border: none;")
             else:
-                self.meta_arrival_led.setStyleSheet("color: #2A4A34; font-size: 16pt; background: transparent; border: none;")
+                self.meta_arrival_led.setStyleSheet("color: #2A4A34; font-size: 11px; background: transparent; border: none;")
 
             # LED2: link state (AVG alapú küszöb: ha aktuális gap > (avg+1s) → fault)
             ref_gap = self.meta_avg_gap if self.meta_avg_gap is not None else (self.meta_max_gap if self.meta_max_gap > 0 else 2.0)
             threshold = ref_gap + 1.0
             gap_fault = (self.meta_last_gap > threshold) or (age > threshold)
             if not gap_fault:
-                self.meta_link_led.setStyleSheet("color: #00A8FF; font-size: 16pt; background: transparent; border: none;")
+                self.meta_link_led.setStyleSheet("color: #00A8FF; font-size: 11px; background: transparent; border: none;")
             else:
                 blink_on = int(time.time() * 2) % 2 == 0
                 color = "#FF3B30" if blink_on else "#1F374C"
-                self.meta_link_led.setStyleSheet(f"color: {color}; font-size: 16pt; background: transparent; border: none;")
+                self.meta_link_led.setStyleSheet(f"color: {color}; font-size: 11px; background: transparent; border: none;")
 
             bw_map = {
                 0: "7.8k", 1: "10.4k", 2: "15.6k", 3: "20.8k",
@@ -2429,12 +2445,12 @@ Raw Data ({len(frame.raw_data)} bytes):
             bw_txt = bw_map.get(latest.bw_bits, f"{latest.bw_bits}")
             tuned_freq_mhz = 433.200 + (latest.offset_hz / 1e6)
             meta_text = (
-                f"LAST {self.meta_last_gap:0.1f}s | AVG {(self.meta_avg_gap or 0):0.1f}s | MAX {self.meta_max_gap:0.1f}s\n"
-                f"LIVE {age:0.1f}s  TUNE {tuned_freq_mhz:0.3f}MHz ({latest.offset_hz:+.0f}Hz)\n"
+                f"LAST {self.meta_last_gap:0.1f}s  AVG {(self.meta_avg_gap or 0):0.1f}s  MAX {self.meta_max_gap:0.1f}s\n"
+                f"LIVE {age:0.1f}s  TUNE {tuned_freq_mhz:0.3f}MHz\n"
                 f"RSSI {latest.rssi_pkt_dbm: .1f}/{latest.rssi_inst_dbm: .1f} dBm  SNR {latest.snr_db: .1f} dB\n"
-                f"FEI {latest.fei_hz: .0f}Hz  BW/SF/CR {bw_txt}/SF{latest.sf}/CR{latest.cr}\n"
-                f"SEQ {latest.seq}  MET {latest.met}\n"
-                f"RX {latest.rx_packet_cnt}p/{latest.rx_header_cnt}h  LINK {latest.link_score}%  CRC {latest.crc_ok}"
+                f"FEI {latest.fei_hz: .0f}Hz  BW {bw_txt}  SF{latest.sf}  CR{latest.cr}\n"
+                f"SEQ {latest.seq}  MET {latest.met}  LINK {latest.link_score}%\n"
+                f"RX {latest.rx_packet_cnt}p/{latest.rx_header_cnt}h  CRC {latest.crc_ok}"
             )
             self.radio_meta_label.setText(meta_text)
         else:
