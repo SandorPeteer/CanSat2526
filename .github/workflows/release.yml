@@ -1,0 +1,61 @@
+name: Build Releases
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        working-directory: astrolink-desktop
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install pyinstaller pillow
+        shell: bash
+
+      - name: Build icons
+        working-directory: astrolink-desktop
+        run: python scripts/build_icons.py
+
+      - name: Build (PyInstaller)
+        working-directory: astrolink-desktop
+        run: pyinstaller --noconfirm astrolink.spec
+
+      - name: Package macOS app
+        if: matrix.os == 'macos-latest'
+        working-directory: astrolink-desktop
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent "dist/AstroLink.app" "dist/AstroLink-macOS.zip"
+
+      - name: Package Windows exe
+        if: matrix.os == 'windows-latest'
+        working-directory: astrolink-desktop
+        run: |
+          powershell Compress-Archive -Path "dist/AstroLink/*" -DestinationPath "dist/AstroLink-Windows.zip"
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            astrolink-desktop/dist/AstroLink-macOS.zip
+            astrolink-desktop/dist/AstroLink-Windows.zip

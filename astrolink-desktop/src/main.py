@@ -12,6 +12,7 @@ from pathlib import Path
 
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
 
 # Add src directory to Python path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -72,6 +73,9 @@ def main():
     app.setApplicationName(APP_NAME)
     app.setApplicationVersion(APP_VERSION)
     app.setOrganizationName("AstroLink")
+    icon_path = Path(__file__).parent.parent / "assets" / "astrolink_icon.png"
+    if icon_path.exists():
+        app.setWindowIcon(QIcon(str(icon_path)))
 
     # Apply Mission Control theme
     theme = MissionControlTheme()

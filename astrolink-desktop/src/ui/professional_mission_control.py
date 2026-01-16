@@ -2836,7 +2836,8 @@ RX Bytes: {latest.rx_nb_bytes}
             "About Professional Mission Control",
             f"{APP_NAME} v{APP_VERSION}\n\n"
             "Professional telemetry monitoring for LoRa missions\n\n"
-            "OpenMCT-style interface with real-time data visualization"
+            "OpenMCT-style interface with real-time data visualization\n\n"
+            "Astrolink Team"
         )
 
     def toggle_fullscreen(self):
