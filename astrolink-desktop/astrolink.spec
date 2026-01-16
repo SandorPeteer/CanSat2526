@@ -5,7 +5,7 @@ block_cipher = None
 import os
 import sys
 
-base_dir = os.path.dirname(os.path.abspath(__file__))
+base_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
 assets_dir = os.path.join(base_dir, "assets")
 icon_icns = os.path.join(assets_dir, "astrolink_icon.icns")
 icon_ico = os.path.join(assets_dir, "astrolink_icon.ico")
