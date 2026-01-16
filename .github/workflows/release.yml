@@ -51,7 +51,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         working-directory: astrolink-desktop
         run: |
-          powershell Compress-Archive -Path "dist/AstroLink/*" -DestinationPath "dist/AstroLink-Windows.zip"
+          powershell -Command "if (Test-Path 'dist/AstroLink') { Compress-Archive -Path 'dist/AstroLink/*' -DestinationPath 'dist/AstroLink-Windows.zip' } else { Compress-Archive -Path 'dist/AstroLink.exe' -DestinationPath 'dist/AstroLink-Windows.zip' }"
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
