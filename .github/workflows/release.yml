@@ -33,6 +33,16 @@ jobs:
           pip install pyinstaller pillow
         shell: bash
 
+      - name: Set build metadata
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          if [ "${VERSION}" = "${GITHUB_REF_NAME}" ]; then
+            VERSION="dev"
+          fi
+          echo "ASTROLINK_VERSION=${VERSION}" >> "${GITHUB_ENV}"
+          echo "ASTROLINK_BUILD_DATE=$(date -u +%Y-%m-%d)" >> "${GITHUB_ENV}"
+        shell: bash
+
       - name: Build icons
         working-directory: astrolink-desktop
         run: python scripts/build_icons.py

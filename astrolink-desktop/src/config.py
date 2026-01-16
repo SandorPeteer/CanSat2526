@@ -3,6 +3,7 @@ Application Configuration and Constants
 """
 
 import os
+from datetime import datetime
 from pathlib import Path
 
 # ============================================================================
@@ -10,8 +11,10 @@ from pathlib import Path
 # ============================================================================
 
 APP_NAME = "AstroLink Mission Control"
-APP_VERSION = "1.0.0"
-APP_BUILD_DATE = "2025-12-16"
+APP_VERSION = os.environ.get("ASTROLINK_VERSION", "1.0.3")
+APP_BUILD_DATE = os.environ.get(
+    "ASTROLINK_BUILD_DATE", datetime.utcnow().strftime("%Y-%m-%d")
+)
 APP_ORGANIZATION = "AstroLink"
 APP_DOMAIN = "astrolink.space"
 

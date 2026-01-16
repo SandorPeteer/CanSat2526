@@ -26,7 +26,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QTimer, QTime, QSize
 from PyQt6.QtGui import QFont, QColor, QIcon, QPainter, QPen, QLinearGradient, QGuiApplication
 
-from config import APP_NAME, APP_VERSION, PLOT_UPDATE_INTERVAL
+from config import APP_NAME, APP_VERSION, APP_BUILD_DATE, PLOT_UPDATE_INTERVAL
 from core.telemetry import TelemetryDecoder, SignalMetadata, FrameInfo
 from core.serial_handler import SerialHandler
 from core.data_manager import DataManager
@@ -3007,7 +3007,7 @@ RX Bytes: {latest.rx_nb_bytes}
         QMessageBox.about(
             self,
             "About Professional Mission Control",
-            f"{APP_NAME} v{APP_VERSION}\n\n"
+            f"{APP_NAME} v{APP_VERSION} ({APP_BUILD_DATE})\n\n"
             "Professional telemetry monitoring for LoRa missions\n\n"
             "OpenMCT-style interface with real-time data visualization\n\n"
             "Astrolink Team"
