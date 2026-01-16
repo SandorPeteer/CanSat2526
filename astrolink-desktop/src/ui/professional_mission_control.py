@@ -7,6 +7,7 @@ import logging
 import time
 import math
 import shutil
+import sys
 from pathlib import Path
 from typing import Dict, List, Optional
 from dataclasses import dataclass
@@ -1006,7 +1007,13 @@ class ProfessionalMissionControl(QMainWindow):
         # Core components
         self.telemetry_decoder = TelemetryDecoder()
         self.serial_handler = SerialHandler()
-        self.data_manager = DataManager()
+        if getattr(sys, "frozen", False):
+            app_dir = Path(sys.executable).resolve().parent
+            if sys.platform == "darwin":
+                app_dir = app_dir.parents[2]
+        else:
+            app_dir = Path(__file__).resolve().parents[2]
+        self.data_manager = DataManager(working_directory=app_dir)
         self.stream_demux = SerialStreamDemux()
         self.rf_meta_decoder = RfMetaDecoder()
 
@@ -1031,6 +1038,7 @@ class ProfessionalMissionControl(QMainWindow):
         self.meta_gap_samples: int = 0
         self.mission_start_time: Optional[float] = None
         self.is_recording = False
+        self._session_bytes = bytearray()
         self.last_meta_arrival_flash: float = 0.0
         self.meta_counter: int = 0
         self.strip_started: bool = False
@@ -1044,6 +1052,7 @@ class ProfessionalMissionControl(QMainWindow):
         self._pending_frame_numbers: List[int] = []
         self._frame_meta: List[Optional[RfMetaFrame]] = []
         self._frame_meta_dirty = False
+        self._offline_loaded = False
 
         # Error tracking
         self._last_crc_error_count = 0
@@ -1205,6 +1214,43 @@ class ProfessionalMissionControl(QMainWindow):
         self.view_list.setCurrentRow(0)
         self.view_list.currentRowChanged.connect(self._on_view_changed)
         layout.addWidget(self.view_list)
+
+        # Quick file actions
+        file_box = QFrame()
+        file_box.setFrameShape(QFrame.Shape.StyledPanel)
+        file_box.setStyleSheet(f"border: 1px solid {Colors.BORDER}; background: {Colors.BG_PRIMARY};")
+        file_layout = QVBoxLayout(file_box)
+        file_layout.setContentsMargins(6, 6, 6, 6)
+        file_layout.setSpacing(6)
+
+        load_btn = QPushButton("📂 Load")
+        save_btn = QPushButton("💾 Save")
+        clear_btn = QPushButton("🧹 Clear")
+        for btn in (load_btn, save_btn, clear_btn):
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: {Colors.BG_TERTIARY};
+                    color: {Colors.TEXT_PRIMARY};
+                    border: 1px solid {Colors.BORDER};
+                    padding: 6px 10px;
+                    border-radius: 6px;
+                    font-weight: bold;
+                }}
+                QPushButton:hover {{
+                    background-color: {Colors.BG_HOVER};
+                }}
+                QPushButton:pressed {{
+                    background-color: {Colors.BG_SECONDARY};
+                }}
+            """)
+        load_btn.clicked.connect(self._on_open_recording)
+        save_btn.clicked.connect(self._on_save_recording)
+        clear_btn.clicked.connect(self._on_clear_data)
+        file_layout.addWidget(load_btn)
+        file_layout.addWidget(save_btn)
+        file_layout.addWidget(clear_btn)
+        layout.addWidget(file_box)
 
         layout.addStretch()
 
@@ -1904,7 +1950,6 @@ class ProfessionalMissionControl(QMainWindow):
         # File menu
         file_menu = menubar.addMenu("File")
         file_menu.addAction("Open Recording...", self._on_open_recording)
-        file_menu.addAction("Save Recording...", self._on_save_recording)
         file_menu.addSeparator()
         file_menu.addAction("Clear Data", self._on_clear_data)
         file_menu.addSeparator()
@@ -2201,6 +2246,11 @@ class ProfessionalMissionControl(QMainWindow):
         if not data:
             return
 
+        self._offline_loaded = False
+        self._session_bytes.extend(data)
+        if self.is_recording:
+            self.data_manager.append_recording(data)
+
         # Push to stream demux
         result = self.stream_demux.ingest(data)
         telem_chunks = result.telemetry_frames
@@ -2283,12 +2333,21 @@ class ProfessionalMissionControl(QMainWindow):
         """Handle record button"""
         if self.btn_record.isChecked():
             self.btn_record.setText("⏹ STOP")
-            self.is_recording = True
-            self._add_event("Recording started", "INFO")
+            if self.data_manager.start_recording():
+                self.is_recording = True
+                self._add_event("Recording started", "INFO")
+            else:
+                self.btn_record.setChecked(False)
+                self.btn_record.setText("⚫ REC")
+                self._add_event("Recording failed", "WARN")
         else:
             self.btn_record.setText("⚫ REC")
             self.is_recording = False
-            self._add_event("Recording stopped", "INFO")
+            filename = self.data_manager.stop_recording()
+            if filename:
+                self._add_event(f"Recording saved: {filename}", "INFO")
+            else:
+                self._add_event("Recording stopped", "INFO")
 
     def _on_frame_selected(self):
         """Handle frame table selection"""
@@ -2408,7 +2467,7 @@ Raw Data ({len(frame.raw_data)} bytes):
                 self.last_strip_frame_id = new_id
 
         # Add any new META frames to strip
-        if self.last_strip_meta_idx < len(self.rf_meta_history):
+        if not self._offline_loaded and self.last_strip_meta_idx < len(self.rf_meta_history):
             for mf in self.rf_meta_history[self.last_strip_meta_idx:]:
                 self.meta_counter += 1
                 # Only show META ids after sync start; before that neutral
@@ -2779,22 +2838,116 @@ RX Bytes: {latest.rx_nb_bytes}
     def _on_open_recording(self):
         """Open recording file"""
         filename, _ = QFileDialog.getOpenFileName(
-            self, "Open Telemetry Recording", "", "Binary Files (*.bin);;All Files (*)"
+            self,
+            "Open Telemetry Recording",
+            str(self.data_manager.working_dir),
+            "Binary Files (*.bin);;All Files (*)",
         )
         if filename:
-            self._add_event(f"Opening {filename}", "INFO")
+            data = self.data_manager.load_file(filename)
+            if data is None:
+                QMessageBox.warning(self, "Open Failed", "Could not load file.")
+                return
+            self._on_clear_data()
+            self._session_bytes = bytearray(data)
+            self.stream_demux.reset()
+            self._process_recording_bytes(data)
+            self._offline_loaded = True
+            self._add_event(f"Opened {filename}", "INFO")
 
     def _on_save_recording(self):
         """Save recording file"""
-        if not self.temperatures:
+        if not self._session_bytes:
             QMessageBox.warning(self, "No Data", "No telemetry data to save")
             return
 
         filename, _ = QFileDialog.getSaveFileName(
-            self, "Save Telemetry Recording", "", "Binary Files (*.bin);;All Files (*)"
+            self,
+            "Save Telemetry Recording",
+            str(self.data_manager.working_dir),
+            "Binary Files (*.bin);;All Files (*)",
         )
         if filename:
-            self._add_event(f"Saving to {filename}", "INFO")
+            if self.data_manager.save_file(filename, bytes(self._session_bytes)):
+                self._add_event(f"Saved to {filename}", "INFO")
+            else:
+                QMessageBox.warning(self, "Save Failed", "Could not save file.")
+
+    def _process_recording_bytes(self, data: bytes):
+        self.stream_demux.reset()
+        result = self.stream_demux.ingest(data)
+        telem_chunks = result.telemetry_frames
+        meta_chunks = result.meta_frames
+
+        for chunk in telem_chunks:
+            prev_frames = len(self.telemetry_decoder.frames)
+            temps, hums, press, _ = self.telemetry_decoder.decode_frames(chunk)
+            new_frames = len(self.telemetry_decoder.frames) - prev_frames
+            self.temperatures.extend(temps)
+            self.humidities.extend(hums)
+            self.pressures.extend(press)
+            if new_frames > 0:
+                self.frames_received += new_frames
+                for i in range(new_frames):
+                    fn = prev_frames + i
+                    if self._pending_meta_frames:
+                        self._frame_meta.append(self._pending_meta_frames.pop(0))
+                    else:
+                        self._frame_meta.append(None)
+                        self._pending_frame_numbers.append(fn)
+
+        for chunk in meta_chunks:
+            meta_frames = self.rf_meta_decoder.push_data(chunk)
+            for mf in meta_frames:
+                self.rf_meta_history.append(mf)
+                self.meta_frames_parsed += 1
+                if not mf.crc_ok:
+                    self.meta_crc_bad += 1
+                if self._pending_frame_numbers:
+                    fn = self._pending_frame_numbers.pop(0)
+                    if fn < len(self._frame_meta):
+                        self._frame_meta[fn] = mf
+                        self._frame_meta_dirty = True
+                else:
+                    self._pending_meta_frames.append(mf)
+
+        # Rebuild frame strip to keep META frames interleaved with telemetry.
+        self.frame_strip.items = []
+        self.frame_strip.update()
+        self.strip_started = False
+        self.strip_frame_counter = 0
+        self.last_strip_frame_id = -1
+        self.last_strip_meta_idx = len(self.rf_meta_history)
+        self.meta_counter = 0
+
+        for f in self.telemetry_decoder.frames:
+            ftype = (f.frame_type or "UNKNOWN").upper()
+            flen = len(f.raw_data) if f.raw_data else 0
+            crc_ok = bool(f.crc_valid)
+            if not self.strip_started:
+                if ftype == "FULL" and crc_ok:
+                    self.strip_started = True
+                    self.strip_frame_counter = 0
+                else:
+                    self.frame_strip.add_frame("PRE", flen, crc_ok, fid=None)
+                    self.last_strip_frame_id = max(self.last_strip_frame_id, f.frame_number)
+                    continue
+            self.strip_frame_counter += 1
+            self.frame_strip.add_frame(ftype, flen, crc_ok, fid=self.strip_frame_counter)
+            self.last_strip_frame_id = max(self.last_strip_frame_id, f.frame_number)
+
+            if 0 <= f.frame_number < len(self._frame_meta):
+                mf = self._frame_meta[f.frame_number]
+            else:
+                mf = None
+            if mf is not None:
+                if self.strip_started:
+                    self.frame_strip.add_frame("META", 28, mf.crc_ok, fid=None)
+                else:
+                    self.frame_strip.add_frame("PRE", 28, mf.crc_ok, fid=None)
+
+        self.frame_count_label.setText(f"{self.frames_received}")
+        self._update_displays()
 
     def _on_clear_data(self):
         """Clear all data"""
@@ -2808,6 +2961,26 @@ RX Bytes: {latest.rx_nb_bytes}
         self._pending_frame_numbers.clear()
         self._frame_meta.clear()
         self._frame_meta_dirty = False
+        self.stream_demux.reset()
+        self.strip_started = False
+        self.strip_frame_counter = 0
+        self.last_strip_frame_id = -1
+        self.last_strip_meta_idx = 0
+        self.meta_counter = 0
+        self.frame_strip.items = []
+        self.frame_strip.update()
+        self._offline_loaded = False
+        if hasattr(self, "plot_temp"):
+            self.plot_temp.clear()
+        if hasattr(self, "plot_hum"):
+            self.plot_hum.clear()
+        if hasattr(self, "plot_press"):
+            self.plot_press.clear()
+        if hasattr(self, "plot_rssi"):
+            self.plot_rssi.clear()
+        if hasattr(self, "plot_snr"):
+            self.plot_snr.clear()
+        self._session_bytes = bytearray()
         self._sample_buffer_temp.clear()
         self._sample_buffer_hum.clear()
         self._sample_buffer_press.clear()
