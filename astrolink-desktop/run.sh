@@ -1,6 +1,6 @@
 #!/bin/bash
 # AstroLink Mission Control - Startup Script
-# Professional Telemetry Ground Station v1.0.0
+# Professional Telemetry Ground Station v1.0.4
 
 set -e  # Exit on error
 
@@ -8,7 +8,7 @@ cd "$(dirname "$0")"
 
 echo "=========================================="
 echo "AstroLink Mission Control - Desktop"
-echo "Professional Telemetry Ground Station v1.0.0"
+echo "Professional Telemetry Ground Station v1.0.4"
 echo "=========================================="
 echo ""
 
