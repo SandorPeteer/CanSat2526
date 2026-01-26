@@ -1,0 +1,430 @@
+#include <Arduino.h>
+#include "driver/uart.h"  // uart_set_tx_break
+
+static bool g_identified_once = false;
+
+// ---------- Helpers: hexdump ----------
+static void hexdump_line(const char* tag, const uint8_t* b, int n) {
+  Serial.printf("%s (%d): ", tag, n);
+  for (int i = 0; i < n; ++i) Serial.printf("%02X ", b[i]);
+  Serial.print("\n");
+}
+
+static void dump_rx_window(const char* tag, uint32_t ms) {
+  uint32_t t0 = millis();
+  bool any = false;
+  Serial.printf("[RX] %s (%lums): ", tag, (unsigned long)ms);
+  while ((uint32_t)(millis() - t0) < ms) {
+    while (Serial2.available()) {
+      uint8_t b = (uint8_t)Serial2.read();
+      Serial.printf("%02X ", b);
+      any = true;
+    }
+    delay(1);
+  }
+  if (!any) Serial.print("<no-bytes>");
+  Serial.print("\n");
+}
+
+static void flush_rx() {
+  while (Serial2.available()) (void)Serial2.read();
+}
+
+// ---------- Big-endian float decoder ----------
+static uint32_t be_u32(const uint8_t* p) {
+  return ((uint32_t)p[0] << 24) | ((uint32_t)p[1] << 16) | ((uint32_t)p[2] << 8) | (uint32_t)p[3];
+}
+
+static float be_f32(const uint8_t* p) {
+  uint32_t u = be_u32(p);
+  float f;
+  memcpy(&f, &u, sizeof(f));
+  return f;
+}
+
+// ---------- Minimal SHDLC ----------
+// Frame: 0x7E, addr(0x00), cmd, len, data..., checksum, 0x7E
+// checksum: sum(addr+cmd+len+data+checksum) == 0xFF (8-bit)
+// escaping inside frame (not including delimiters):
+// 0x7E -> 0x7D 0x5E, 0x7D -> 0x7D 0x5D, 0x11 -> 0x7D 0x31, 0x13 -> 0x7D 0x33
+
+static void shdlc_write_escaped(uint8_t b) {
+  switch (b) {
+    case 0x7E: Serial2.write(0x7D); Serial2.write(0x5E); break;
+    case 0x7D: Serial2.write(0x7D); Serial2.write(0x5D); break;
+    case 0x11: Serial2.write(0x7D); Serial2.write(0x31); break;
+    case 0x13: Serial2.write(0x7D); Serial2.write(0x33); break;
+    default:   Serial2.write(b); break;
+  }
+}
+
+static void shdlc_send(uint8_t cmd, const uint8_t* data, uint8_t len) {
+  const uint8_t addr = 0x00;
+  uint16_t sum = addr + cmd + len;
+  for (uint8_t i = 0; i < len; ++i) sum += data[i];
+  const uint8_t chk = (uint8_t)(0xFFu - (sum & 0xFFu));
+
+  Serial2.write(0x7E);
+  shdlc_write_escaped(addr);
+  shdlc_write_escaped(cmd);
+  shdlc_write_escaped(len);
+  for (uint8_t i = 0; i < len; ++i) shdlc_write_escaped(data[i]);
+  shdlc_write_escaped(chk);
+  Serial2.write(0x7E);
+  Serial2.flush();
+}
+
+static int shdlc_read_frame(uint8_t* out, int outMax, uint32_t timeoutMs) {
+  // Returns number of unescaped bytes between 0x7E..0x7E, or -1 on timeout.
+  uint32_t t0 = millis();
+  bool inFrame = false;
+  bool esc = false;
+  int n = 0;
+
+  while ((uint32_t)(millis() - t0) < timeoutMs) {
+    while (Serial2.available()) {
+      uint8_t b = (uint8_t)Serial2.read();
+
+      if (!inFrame) {
+        if (b == 0x7E) {
+          inFrame = true;
+          esc = false;
+          n = 0;
+        }
+        continue;
+      }
+
+      if (b == 0x7E) {
+        // end
+        return n;
+      }
+
+      if (esc) {
+        esc = false;
+        if (b == 0x5E) b = 0x7E;
+        else if (b == 0x5D) b = 0x7D;
+        else if (b == 0x31) b = 0x11;
+        else if (b == 0x33) b = 0x13;
+      } else if (b == 0x7D) {
+        esc = true;
+        continue;
+      }
+
+      if (n < outMax) out[n++] = b;
+    }
+    delay(1);
+  }
+  return -1;
+}
+
+// ---------- Generic SHDLC request/response helper ----------
+static bool shdlc_request(uint8_t cmd, const uint8_t* txData, uint8_t txLen,
+                          uint8_t expectCmd, uint8_t* outData, uint8_t* outLen,
+                          uint8_t* outState, uint32_t timeoutMs) {
+  shdlc_send(cmd, txData, txLen);
+
+  const uint32_t t0 = millis();
+  while ((uint32_t)(millis() - t0) < timeoutMs) {
+    uint32_t remain = timeoutMs - (uint32_t)(millis() - t0);
+    if (remain < 30) remain = 30;
+
+    uint8_t buf[160];
+    int n = shdlc_read_frame(buf, (int)sizeof(buf), remain);
+    if (n < 0) break;
+    if (n < 5) continue;
+
+    const uint8_t addr  = buf[0];
+    const uint8_t rcmd  = buf[1];
+    const uint8_t state = buf[2];
+    const uint8_t len   = buf[3];
+
+    if (addr != 0x00) continue;
+    if (n != (int)(4 + len + 1)) continue;
+
+    uint16_t sum = 0;
+    for (int i = 0; i < n; ++i) sum += buf[i];
+    if (((uint8_t)sum) != 0xFF) continue;
+
+    // Skip unrelated frames until we see the expected command.
+    if (rcmd != expectCmd) continue;
+
+    if (outState) *outState = state;
+    if (outLen) *outLen = len;
+
+    if (outData && len > 0) {
+      memcpy(outData, &buf[4], len);
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+static bool shdlc_parse_and_print(const char* tag, uint8_t expectCmd, uint32_t timeoutMs) {
+  const uint32_t t0 = millis();
+  int shown = 0;
+
+  while ((uint32_t)(millis() - t0) < timeoutMs) {
+    uint32_t remain = timeoutMs - (uint32_t)(millis() - t0);
+    if (remain < 30) remain = 30;
+
+    uint8_t buf[128];
+    int n = shdlc_read_frame(buf, (int)sizeof(buf), remain);
+    if (n < 0) break; // timeout of this read
+
+    if (shown < 3) {
+      hexdump_line((String("[") + tag + "] frame").c_str(), buf, n);
+      shown++;
+    }
+
+    if (n < 5) continue;
+
+    const uint8_t addr  = buf[0];
+    const uint8_t cmd   = buf[1];
+    const uint8_t state = buf[2];
+    const uint8_t len   = buf[3];
+
+    if (addr != 0x00) continue;
+    if (n != (int)(4 + len + 1)) continue;
+
+    uint16_t sum = 0;
+    for (int i = 0; i < n; ++i) sum += buf[i];
+    if (((uint8_t)sum) != 0xFF) continue;
+
+    // Skip unrelated frames (e.g., wake-up ACK 0x11) until we see the expected command.
+    if (cmd != expectCmd) continue;
+
+    const bool errFlag = (state & 0x80) != 0;
+    Serial.printf("[%s] cmd=0x%02X state=0x%02X errFlag=%d len=%u\n", tag, cmd, state, errFlag ? 1 : 0, len);
+
+    const uint8_t* data = &buf[4];
+    if (len > 0) hexdump_line((String("[") + tag + "] data").c_str(), data, len);
+
+    // Pretty-print
+    if (expectCmd == 0xD0 && len > 0) {
+      char s[64];
+      int m = 0;
+      for (int i = 0; i < (int)len && m < (int)sizeof(s) - 1; ++i) {
+        if (data[i] == 0) break;
+        s[m++] = (char)data[i];
+      }
+      s[m] = 0;
+      Serial.printf("[%s] ASCII: %s\n", tag, s);
+    }
+    if (expectCmd == 0xD1) {
+      if (len >= 7) {
+        Serial.printf("[%s] Version: FW %u.%u  HW %u  SHDLC %u.%u\n",
+                      tag, data[0], data[1], data[3], data[5], data[6]);
+      } else {
+        Serial.printf("[%s] Version: unexpected len=%u\n", tag, len);
+      }
+    }
+
+    return true;
+  }
+
+  Serial.printf("[%s] no expected frame (timeout)\n", tag);
+  return false;
+}
+
+// Proper wake-up: BREAK (TX low) then wake-up command 0x11
+static void sps30_wakeup_uart() {
+  // Arduino-ESP32 core provides uart_send_break(uartNum) with a fixed break length.
+  // We repeat it a few times and add delay to approximate a >100ms low wake-up.
+  uart_send_break(2);
+  delay(50);
+  uart_send_break(2);
+  delay(50);
+  uart_send_break(2);
+  delay(50);
+  shdlc_send(0x11, nullptr, 0);
+  delay(10);
+  shdlc_send(0x11, nullptr, 0);
+  delay(20);
+}
+
+// ---------- SPS30 measurement commands ----------
+struct Sps30Values {
+  float mc_1p0;
+  float mc_2p5;
+  float mc_4p0;
+  float mc_10p0;
+  float nc_0p5;
+  float nc_1p0;
+  float nc_2p5;
+  float nc_4p0;
+  float nc_10p0;
+  float tps;
+};
+
+static bool sps30_start_measurement_float() {
+  // CMD 0x00, data: subcmd=0x01, format=0x03 (big-endian IEEE754 floats)
+  uint8_t d[2] = {0x01, 0x03};
+  uint8_t st = 0;
+  uint8_t rl = 0;
+  bool ok = shdlc_request(0x00, d, 2, 0x00, nullptr, &rl, &st, 800);
+  if (!ok) {
+    Serial.println("[MEAS] StartMeasurement: no response");
+    return false;
+  }
+  const uint8_t errFlag = (st & 0x80) ? 1 : 0;
+  Serial.printf("[MEAS] StartMeasurement: state=0x%02X errFlag=%u len=%u\n", st, errFlag, rl);
+  return !errFlag;
+}
+
+static bool sps30_stop_measurement() {
+  uint8_t st = 0;
+  uint8_t rl = 0;
+  bool ok = shdlc_request(0x01, nullptr, 0, 0x01, nullptr, &rl, &st, 800);
+  if (!ok) {
+    Serial.println("[MEAS] StopMeasurement: no response");
+    return false;
+  }
+  const uint8_t errFlag = (st & 0x80) ? 1 : 0;
+  Serial.printf("[MEAS] StopMeasurement: state=0x%02X errFlag=%u len=%u\n", st, errFlag, rl);
+  return !errFlag;
+}
+
+static bool sps30_read_measured_values_float(Sps30Values* out, bool* hasNew) {
+  if (hasNew) *hasNew = false;
+  uint8_t st = 0;
+  uint8_t rl = 0;
+  uint8_t pl[64];
+
+  bool ok = shdlc_request(0x03, nullptr, 0, 0x03, pl, &rl, &st, 900);
+  if (!ok) {
+    Serial.println("[MEAS] ReadMeasuredValues: no response");
+    return false;
+  }
+
+  const uint8_t errFlag = (st & 0x80) ? 1 : 0;
+  if (errFlag) {
+    Serial.printf("[MEAS] ReadMeasuredValues: ERROR state=0x%02X\n", st);
+    return false;
+  }
+
+  // Empty response means no new values.
+  if (rl == 0) {
+    return true;
+  }
+
+  // Float format yields 10 float32 = 40 bytes (0x28)
+  if (rl != 40) {
+    Serial.printf("[MEAS] ReadMeasuredValues: unexpected len=%u (expected 40 for float)\n", rl);
+    hexdump_line("[MEAS] payload", pl, rl);
+    return false;
+  }
+
+  if (out) {
+    out->mc_1p0  = be_f32(&pl[0]);
+    out->mc_2p5  = be_f32(&pl[4]);
+    out->mc_4p0  = be_f32(&pl[8]);
+    out->mc_10p0 = be_f32(&pl[12]);
+
+    out->nc_0p5  = be_f32(&pl[16]);
+    out->nc_1p0  = be_f32(&pl[20]);
+    out->nc_2p5  = be_f32(&pl[24]);
+    out->nc_4p0  = be_f32(&pl[28]);
+    out->nc_10p0 = be_f32(&pl[32]);
+
+    out->tps     = be_f32(&pl[36]);
+  }
+
+  if (hasNew) *hasNew = true;
+  return true;
+}
+
+static void sps30_print_values(const Sps30Values& v) {
+  Serial.printf("[MEAS] MC ug/m3: PM1=%.2f PM2.5=%.2f PM4=%.2f PM10=%.2f\n", v.mc_1p0, v.mc_2p5, v.mc_4p0, v.mc_10p0);
+  Serial.printf("[MEAS] NC #/cm3: PM0.5=%.2f PM1=%.2f PM2.5=%.2f PM4=%.2f PM10=%.2f\n", v.nc_0p5, v.nc_1p0, v.nc_2p5, v.nc_4p0, v.nc_10p0);
+  Serial.printf("[MEAS] TPS um: %.3f\n", v.tps);
+}
+
+static bool run_identify_sequence(const char* tag) {
+  Serial.printf("\n=== IDENTIFY %s ===\n", tag);
+  flush_rx();
+
+  dump_rx_window("pre-wakeup", 80);
+  sps30_wakeup_uart();
+
+  // Device Info: Product Type (sel=0x00), Serial Number (sel=0x03)
+  uint8_t sel;
+
+  sel = 0x00;
+  shdlc_send(0xD0, &sel, 1);
+  // dump_rx_window("after D0(product)", 250);  // removed per instructions
+  bool ok_prod = shdlc_parse_and_print("D0(product)", 0xD0, 800);
+
+  sel = 0x03;
+  shdlc_send(0xD0, &sel, 1);
+  // dump_rx_window("after D0(serial)", 250);  // removed per instructions
+  bool ok_sn = shdlc_parse_and_print("D0(serial)", 0xD0, 800);
+
+  // Version
+  shdlc_send(0xD1, nullptr, 0);
+  // dump_rx_window("after D1", 250);  // removed per instructions
+  bool ok_ver = shdlc_parse_and_print("D1", 0xD1, 800);
+
+  return ok_prod || ok_sn || ok_ver;
+}
+
+static void serial2_begin_on_pins(int rxPin, int txPin) {
+  Serial.printf("[UART] Serial2 begin RX=%d TX=%d\n", rxPin, txPin);
+  Serial2.end();
+  delay(50);
+  Serial2.setRxBufferSize(4096);
+  Serial2.setTxBufferSize(1024);
+  Serial2.begin(115200, SERIAL_8N1, rxPin, txPin);
+  delay(200);
+  flush_rx();
+}
+
+// ---------- Arduino entry ----------
+void setup() {
+  Serial.begin(115200);
+  delay(1500);
+  Serial.println("SPS30 RAW UART sanity test");
+
+  // Fixed wiring: RX=13 TX=14
+  serial2_begin_on_pins(13, 14);
+  (void)run_identify_sequence("RX=13 TX=14");
+
+  // Wake-up + Start measurement (float format)
+  sps30_wakeup_uart();
+  (void)sps30_stop_measurement(); // ignore failure; might not be measuring
+  delay(50);
+  if (!sps30_start_measurement_float()) {
+    Serial.println("[MEAS] StartMeasurement FAILED");
+  }
+
+  // Wait up to 3 seconds for first sample
+  uint32_t t0 = millis();
+  while ((uint32_t)(millis() - t0) < 3000) {
+    Sps30Values v;
+    bool hasNew = false;
+    if (sps30_read_measured_values_float(&v, &hasNew) && hasNew) {
+      Serial.println("[MEAS] First sample OK");
+      sps30_print_values(v);
+      break;
+    }
+    delay(200);
+  }
+
+  g_identified_once = false;
+}
+
+void loop() {
+  static uint32_t lastPoll = 0;
+  if ((uint32_t)(millis() - lastPoll) < 900) {
+    delay(10);
+    return;
+  }
+  lastPoll = millis();
+
+  Sps30Values v;
+  bool hasNew = false;
+  if (sps30_read_measured_values_float(&v, &hasNew) && hasNew) {
+    sps30_print_values(v);
+  }
+}

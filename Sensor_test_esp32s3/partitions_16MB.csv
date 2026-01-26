@@ -1,0 +1,10 @@
+# Name,   Type, SubType,  Offset,   Size,    Flags
+# ESP32-S3 N16R8 - 16MB flash partition table with OTA + LittleFS
+# Total: 16MB = 0x1000000
+nvs,      data, nvs,      0x9000,   0x5000,
+otadata,  data, ota,      0xe000,   0x2000,
+phy_init, data, phy,      0x10000,  0x1000,
+ota_0,    app,  ota_0,    0x20000,  0x3E0000,
+ota_1,    app,  ota_1,    0x400000, 0x3E0000,
+littlefs, data, littlefs, 0x7E0000, 0x800000,
+coredump, data, coredump, 0xFE0000, 0x20000,

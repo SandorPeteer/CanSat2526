@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AstroLink</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <a href="#" class="logo" onclick="showPage('dashboard');return false;">
+            <svg viewBox="0 0 32 32" width="24" height="24">
+                <defs><linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#1e3a5f"/>
+                <stop offset="100%" style="stop-color:#0d1b2a"/>
+                </linearGradient></defs>
+                <circle cx="16" cy="16" r="15" fill="url(#logoGrad)" stroke="#4a9eff" stroke-width="1"/>
+                <circle cx="16" cy="12" r="3" fill="#ffd700"/>
+                <path d="M8 22 Q16 18 24 22" stroke="#4a9eff" stroke-width="2" fill="none"/>
+                <circle cx="10" cy="20" r="1.5" fill="#4a9eff"/>
+                <circle cx="22" cy="20" r="1.5" fill="#4a9eff"/>
+            </svg>
+            AstroLink
+        </a>
+        <div class="header-right">
+            <span id="status" class="status offline">Offline</span>
+            <span class="meta">Uptime: <b id="uptime">--</b></span>
+        </div>
+        <button class="hamburger" id="menuBtn" onclick="toggleMenu()">
+            <span></span><span></span><span></span>
+        </button>
+    </header>
+
+    <!-- Side Menu -->
+    <nav id="sideMenu" class="side-menu">
+        <div class="menu-header">
+            <svg viewBox="0 0 32 32" width="28" height="28">
+                <defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#1e3a5f"/>
+                <stop offset="100%" style="stop-color:#0d1b2a"/>
+                </linearGradient></defs>
+                <circle cx="16" cy="16" r="15" fill="url(#g)" stroke="#4a9eff" stroke-width="1"/>
+                <circle cx="16" cy="12" r="3" fill="#ffd700"/>
+                <path d="M8 22 Q16 18 24 22" stroke="#4a9eff" stroke-width="2" fill="none"/>
+                <circle cx="10" cy="20" r="1.5" fill="#4a9eff"/>
+                <circle cx="22" cy="20" r="1.5" fill="#4a9eff"/>
+            </svg>
+            <span>AstroLink</span>
+        </div>
+        <a href="#" class="menu-item active" data-page="dashboard">Dashboard</a>
+        <a href="#" class="menu-item" data-page="sps30">SPS30 Sensor</a>
+        <a href="#" class="menu-item" data-page="gps">GPS & Compass</a>
+        <a href="#" class="menu-item" data-page="bno">BNO085 IMU</a>
+        <a href="#" class="menu-item" data-page="bmp585">BMP585</a>
+        <a href="#" class="menu-item" data-page="scd40">SCD40 CO2</a>
+        <a href="#" class="menu-item" data-page="files">Files</a>
+        <a href="#" class="menu-item" data-page="system">System</a>
+        <div class="menu-footer">
+            <span class="meta">Serial: <b id="serial">--</b></span>
+            <span class="meta">FW: <b id="firmware">--</b></span>
+        </div>
+    </nav>
+    <div id="menuOverlay" class="menu-overlay" onclick="toggleMenu()"></div>
+
+    <!-- PAGE: Dashboard -->
+    <main id="page-dashboard" class="page active">
+        <h2 class="page-title">Dashboard</h2>
+
+        <!-- GPS Summary -->
+        <section class="cards gps-row">
+            <div class="card gps-card">
+                <span class="card-label">GPS</span>
+                <div class="gps-info">
+                    <a id="gpsLink" href="#" target="_blank" class="gps-coords">
+                        <span id="gpsLat">--</span>, <span id="gpsLon">--</span>
+                    </a>
+                    <span class="gps-meta">
+                        <span id="gpsFix">--</span> · <span id="gpsSat">--</span> sat · <span id="gpsAlt">--</span>m
+                    </span>
+                </div>
+            </div>
+            <div class="card compass-card">
+                <span class="card-label">Compass</span>
+                <div class="compass-info">
+                    <canvas id="compassCanvas" width="50" height="50"></canvas>
+                    <span id="compassHeading">--</span>
+                </div>
+            </div>
+            <div class="card speed-card">
+                <span class="card-label">Speed</span>
+                <span class="card-value" id="gpsSpeed">--</span>
+                <span class="card-unit">km/h</span>
+            </div>
+            <div class="card time-card">
+                <span class="card-label">Local Time</span>
+                <span class="card-value small" id="localTime">--</span>
+            </div>
+        </section>
+
+        <section class="cards env-cards">
+            <div class="card highlight-green">
+                <span class="card-label">CO2</span>
+                <span class="card-value" id="co2">--</span>
+                <span class="card-unit">ppm</span>
+            </div>
+            <div class="card highlight-blue">
+                <span class="card-label">Humidity</span>
+                <span class="card-value" id="scd-hum">--</span>
+                <span class="card-unit">%</span>
+            </div>
+            <div class="card highlight-orange">
+                <span class="card-label">BMP Temp</span>
+                <span class="card-value" id="bmp-temp">--</span>
+                <span class="card-unit">C</span>
+            </div>
+            <div class="card highlight-purple">
+                <span class="card-label">BMP Pressure</span>
+                <span class="card-value" id="bmp-press">--</span>
+                <span class="card-unit">hPa</span>
+            </div>
+            <div class="card highlight-blue bmp-alt-card">
+                <span class="card-label">BMP Alt (Rel)</span>
+                <span class="card-value" id="bmp-alt-rel">--</span>
+                <span class="card-unit">m</span>
+                <button class="btn-sm" id="bmp-alt-zero-btn">Set Zero</button>
+            </div>
+            <div class="card highlight-blue">
+                <span class="card-label">WiFi RSSI</span>
+                <span class="card-value" id="wifi-rssi">--</span>
+                <span class="card-unit">dBm</span>
+                <span class="card-meta" id="wifi-quality">--</span>
+            </div>
+            <div class="card highlight-purple">
+                <span class="card-label">ESP Temp</span>
+                <span class="card-value" id="cpu-temp">--</span>
+                <span class="card-unit">°C</span>
+                <span class="card-meta">Internal sensor</span>
+            </div>
+        </section>
+
+        <section class="cards imu-dashboard">
+            <div class="card imu-axes-card">
+                <span class="card-label">IMU Axes / CubeSat</span>
+                <div class="axes-wrap">
+                    <div class="axes-stage">
+                        <div id="imuRig" class="imu-rig">
+                            <div class="axis axis-x"><span>X</span></div>
+                            <div class="axis axis-y"><span>Y</span></div>
+                            <div class="axis axis-z"><span>Z</span></div>
+                            <div class="cubesat">
+                                <div class="sat-face sat-front">F</div>
+                                <div class="sat-face sat-back">B</div>
+                                <div class="sat-face sat-right">R</div>
+                                <div class="sat-face sat-left">L</div>
+                                <div class="sat-face sat-top">U</div>
+                                <div class="sat-face sat-bottom">D</div>
+                                <div class="antenna">
+                                    <span class="antenna-tip"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="axes-legend">
+                    <span class="axis-tag x">X</span>
+                    <span class="axis-tag y">Y</span>
+                    <span class="axis-tag z">Z</span>
+                    <span class="axis-note">BNO orientation</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- PM Cards -->
+        <section class="cards pm-cards">
+            <div class="card highlight-blue">
+                <span class="card-label">PM1.0</span>
+                <span class="card-value" id="pm1">--</span>
+                <span class="card-unit">ug/m3</span>
+            </div>
+            <div class="card highlight-orange">
+                <span class="card-label">PM2.5</span>
+                <span class="card-value" id="pm25">--</span>
+                <span class="card-unit">ug/m3</span>
+            </div>
+            <div class="card highlight-purple">
+                <span class="card-label">PM4</span>
+                <span class="card-value" id="pm4">--</span>
+                <span class="card-unit">ug/m3</span>
+            </div>
+            <div class="card highlight-red">
+                <span class="card-label">PM10</span>
+                <span class="card-value" id="pm10">--</span>
+                <span class="card-unit">ug/m3</span>
+            </div>
+        </section>
+
+        <!-- Flight Data Chart -->
+        <section class="chart-section">
+            <div class="chart-header">
+                <select id="chartTypeSelect" class="chart-type-select" onchange="setChartType(this.value)">
+                    <option value="0" selected>PM (µg/m³)</option>
+                    <option value="1">CO2 (ppm)</option>
+                    <option value="2">Pressure (hPa)</option>
+                    <option value="3">Altitude (m)</option>
+                    <option value="4">Temperature (°C)</option>
+                    <option value="5">Humidity (%)</option>
+                    <option value="6">Velocity (m/s)</option>
+                    <option value="7">Heading (°)</option>
+                </select>
+                <div class="range-btns">
+                    <button class="range-btn" data-range="60" onclick="setRange(60)">1m</button>
+                    <button class="range-btn active" data-range="300" onclick="setRange(300)">5m</button>
+                    <button class="range-btn" data-range="3600" onclick="setRange(3600)">1h</button>
+                    <button class="range-btn" data-range="86400" onclick="setRange(86400)">24h</button>
+                </div>
+                <span id="liveIndicator" class="live-indicator">LIVE</span>
+                <button class="btn-icon" onclick="exportCSV()" title="Export CSV">⬇</button>
+            </div>
+            <canvas id="chart"></canvas>
+        </section>
+
+        <!-- Sensor Toggles -->
+        <section class="controls sensors-controls">
+            <div class="control-group sensor-toggle-group">
+                <div class="sensor-toggle">
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-bno" checked onchange="toggleSensor('bno', this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">BNO085</span>
+                </div>
+                <div class="sensor-toggle">
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-sps30" checked onchange="toggleSensor('sps30', this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">SPS30</span>
+                </div>
+                <div class="sensor-toggle">
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-gps" checked onchange="toggleSensor('gps', this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">GPS</span>
+                </div>
+                <div class="sensor-toggle">
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-compass" checked onchange="toggleSensor('compass', this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">Compass</span>
+                </div>
+                <div class="sensor-toggle">
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-bmp585" checked onchange="toggleSensor('bmp585', this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">BMP585</span>
+                </div>
+                <div class="sensor-toggle">
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-scd40" checked onchange="toggleSensor('scd40', this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">SCD40</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Controls -->
+        <section class="controls">
+            <div class="control-group">
+                <button class="btn" id="btnRec" onclick="toggleRec()">Record</button>
+                <span id="recInfo" class="rec-info"></span>
+            </div>
+        </section>
+    </main>
+
+    <!-- PAGE: SPS30 -->
+    <main id="page-sps30" class="page">
+        <h2 class="page-title">SPS30 Particle Sensor</h2>
+
+        <!-- Status -->
+        <section class="cards status-cards">
+            <div class="card">
+                <span class="card-label">Status</span>
+                <span class="card-value small" id="spsStatus">--</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Serial</span>
+                <span class="card-value small" id="spsSerial">--</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Cleaning</span>
+                <span class="card-value small" id="spsCleanInterval">--</span>
+                <span class="card-unit">seconds</span>
+            </div>
+        </section>
+
+        <!-- Mass Concentration -->
+        <h3 class="section-title">Mass Concentration</h3>
+        <section class="cards pm-cards">
+            <div class="card highlight-blue">
+                <span class="card-label">PM1.0</span>
+                <span class="card-value" id="sps-pm1">--</span>
+                <span class="card-unit">ug/m3</span>
+            </div>
+            <div class="card highlight-orange">
+                <span class="card-label">PM2.5</span>
+                <span class="card-value" id="sps-pm25">--</span>
+                <span class="card-unit">ug/m3</span>
+            </div>
+            <div class="card highlight-purple">
+                <span class="card-label">PM4.0</span>
+                <span class="card-value" id="sps-pm4">--</span>
+                <span class="card-unit">ug/m3</span>
+            </div>
+            <div class="card highlight-red">
+                <span class="card-label">PM10</span>
+                <span class="card-value" id="sps-pm10">--</span>
+                <span class="card-unit">ug/m3</span>
+            </div>
+        </section>
+
+        <!-- Number Concentration -->
+        <h3 class="section-title">Number Concentration</h3>
+        <section class="cards nc-cards">
+            <div class="card small"><span class="card-label">NC 0.5</span><span class="card-value" id="sps-nc05">--</span><span class="card-unit">#/cm3</span></div>
+            <div class="card small"><span class="card-label">NC 1.0</span><span class="card-value" id="sps-nc1">--</span><span class="card-unit">#/cm3</span></div>
+            <div class="card small"><span class="card-label">NC 2.5</span><span class="card-value" id="sps-nc25">--</span><span class="card-unit">#/cm3</span></div>
+            <div class="card small"><span class="card-label">NC 4.0</span><span class="card-value" id="sps-nc4">--</span><span class="card-unit">#/cm3</span></div>
+            <div class="card small"><span class="card-label">NC 10</span><span class="card-value" id="sps-nc10">--</span><span class="card-unit">#/cm3</span></div>
+            <div class="card small"><span class="card-label">Typical Size</span><span class="card-value" id="sps-size">--</span><span class="card-unit">um</span></div>
+        </section>
+
+        <!-- Error Flags -->
+        <h3 class="section-title">Device Status</h3>
+        <section class="cards error-cards">
+            <div class="card" id="errSpeed">
+                <span class="card-label">Fan Speed</span>
+                <span class="card-value small status-ok">OK</span>
+            </div>
+            <div class="card" id="errLaser">
+                <span class="card-label">Laser</span>
+                <span class="card-value small status-ok">OK</span>
+            </div>
+            <div class="card" id="errFan">
+                <span class="card-label">Fan</span>
+                <span class="card-value small status-ok">OK</span>
+            </div>
+        </section>
+
+        <!-- Controls -->
+        <section class="controls">
+            <div class="control-group">
+                <button class="btn" id="btnFan" onclick="fanClean()">Fan Clean</button>
+                <button class="btn" onclick="resetSensor()">Reset Sensor</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- PAGE: GPS -->
+    <main id="page-gps" class="page">
+        <h2 class="page-title">GPS & Compass</h2>
+
+        <!-- Position -->
+        <h3 class="section-title">Position</h3>
+        <section class="cards gps-detail-cards">
+            <div class="card">
+                <span class="card-label">Latitude</span>
+                <span class="card-value small" id="gps-lat">--</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Longitude</span>
+                <span class="card-value small" id="gps-lon">--</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Altitude (MSL)</span>
+                <span class="card-value" id="gps-alt">--</span>
+                <span class="card-unit">m</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Height (Ellipsoid)</span>
+                <span class="card-value" id="gps-height">--</span>
+                <span class="card-unit">m</span>
+            </div>
+        </section>
+
+        <!-- Accuracy -->
+        <h3 class="section-title">Accuracy</h3>
+        <section class="cards accuracy-cards">
+            <div class="card">
+                <span class="card-label">Horizontal</span>
+                <span class="card-value" id="gps-hacc">--</span>
+                <span class="card-unit">m</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Vertical</span>
+                <span class="card-value" id="gps-vacc">--</span>
+                <span class="card-unit">m</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Speed</span>
+                <span class="card-value" id="gps-sacc">--</span>
+                <span class="card-unit">m/s</span>
+            </div>
+            <div class="card">
+                <span class="card-label">PDOP</span>
+                <span class="card-value" id="gps-pdop">--</span>
+            </div>
+        </section>
+
+        <!-- Fix Info -->
+        <h3 class="section-title">Fix Status</h3>
+        <section class="cards fix-cards">
+            <div class="card">
+                <span class="card-label">Fix Type</span>
+                <span class="card-value small" id="gps-fixtype">--</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Satellites</span>
+                <span class="card-value" id="gps-sat">--</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Valid</span>
+                <span class="card-value small" id="gps-valid">--</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Flags</span>
+                <span class="card-value small" id="gps-flags">--</span>
+            </div>
+        </section>
+
+        <!-- Velocity -->
+        <h3 class="section-title">Velocity</h3>
+        <section class="cards vel-cards">
+            <div class="card">
+                <span class="card-label">Ground Speed</span>
+                <span class="card-value" id="gps-speed">--</span>
+                <span class="card-unit">km/h</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Heading</span>
+                <span class="card-value" id="gps-heading">--</span>
+                <span class="card-unit">deg</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Vel North</span>
+                <span class="card-value small" id="gps-veln">--</span>
+                <span class="card-unit">m/s</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Vel East</span>
+                <span class="card-value small" id="gps-vele">--</span>
+                <span class="card-unit">m/s</span>
+            </div>
+        </section>
+
+        <!-- Time -->
+        <h3 class="section-title">Time</h3>
+        <section class="cards time-cards">
+            <div class="card">
+                <span class="card-label">UTC Date</span>
+                <span class="card-value small" id="gps-date">--</span>
+            </div>
+            <div class="card">
+                <span class="card-label">UTC Time</span>
+                <span class="card-value small" id="gps-time">--</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Time Accuracy</span>
+                <span class="card-value small" id="gps-tacc">--</span>
+                <span class="card-unit">ns</span>
+            </div>
+            <div class="card">
+                <span class="card-label">iTOW</span>
+                <span class="card-value small" id="gps-itow">--</span>
+                <span class="card-unit">ms</span>
+            </div>
+        </section>
+
+        <!-- Compass -->
+        <h3 class="section-title">Magnetometer (QMC5883L)</h3>
+        <section class="cards compass-cards">
+            <div class="card compass-big">
+                <canvas id="compassCanvasBig" width="120" height="120"></canvas>
+                <span class="compass-heading-big" id="compass-heading">--</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Raw X</span>
+                <span class="card-value small" id="mag-x">--</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Raw Y</span>
+                <span class="card-value small" id="mag-y">--</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Raw Z</span>
+                <span class="card-value small" id="mag-z">--</span>
+            </div>
+        </section>
+
+        <!-- Map Link -->
+        <section class="controls">
+            <a id="gpsMapLink" class="btn" href="#" target="_blank">Open in Google Maps</a>
+        </section>
+    </main>
+
+    <!-- PAGE: BNO085 -->
+    <main id="page-bno" class="page">
+        <h2 class="page-title">BNO085 IMU</h2>
+
+        <section class="cards imu-cards">
+            <div class="card">
+                <span class="card-label">Quaternion</span>
+                <span class="card-value small" id="bno-quat">--</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Euler</span>
+                <span class="card-value small" id="bno-euler">--</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Accuracy</span>
+                <span class="card-value small" id="bno-acc">--</span>
+                <span class="card-unit">rad</span>
+            </div>
+        </section>
+
+        <section class="cards imu-visual">
+            <div class="card cube-card">
+                <span class="card-label">Orientation</span>
+                <div class="cube-wrap">
+                    <div id="imuCube" class="cube">
+                        <div class="face front">F</div>
+                        <div class="face back">B</div>
+                        <div class="face right">R</div>
+                        <div class="face left">L</div>
+                        <div class="face top">U</div>
+                        <div class="face bottom">D</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <span class="card-label">Status</span>
+                <span class="card-value small" id="bno-status">--</span>
+                <span class="card-label">Last Update</span>
+                <span class="card-value small" id="bno-ts">--</span>
+            </div>
+        </section>
+
+        <section class="cards imu-mapping">
+            <div class="card">
+                <span class="card-label">IMU Axis Mapping</span>
+                <div class="imu-map-grid">
+                    <div class="imu-map-row">
+                        <span class="imu-map-axis">UI X (Right)</span>
+                        <select id="imu-map-x-axis" class="imu-map-select">
+                            <option value="x">Sensor X</option>
+                            <option value="y">Sensor Y</option>
+                            <option value="z">Sensor Z</option>
+                        </select>
+                        <label class="imu-map-invert">
+                            <input type="checkbox" id="imu-map-x-invert">
+                            Invert
+                        </label>
+                    </div>
+                    <div class="imu-map-row">
+                        <span class="imu-map-axis">UI Y (Down)</span>
+                        <select id="imu-map-y-axis" class="imu-map-select">
+                            <option value="x">Sensor X</option>
+                            <option value="y">Sensor Y</option>
+                            <option value="z">Sensor Z</option>
+                        </select>
+                        <label class="imu-map-invert">
+                            <input type="checkbox" id="imu-map-y-invert">
+                            Invert
+                        </label>
+                    </div>
+                    <div class="imu-map-row">
+                        <span class="imu-map-axis">UI Z (Toward You)</span>
+                        <select id="imu-map-z-axis" class="imu-map-select">
+                            <option value="x">Sensor X</option>
+                            <option value="y">Sensor Y</option>
+                            <option value="z">Sensor Z</option>
+                        </select>
+                        <label class="imu-map-invert">
+                            <input type="checkbox" id="imu-map-z-invert">
+                            Invert
+                        </label>
+                    </div>
+                </div>
+                <div class="imu-map-actions">
+                    <button class="btn-sm" id="imu-map-apply">Apply</button>
+                    <button class="btn-sm" id="imu-map-zero">Set Front As Zero</button>
+                    <button class="btn-sm" id="imu-map-reset">Reset</button>
+                </div>
+                <div class="imu-map-help">
+                    Tip: set the cube so the F face is visible, then click "Set Front As Zero".
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- PAGE: BMP585 -->
+    <main id="page-bmp585" class="page">
+        <h2 class="page-title">BMP585 Barometer</h2>
+
+        <section class="cards bmp-cards">
+            <div class="card">
+                <span class="card-label">Temperature</span>
+                <span class="card-value" id="bmp-temp-big">--</span>
+                <span class="card-unit">C</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Pressure</span>
+                <span class="card-value" id="bmp-press-big">--</span>
+                <span class="card-unit">Pa</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Pressure</span>
+                <span class="card-value" id="bmp-press-hpa">--</span>
+                <span class="card-unit">hPa</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Altitude</span>
+                <span class="card-value" id="bmp-alt">--</span>
+                <span class="card-unit">m</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Alt (Rel)</span>
+                <span class="card-value" id="bmp-alt-rel-big">--</span>
+                <span class="card-unit">m</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Alt Zero</span>
+                <span class="card-value" id="bmp-alt-zero-big">--</span>
+                <span class="card-unit">m</span>
+            </div>
+        </section>
+
+        <section class="cards status-cards">
+            <div class="card">
+                <span class="card-label">Status</span>
+                <span class="card-value small" id="bmp-status">--</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Last Update</span>
+                <span class="card-value small" id="bmp-ts">--</span>
+            </div>
+        </section>
+
+        <section class="controls">
+            <button class="btn-sm" id="bmp-alt-zero-btn-big">Set Alt Zero</button>
+        </section>
+    </main>
+
+    <!-- PAGE: SCD40 -->
+    <main id="page-scd40" class="page">
+        <h2 class="page-title">SCD40 CO2</h2>
+
+        <section class="cards scd-cards">
+            <div class="card highlight-green">
+                <span class="card-label">CO2</span>
+                <span class="card-value" id="scd-co2">--</span>
+                <span class="card-unit">ppm</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Temperature</span>
+                <span class="card-value" id="scd-temp">--</span>
+                <span class="card-unit">C</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Humidity</span>
+                <span class="card-value" id="scd-hum-big">--</span>
+                <span class="card-unit">%</span>
+            </div>
+        </section>
+
+        <section class="cards status-cards">
+            <div class="card">
+                <span class="card-label">Status</span>
+                <span class="card-value small" id="scd-status">--</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Last Update</span>
+                <span class="card-value small" id="scd-ts">--</span>
+            </div>
+        </section>
+    </main>
+
+    <!-- PAGE: Files -->
+    <main id="page-files" class="page">
+        <h2 class="page-title">Recorded Files</h2>
+
+        <!-- File List -->
+        <section class="section">
+            <div id="fileList" class="file-list">Loading...</div>
+            <div class="storage-info" id="storageInfo"></div>
+        </section>
+
+        <!-- Hexdump -->
+        <section class="section hex-section" id="hexSection">
+            <div class="section-header">
+                <span class="section-title">Quick Hexdump</span>
+                <button class="btn-sm" onclick="clearHex()">Clear</button>
+            </div>
+            <div class="hex-meta" id="hexTitle">--</div>
+            <div class="hex-box" id="hexBox">--</div>
+        </section>
+
+        <!-- Flight Viewer -->
+        <section class="section viewer-section" id="flightViewerSection">
+            <h3 class="section-title">Flight Viewer</h3>
+
+            <div class="viewer-info show" id="flightViewerInfo">
+                <div class="info-row">
+                    <div class="info-item">
+                        <span class="info-label">File</span>
+                        <span class="info-value" id="flightInfoFile">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-box">
+                <div class="chart-title">PM (PM1/PM2.5/PM4/PM10)</div>
+                <canvas id="flightChartPm"></canvas>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">CO2</div>
+                <canvas id="flightChartCo2"></canvas>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">Pressure</div>
+                <canvas id="flightChartPress"></canvas>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">Altitude (Baro/GPS)</div>
+                <canvas id="flightChartAlt"></canvas>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">Temperature (BMP/SCD)</div>
+                <canvas id="flightChartTemp"></canvas>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">Humidity</div>
+                <canvas id="flightChartHum"></canvas>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">Velocity</div>
+                <canvas id="flightChartVel"></canvas>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">Heading</div>
+                <canvas id="flightChartHead"></canvas>
+            </div>
+        </section>
+    </main>
+
+    <!-- PAGE: System -->
+    <main id="page-system" class="page">
+        <h2 class="page-title">System</h2>
+
+        <!-- Time & Timezone -->
+        <section class="ota-section">
+            <h3 class="section-title">Time & Date</h3>
+            <div class="cards status-cards" style="margin-bottom:12px">
+                <div class="card">
+                    <span class="card-label">Device Time</span>
+                    <span class="card-value small" id="deviceTime">--</span>
+                </div>
+                <div class="card">
+                    <span class="card-label">Time Source</span>
+                    <span class="card-value small" id="timeSource">--</span>
+                </div>
+            </div>
+            <div class="wifi-form">
+                <select id="tzSelect" onchange="setTimezone(this.value)">
+                    <option value="0">UTC+0</option>
+                    <option value="1">UTC+1 (CET)</option>
+                    <option value="2" selected>UTC+2 (CEST/EET)</option>
+                    <option value="3">UTC+3 (MSK)</option>
+                    <option value="-5">UTC-5 (EST)</option>
+                    <option value="-8">UTC-8 (PST)</option>
+                </select>
+                <button class="btn" onclick="syncTimeFromBrowser()">Sync from Browser</button>
+            </div>
+        </section>
+
+        <!-- WiFi Settings -->
+        <section class="ota-section" style="margin-top:16px">
+            <h3 class="section-title">WiFi Settings</h3>
+            <div id="wifiStatus" class="wifi-status"></div>
+            <div class="wifi-form">
+                <input type="text" id="wifiSsid" placeholder="WiFi SSID" maxlength="32">
+                <input type="password" id="wifiPass" placeholder="Password" maxlength="64"><button type="button" class="btn-eye" onclick="togglePass()">👁</button>
+                <button class="btn" onclick="wifiConnect()">Connect</button>
+                <button class="btn btn-secondary" onclick="wifiClear()">Clear Saved</button>
+            </div>
+        </section>
+
+        <!-- Firmware Update -->
+        <section class="ota-section" style="margin-top:16px">
+            <h3 class="section-title">Firmware Update</h3>
+            <p class="ota-info">Upload firmware.bin to update the application. Device will reboot after successful update.</p>
+            <div class="ota-upload">
+                <input type="file" id="otaFwFile" accept=".bin" onchange="otaFwFileSelected()">
+                <button class="btn" id="otaFwBtn" onclick="otaUploadFw()" disabled>Upload Firmware</button>
+            </div>
+            <div id="otaFwProgress" class="ota-progress" style="display:none">
+                <div class="progress-bar"><div id="otaFwBar" class="progress-fill"></div></div>
+                <span id="otaFwPercent">0%</span>
+            </div>
+            <div id="otaFwStatus" class="ota-status"></div>
+        </section>
+
+        <!-- Web UI Files Update -->
+        <section class="ota-section" style="margin-top:16px">
+            <h3 class="section-title">Web UI Files</h3>
+            <p class="ota-info">Upload individual files (index.html, app.js, style.css, etc.) directly to LittleFS. No reboot needed.</p>
+            <div class="ota-upload">
+                <input type="file" id="otaUiFiles" accept=".html,.css,.js,.svg,.ico,.json,.png" multiple onchange="otaUiFileSelected()">
+                <button class="btn" id="otaUiBtn" onclick="otaUploadUi()" disabled>Upload UI Files</button>
+            </div>
+            <div id="otaUiProgress" class="ota-progress" style="display:none">
+                <div class="progress-bar"><div id="otaUiBar" class="progress-fill"></div></div>
+                <span id="otaUiPercent">0%</span>
+            </div>
+            <div id="otaUiStatus" class="ota-status"></div>
+        </section>
+
+        <!-- LittleFS Image Update -->
+        <section class="ota-section" style="margin-top:16px">
+            <h3 class="section-title">LittleFS Image</h3>
+            <p class="ota-info">Upload littlefs.bin to replace the entire filesystem. Device will reboot after successful update.</p>
+            <div class="ota-upload">
+                <input type="file" id="otaFsFile" accept=".bin" onchange="otaFsFileSelected()">
+                <button class="btn" id="otaFsBtn" onclick="otaUploadFs()" disabled>Upload littlefs.bin</button>
+            </div>
+            <div id="otaFsProgress" class="ota-progress" style="display:none">
+                <div class="progress-bar"><div id="otaFsBar" class="progress-fill"></div></div>
+                <span id="otaFsPercent">0%</span>
+            </div>
+            <div id="otaFsStatus" class="ota-status"></div>
+        </section>
+
+        <!-- Device Info -->
+        <section class="cards status-cards" style="margin-top:20px">
+            <div class="card">
+                <span class="card-label">Current FW</span>
+                <span class="card-value small" id="otaFwVersion">--</span>
+            </div>
+            <div class="card">
+                <span class="card-label">Partition</span>
+                <span class="card-value small" id="otaPartition">--</span>
+            </div>
+            <div class="card">
+                <span class="card-label">LittleFS</span>
+                <span class="card-value small" id="otaFsInfo">--</span>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast"></div>
+    <script src="app.js"></script>
+</body>
+</html>
