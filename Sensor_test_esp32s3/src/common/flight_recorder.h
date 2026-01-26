@@ -170,6 +170,7 @@ typedef enum {
     FLIGHT_DATA_HUMIDITY,   // Humidity
     FLIGHT_DATA_VELOCITY,   // Vertical velocity
     FLIGHT_DATA_HEADING,    // Compass heading
+    FLIGHT_DATA_IMU,        // Roll, Pitch, Yaw (Euler angles from quaternion)
     FLIGHT_DATA_COUNT
 } flight_data_type_t;
 

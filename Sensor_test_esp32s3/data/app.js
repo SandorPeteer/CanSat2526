@@ -1,6 +1,8 @@
 // AstroLink Air Quality Monitor
-let ws, reconnectTimer;
+let ws, reconnectTimer, activityTimer;
 let reconnect = true;
+let lastActivityTime = 0;
+const CONNECTION_TIMEOUT_MS = 45000;  // Consider connection dead after 45s no data
 let currentPage = 'dashboard';
 let lastImuTs = 0;
 let zeroQuat = null;
@@ -21,7 +23,7 @@ const imuAxisMap = { ...imuMapDefaults };
 // Chart state
 let chartRange = 300;
 let chartData = [];
-let chartType = 0;  // 0=PM, 1=CO2, 2=Pressure, 3=Altitude, 4=Temperature, 5=Humidity, 6=Velocity, 7=Heading
+let chartType = 0;  // 0=PM, 1=CO2, 2=Pressure, 3=Altitude, 4=Temperature, 5=Humidity, 6=Velocity, 7=Heading, 8=IMU
 let chartLabels = [];
 let chartUnit = 'µg/m³';
 let chartSeriesCount = 4;
@@ -36,10 +38,11 @@ const flightViewerCanvasByType = [
     'flightChartTemp',
     'flightChartHum',
     'flightChartVel',
-    'flightChartHead'
+    'flightChartHead',
+    'flightChartImu'
 ];
-const flightChartLabelsMap = [['PM1','PM2.5','PM4','PM10'],['CO2'],['Pressure'],['Baro','GPS'],['BMP','SCD'],['Humidity'],['Velocity'],['Heading']];
-const flightChartUnitsMap = ['µg/m³','ppm','hPa','m','°C','%','m/s','°'];
+const flightChartLabelsMap = [['PM1','PM2.5','PM4','PM10'],['CO2'],['Pressure'],['Baro','GPS'],['BMP','SCD'],['Humidity'],['Velocity'],['Heading'],['Roll','Pitch','Yaw']];
+const flightChartUnitsMap = ['µg/m³','ppm','hPa','m','°C','%','m/s','°','°'];
 let liveMode = true;
 let lastHistoryLoad = 0;
 let flightChartTimer = null;
@@ -265,8 +268,8 @@ function handleBinaryMessage(buf) {
         break;
     }
     default:
-        // Flight chart: 0xF0-0xF7
-        if (type >= 0xF0 && type <= 0xF7) {
+        // Flight chart: 0xF0-0xF8 (PM, CO2, Pressure, Altitude, Temp, Humidity, Velocity, Heading, IMU)
+        if (type >= 0xF0 && type <= 0xF8) {
             o = 1;
             const series = readU8();
             const count = readU16();
@@ -747,7 +750,7 @@ function showPage(page) {
         flightViewerActive = false;
         resizeChart();
     }
-    if (page === 'files') loadFiles();
+    if (page === 'files') { loadFiles(); updatePsramInfo(); }
     if (page === 'system') { loadWifiStatus(); loadOtaInfo(); }
 }
 
@@ -776,6 +779,14 @@ async function loadInfo() {
         if ($('wifi-quality')) $('wifi-quality').textContent = wifiQualityLabel(wifiRssi);
         const cpuTemp = typeof info.cpu_temp_c === 'number' ? info.cpu_temp_c : null;
         if ($('cpu-temp')) $('cpu-temp').textContent = cpuTemp != null ? fmt(cpuTemp) : '--';
+
+        // Flight recorder PSRAM info (Files page)
+        if ($('psramCount')) {
+            $('psramCount').textContent = info.flight_records != null ? info.flight_records.toLocaleString() : '--';
+        }
+        if ($('psramCap')) {
+            $('psramCap').textContent = info.flight_capacity != null ? info.flight_capacity.toLocaleString() : '--';
+        }
     } catch (e) {}
 }
 
@@ -870,6 +881,10 @@ function loadFlightChart() {
 
 function setChartType(type) {
     chartType = parseInt(type);
+    // Set default labels/unit immediately for better UX
+    chartLabels = flightChartLabelsMap[chartType] || [];
+    chartUnit = flightChartUnitsMap[chartType] || '';
+    chartSeriesCount = chartLabels.length || 1;
     loadFlightChart();
 }
 
@@ -1216,13 +1231,24 @@ async function toggleRec() {
     } catch (e) { toast('Failed', 'error'); }
 }
 
-function exportCSV() {
-    window.location.href = `/api/export?range=${chartRange}`;
-}
 
 // ============================================================================
 // WebSocket
 // ============================================================================
+
+function resetActivityTimer() {
+    lastActivityTime = Date.now();
+    if (activityTimer) clearTimeout(activityTimer);
+    activityTimer = setTimeout(checkConnectionHealth, CONNECTION_TIMEOUT_MS);
+}
+
+function checkConnectionHealth() {
+    const elapsed = Date.now() - lastActivityTime;
+    if (elapsed >= CONNECTION_TIMEOUT_MS && ws && ws.readyState === WebSocket.OPEN) {
+        console.warn('Connection timeout - no data for', Math.round(elapsed/1000), 'seconds, reconnecting...');
+        ws.close();
+    }
+}
 
 function connect() {
     // Prevent multiple connections
@@ -1230,6 +1256,7 @@ function connect() {
         return;
     }
     if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+    if (activityTimer) { clearTimeout(activityTimer); activityTimer = null; }
 
     ws = new WebSocket('ws://' + location.host + '/ws');
     ws.binaryType = 'arraybuffer';
@@ -1237,6 +1264,7 @@ function connect() {
     ws.onopen = () => {
         $('status').textContent = 'Connected';
         $('status').className = 'status online';
+        resetActivityTimer();
         loadInfo();
         checkRecording();
         ws.send('Q');
@@ -1245,7 +1273,8 @@ function connect() {
     ws.onclose = (ev) => {
         $('status').textContent = 'Offline';
         $('status').className = 'status offline';
-        if (ev) {
+        if (activityTimer) { clearTimeout(activityTimer); activityTimer = null; }
+        if (ev && ev.code !== 1000) {
             console.warn('WebSocket closed', { code: ev.code, reason: ev.reason, clean: ev.wasClean });
         }
         ws = null;
@@ -1254,10 +1283,12 @@ function connect() {
 
     ws.onerror = (err) => {
         console.warn('WebSocket error', err);
-        ws = null;
+        // Don't null ws here - let onclose handle cleanup
     };
 
     ws.onmessage = (e) => {
+        resetActivityTimer();  // Any message resets the timeout
+
         if (typeof e.data === 'string') {
             try {
                 const msg = JSON.parse(e.data);
@@ -1504,6 +1535,333 @@ function downloadFile(content, filename, type) {
     URL.revokeObjectURL(url);
 }
 
+// ============================================================================
+// PSRAM Download & Bin File Viewer
+// ============================================================================
+
+function downloadPsramBin() {
+    window.open('/api/flight-export?format=bin', '_blank');
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.classList.add('drag-over');
+}
+
+function handleDragLeave(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.classList.remove('drag-over');
+}
+
+function handleFileDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.classList.remove('drag-over');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        loadBinFile(files[0]);
+    }
+}
+
+function handleFileSelect(e) {
+    const files = e.target.files;
+    if (files.length > 0) {
+        loadBinFile(files[0]);
+    }
+}
+
+function loadBinFile(file) {
+    if (!file.name.endsWith('.bin')) {
+        toast('Please select a .bin file', 'error');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const buffer = e.target.result;
+        parseBinAndShowCharts(buffer, file.name);
+    };
+    reader.onerror = () => toast('Failed to read file', 'error');
+    reader.readAsArrayBuffer(file);
+}
+
+function parseBinAndShowCharts(buffer, filename) {
+    const data = new DataView(buffer);
+
+    // Check magic header 0x464C5452 ("FLTR" as little-endian uint32)
+    const magic = data.getUint32(0, true);
+    if (magic !== 0x464C5452) {
+        toast('Invalid file format (expected FLTR header)', 'error');
+        return;
+    }
+
+    // Header: magic(4) + version(1) + record_size(1) + reserved(2) + start_timestamp(4) = 12 bytes
+    const version = data.getUint8(4);
+    const recordSize = data.getUint8(5);
+    // reserved: 2 bytes at offset 6
+    const startTimestamp = data.getUint32(8, true);
+
+    if (recordSize !== 64) {
+        toast(`Unexpected record size: ${recordSize}`, 'error');
+        return;
+    }
+
+    // Calculate record count from file size
+    const headerSize = 12;
+    const recordCount = Math.floor((buffer.byteLength - headerSize) / recordSize);
+    const records = [];
+
+    for (let i = 0; i < recordCount; i++) {
+        const offset = headerSize + i * 64;
+        if (offset + 64 > buffer.byteLength) break;
+
+        records.push({
+            timestamp: data.getUint32(offset, true),
+            lat: data.getInt32(offset + 4, true) / 1e7,
+            lon: data.getInt32(offset + 8, true) / 1e7,
+            alt_mm: data.getInt32(offset + 12, true),
+            vel_down: data.getInt16(offset + 16, true),
+            fix_type: data.getUint8(offset + 18),
+            sats: data.getUint8(offset + 19),
+            pdop: data.getUint16(offset + 20, true) / 100,
+            gps_valid: data.getUint8(offset + 22),
+            qi: data.getInt16(offset + 23, true) / 16384,
+            qj: data.getInt16(offset + 25, true) / 16384,
+            qk: data.getInt16(offset + 27, true) / 16384,
+            qw: data.getInt16(offset + 29, true) / 16384,
+            imu_accuracy: data.getUint8(offset + 31),
+            imu_valid: data.getUint8(offset + 32),
+            mag_x: data.getInt16(offset + 33, true),
+            mag_y: data.getInt16(offset + 35, true),
+            mag_z: data.getInt16(offset + 37, true),
+            heading: data.getInt16(offset + 39, true) / 10,
+            pressure_pa: data.getInt32(offset + 41, true),
+            bmp_temp: data.getInt16(offset + 45, true) / 100,
+            baro_alt: data.getInt16(offset + 47, true) / 10,
+            co2: data.getUint16(offset + 49, true),
+            scd_temp: data.getInt16(offset + 51, true) / 100,
+            humidity: data.getUint16(offset + 53, true) / 100,
+            pm1: data.getUint16(offset + 55, true) / 10,
+            pm25: data.getUint16(offset + 57, true) / 10,
+            pm4: data.getUint16(offset + 59, true) / 10,
+            pm10: data.getUint16(offset + 61, true) / 10
+        });
+    }
+
+    if (records.length === 0) {
+        toast('No records found in file', 'error');
+        return;
+    }
+
+    // Calculate duration
+    const startTs = records[0].timestamp;
+    const endTs = records[records.length - 1].timestamp;
+    const durationSec = endTs - startTs;
+    const hours = Math.floor(durationSec / 3600);
+    const mins = Math.floor((durationSec % 3600) / 60);
+    const secs = durationSec % 60;
+    const durationStr = hours > 0 ? `${hours}h ${mins}m ${secs}s` : `${mins}m ${secs}s`;
+
+    // Update info
+    if ($('flightInfoFile')) $('flightInfoFile').textContent = filename;
+    if ($('flightInfoRecords')) $('flightInfoRecords').textContent = records.length.toLocaleString();
+    if ($('flightInfoDuration')) $('flightInfoDuration').textContent = durationStr;
+
+    // Show viewer section
+    const section = $('flightViewerSection');
+    if (section) section.style.display = 'block';
+
+    // Prepare chart data
+    const timestamps = records.map(r => r.timestamp);
+
+    // Downsample if too many points
+    const maxPoints = 2000;
+    let step = 1;
+    if (records.length > maxPoints) {
+        step = Math.ceil(records.length / maxPoints);
+    }
+
+    const sampledRecords = [];
+    const sampledTs = [];
+    for (let i = 0; i < records.length; i += step) {
+        sampledRecords.push(records[i]);
+        sampledTs.push(timestamps[i]);
+    }
+
+    // Render all charts
+    renderFlightChart('flightChartPm', sampledTs, [
+        sampledRecords.map(r => r.pm1),
+        sampledRecords.map(r => r.pm25),
+        sampledRecords.map(r => r.pm4),
+        sampledRecords.map(r => r.pm10)
+    ], ['PM1', 'PM2.5', 'PM4', 'PM10'], 'µg/m³');
+
+    renderFlightChart('flightChartCo2', sampledTs, [
+        sampledRecords.map(r => r.co2)
+    ], ['CO2'], 'ppm');
+
+    renderFlightChart('flightChartPress', sampledTs, [
+        sampledRecords.map(r => r.pressure_pa / 100)
+    ], ['Pressure'], 'hPa');
+
+    renderFlightChart('flightChartAlt', sampledTs, [
+        sampledRecords.map(r => r.baro_alt),
+        sampledRecords.map(r => r.alt_mm / 1000)
+    ], ['Baro', 'GPS'], 'm');
+
+    renderFlightChart('flightChartTemp', sampledTs, [
+        sampledRecords.map(r => r.bmp_temp),
+        sampledRecords.map(r => r.scd_temp)
+    ], ['BMP', 'SCD'], '°C');
+
+    renderFlightChart('flightChartHum', sampledTs, [
+        sampledRecords.map(r => r.humidity)
+    ], ['Humidity'], '%');
+
+    renderFlightChart('flightChartVel', sampledTs, [
+        sampledRecords.map(r => r.vel_down / 1000)
+    ], ['Velocity'], 'm/s');
+
+    renderFlightChart('flightChartHead', sampledTs, [
+        sampledRecords.map(r => r.heading)
+    ], ['Heading'], '°');
+
+    // IMU - calculate Euler angles from quaternion
+    renderFlightChart('flightChartImu', sampledTs, [
+        sampledRecords.map(r => {
+            // Roll from quaternion
+            const sinr = 2 * (r.qw * r.qi + r.qj * r.qk);
+            const cosr = 1 - 2 * (r.qi * r.qi + r.qj * r.qj);
+            return Math.atan2(sinr, cosr) * 57.2957795;
+        }),
+        sampledRecords.map(r => {
+            // Pitch from quaternion
+            const sinp = 2 * (r.qw * r.qj - r.qk * r.qi);
+            return Math.abs(sinp) >= 1 ? Math.sign(sinp) * 90 : Math.asin(sinp) * 57.2957795;
+        }),
+        sampledRecords.map(r => {
+            // Yaw from quaternion
+            const siny = 2 * (r.qw * r.qk + r.qi * r.qj);
+            const cosy = 1 - 2 * (r.qj * r.qj + r.qk * r.qk);
+            return Math.atan2(siny, cosy) * 57.2957795;
+        })
+    ], ['Roll', 'Pitch', 'Yaw'], '°');
+
+    toast(`Loaded ${records.length} records`, 'success');
+}
+
+function renderFlightChart(canvasId, timestamps, series, labels, unit) {
+    const canvas = $(canvasId);
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width = canvas.parentElement.clientWidth;
+    const h = canvas.height = 150;
+
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, w, h);
+
+    if (!timestamps || timestamps.length === 0) return;
+
+    const colors = ['#4a9eff', '#4caf50', '#ff9800', '#e91e63', '#9c27b0'];
+    const padding = { left: 50, right: 20, top: 10, bottom: 25 };
+    const chartW = w - padding.left - padding.right;
+    const chartH = h - padding.top - padding.bottom;
+
+    // Find min/max across all series
+    let minVal = Infinity, maxVal = -Infinity;
+    for (const s of series) {
+        for (const v of s) {
+            if (v !== null && v !== undefined && isFinite(v)) {
+                if (v < minVal) minVal = v;
+                if (v > maxVal) maxVal = v;
+            }
+        }
+    }
+    if (!isFinite(minVal)) minVal = 0;
+    if (!isFinite(maxVal)) maxVal = 1;
+    if (minVal === maxVal) { minVal -= 1; maxVal += 1; }
+    const range = maxVal - minVal;
+
+    // Draw grid
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= 4; i++) {
+        const y = padding.top + (chartH * i / 4);
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(w - padding.right, y);
+        ctx.stroke();
+    }
+
+    // Draw Y axis labels
+    ctx.fillStyle = '#888';
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= 4; i++) {
+        const val = maxVal - (range * i / 4);
+        const y = padding.top + (chartH * i / 4);
+        ctx.fillText(val.toFixed(1), padding.left - 5, y + 3);
+    }
+
+    // Draw series
+    const minTs = timestamps[0];
+    const maxTs = timestamps[timestamps.length - 1];
+    const tsRange = maxTs - minTs || 1;
+
+    for (let si = 0; si < series.length; si++) {
+        const data = series[si];
+        ctx.strokeStyle = colors[si % colors.length];
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        let started = false;
+        for (let i = 0; i < data.length; i++) {
+            const v = data[i];
+            if (v === null || v === undefined || !isFinite(v)) continue;
+            const x = padding.left + ((timestamps[i] - minTs) / tsRange) * chartW;
+            const y = padding.top + chartH - ((v - minVal) / range) * chartH;
+            if (!started) {
+                ctx.moveTo(x, y);
+                started = true;
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        ctx.stroke();
+    }
+
+    // Legend
+    ctx.font = '10px sans-serif';
+    let legendX = padding.left;
+    for (let si = 0; si < labels.length; si++) {
+        ctx.fillStyle = colors[si % colors.length];
+        ctx.fillRect(legendX, h - 12, 10, 10);
+        ctx.fillStyle = '#aaa';
+        ctx.textAlign = 'left';
+        ctx.fillText(labels[si], legendX + 14, h - 3);
+        legendX += ctx.measureText(labels[si]).width + 30;
+    }
+
+    // Unit
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'right';
+    ctx.fillText(unit, w - padding.right, padding.top + 10);
+}
+
+// Update PSRAM info on Files page
+async function updatePsramInfo() {
+    try {
+        const info = await api('info');
+        if ($('psramCount')) {
+            $('psramCount').textContent = info.flight_records != null ? info.flight_records.toLocaleString() : '--';
+        }
+        if ($('psramCap')) {
+            $('psramCap').textContent = info.flight_capacity != null ? info.flight_capacity.toLocaleString() : '--';
+        }
+    } catch (e) {}
+}
 
 // ============================================================================
 // WiFi

@@ -208,6 +208,7 @@
                     <option value="5">Humidity (%)</option>
                     <option value="6">Velocity (m/s)</option>
                     <option value="7">Heading (°)</option>
+                    <option value="8">IMU (°)</option>
                 </select>
                 <div class="range-btns">
                     <button class="range-btn" data-range="60" onclick="setRange(60)">1m</button>
@@ -216,7 +217,7 @@
                     <button class="range-btn" data-range="86400" onclick="setRange(86400)">24h</button>
                 </div>
                 <span id="liveIndicator" class="live-indicator">LIVE</span>
-                <button class="btn-icon" onclick="exportCSV()" title="Export CSV">⬇</button>
+                <button class="btn-icon" onclick="showPage('files')" title="Go to Files">📁</button>
             </div>
             <canvas id="chart"></canvas>
         </section>
@@ -692,22 +693,39 @@
 
     <!-- PAGE: Files -->
     <main id="page-files" class="page">
-        <h2 class="page-title">Recorded Files</h2>
+        <h2 class="page-title">Flight Data</h2>
 
-        <!-- File List -->
+        <!-- PSRAM Download -->
         <section class="section">
-            <div id="fileList" class="file-list">Loading...</div>
-            <div class="storage-info" id="storageInfo"></div>
+            <h3 class="section-title">PSRAM Buffer</h3>
+            <div class="cards status-cards" style="margin-bottom:12px">
+                <div class="card">
+                    <span class="card-label">Records</span>
+                    <span class="card-value" id="psramCount">--</span>
+                </div>
+                <div class="card">
+                    <span class="card-label">Capacity</span>
+                    <span class="card-value" id="psramCap">--</span>
+                </div>
+            </div>
+            <button class="btn" onclick="downloadPsramBin()">Download PSRAM (BIN)</button>
         </section>
 
-        <!-- Hexdump -->
-        <section class="section hex-section" id="hexSection">
-            <div class="section-header">
-                <span class="section-title">Quick Hexdump</span>
-                <button class="btn-sm" onclick="clearHex()">Clear</button>
+        <!-- Drop Zone for viewing -->
+        <section class="section">
+            <h3 class="section-title">View Flight Data</h3>
+            <div id="dropZone" class="drop-zone" ondrop="handleFileDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                <span>Drop .bin file here to view</span>
+                <input type="file" id="binFileInput" accept=".bin" onchange="handleFileSelect(event)" style="display:none">
             </div>
-            <div class="hex-meta" id="hexTitle">--</div>
-            <div class="hex-box" id="hexBox">--</div>
+            <button class="btn btn-secondary" onclick="document.getElementById('binFileInput').click()" style="margin-top:8px">Or Select File</button>
+        </section>
+
+        <!-- LittleFS Files -->
+        <section class="section">
+            <h3 class="section-title">LittleFS Recordings</h3>
+            <div id="fileList" class="file-list">Loading...</div>
+            <div class="storage-info" id="storageInfo"></div>
         </section>
 
         <!-- Flight Viewer -->
@@ -719,6 +737,14 @@
                     <div class="info-item">
                         <span class="info-label">File</span>
                         <span class="info-value" id="flightInfoFile">--</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Records</span>
+                        <span class="info-value" id="flightInfoRecords">--</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Duration</span>
+                        <span class="info-value" id="flightInfoDuration">--</span>
                     </div>
                 </div>
             </div>
@@ -754,6 +780,10 @@
             <div class="chart-box">
                 <div class="chart-title">Heading</div>
                 <canvas id="flightChartHead"></canvas>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">IMU (Roll/Pitch/Yaw)</div>
+                <canvas id="flightChartImu"></canvas>
             </div>
         </section>
     </main>
@@ -792,12 +822,12 @@
         <section class="ota-section" style="margin-top:16px">
             <h3 class="section-title">WiFi Settings</h3>
             <div id="wifiStatus" class="wifi-status"></div>
-            <div class="wifi-form">
-                <input type="text" id="wifiSsid" placeholder="WiFi SSID" maxlength="32">
-                <input type="password" id="wifiPass" placeholder="Password" maxlength="64"><button type="button" class="btn-eye" onclick="togglePass()">👁</button>
-                <button class="btn" onclick="wifiConnect()">Connect</button>
-                <button class="btn btn-secondary" onclick="wifiClear()">Clear Saved</button>
-            </div>
+            <form class="wifi-form" onsubmit="wifiConnect(); return false;" autocomplete="on">
+                <input type="text" id="wifiSsid" name="ssid" placeholder="WiFi SSID" maxlength="32" autocomplete="username">
+                <input type="password" id="wifiPass" name="password" placeholder="Password" maxlength="64" autocomplete="current-password"><button type="button" class="btn-eye" onclick="togglePass()">👁</button>
+                <button type="submit" class="btn">Connect</button>
+                <button type="button" class="btn btn-secondary" onclick="wifiClear()">Clear Saved</button>
+            </form>
         </section>
 
         <!-- Firmware Update -->

@@ -7,6 +7,7 @@
 #include "freertos/semphr.h"
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
 static const char *TAG = "FLIGHT_REC";
 
@@ -405,6 +406,9 @@ size_t flight_recorder_get_chart_data(flight_data_type_t type,
         case FLIGHT_DATA_TEMPERATURE:
             num_series = 2;  // BMP temp, SCD temp
             break;
+        case FLIGHT_DATA_IMU:
+            num_series = 3;  // Roll, Pitch, Yaw
+            break;
         default:
             num_series = 1;
             break;
@@ -453,6 +457,39 @@ size_t flight_recorder_get_chart_data(flight_data_type_t type,
             case FLIGHT_DATA_HEADING:
                 out_values[i][0] = r->heading / 10.0f;       // degrees
                 break;
+
+            case FLIGHT_DATA_IMU: {
+                // Convert quaternion to Euler angles (roll, pitch, yaw)
+                // Quaternion is stored as Q14 fixed point (divide by 16384)
+                float qi = r->qi / 16384.0f;
+                float qj = r->qj / 16384.0f;
+                float qk = r->qk / 16384.0f;
+                float qw = r->qw / 16384.0f;
+
+                // Roll (x-axis rotation)
+                float sinr_cosp = 2.0f * (qw * qi + qj * qk);
+                float cosr_cosp = 1.0f - 2.0f * (qi * qi + qj * qj);
+                float roll = atan2f(sinr_cosp, cosr_cosp) * 57.2957795f;  // rad to deg
+
+                // Pitch (y-axis rotation)
+                float sinp = 2.0f * (qw * qj - qk * qi);
+                float pitch;
+                if (fabsf(sinp) >= 1.0f) {
+                    pitch = copysignf(90.0f, sinp);  // Use 90 degrees if out of range
+                } else {
+                    pitch = asinf(sinp) * 57.2957795f;
+                }
+
+                // Yaw (z-axis rotation)
+                float siny_cosp = 2.0f * (qw * qk + qi * qj);
+                float cosy_cosp = 1.0f - 2.0f * (qj * qj + qk * qk);
+                float yaw = atan2f(siny_cosp, cosy_cosp) * 57.2957795f;
+
+                out_values[i][0] = roll;
+                out_values[i][1] = pitch;
+                out_values[i][2] = yaw;
+                break;
+            }
 
             default:
                 break;

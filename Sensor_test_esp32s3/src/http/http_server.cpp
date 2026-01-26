@@ -21,13 +21,16 @@
 #include <sys/stat.h>
 #include <algorithm>
 #include <dirent.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 
 static const char *TAG = "HTTP";
 
 // Max sockets for HTTP server/client list
-static constexpr size_t MAX_OPEN_SOCKETS = 12;
+static constexpr size_t MAX_OPEN_SOCKETS = 7;  // Keep low to avoid resource exhaustion
 
 static httpd_handle_t s_server = NULL;
+static SemaphoreHandle_t s_ws_mutex = NULL;
 
 static void ws_broadcast_sensor_state(void);
 
@@ -217,13 +220,12 @@ static esp_err_t ws_handler(httpd_req_t *req)
         size_t max_entries = history_count();
         if (max_entries == 0) {
             const char *empty = "{\"type\":\"history\",\"count\":0,\"range\":0,\"data\":[]}";
-            httpd_ws_frame_t out = {
-                .final = true,
-                .fragmented = false,
-                .type = HTTPD_WS_TYPE_TEXT,
-                .payload = (uint8_t *)empty,
-                .len = strlen(empty)
-            };
+            httpd_ws_frame_t out;
+            memset(&out, 0, sizeof(out));
+            out.final = true;
+            out.type = HTTPD_WS_TYPE_TEXT;
+            out.payload = (uint8_t *)empty;
+            out.len = strlen(empty);
             httpd_ws_send_frame(req, &out);
             free(payload);
             return ESP_OK;
@@ -271,13 +273,12 @@ static esp_err_t ws_handler(httpd_req_t *req)
             snprintf(json + used, buf_len - used, "]}");
         }
 
-        httpd_ws_frame_t out = {
-            .final = true,
-            .fragmented = false,
-            .type = HTTPD_WS_TYPE_TEXT,
-            .payload = (uint8_t *)json,
-            .len = strlen(json)
-        };
+        httpd_ws_frame_t out;
+        memset(&out, 0, sizeof(out));
+        out.final = true;
+        out.type = HTTPD_WS_TYPE_TEXT;
+        out.payload = (uint8_t *)json;
+        out.len = strlen(json);
         httpd_ws_send_frame(req, &out);
 
         free(json);
@@ -318,6 +319,9 @@ static esp_err_t ws_handler(httpd_req_t *req)
         size_t count = flight_recorder_get_chart_data((flight_data_type_t)chart_type,
             values, timestamps, max_points, range_sec, &series_count);
 
+        // Yield after heavy data processing to let other tasks run
+        vTaskDelay(1);
+
         // Binary: [0xF0+type][series][countLo][countHi][data...]
         // Data per point: [ts:4][val0:4][val1:4]... (series floats)
         size_t data_size = 4 + count * (4 + series_count * 4);
@@ -343,10 +347,12 @@ static esp_err_t ws_handler(httpd_req_t *req)
             }
         }
 
-        httpd_ws_frame_t out = {
-            .final = true, .fragmented = false, .type = HTTPD_WS_TYPE_BINARY,
-            .payload = bin, .len = off
-        };
+        httpd_ws_frame_t out;
+        memset(&out, 0, sizeof(out));
+        out.final = true;
+        out.type = HTTPD_WS_TYPE_BINARY;
+        out.payload = bin;
+        out.len = off;
         httpd_ws_send_frame(req, &out);
 
         free(bin);
@@ -425,9 +431,14 @@ static esp_err_t ws_handler(httpd_req_t *req)
         size_t out_count = (record_count + downsample - 1) / downsample;
         if (out_count > max_points) out_count = max_points;
 
-        // Allocate buffers
-        uint8_t series = (chart_type == 0 || chart_type == 3 || chart_type == 4) ?
-                         (chart_type == 0 ? 4 : 2) : 1;
+        // Allocate buffers - series count depends on chart type
+        uint8_t series = 1;
+        switch (chart_type) {
+            case 0: series = 4; break;  // PM: 4 series
+            case 3: case 4: series = 2; break;  // Altitude, Temperature: 2 series
+            case 8: series = 3; break;  // IMU: Roll, Pitch, Yaw
+            default: series = 1; break;
+        }
         size_t data_size = 4 + out_count * (4 + series * 4);
         uint8_t *bin = (uint8_t *)heap_caps_malloc(data_size, MALLOC_CAP_SPIRAM);
         if (!bin) { fclose(f); free(payload); return ESP_ERR_NO_MEM; }
@@ -452,6 +463,25 @@ static esp_err_t ws_handler(httpd_req_t *req)
                     case 5: v[0]=rec.humidity/100.0f; break;
                     case 6: v[0]=rec.vel_down/1000.0f; break;
                     case 7: v[0]=rec.heading/10.0f; break;
+                    case 8: {
+                        // IMU: quaternion to Euler angles
+                        float qi = rec.qi / 16384.0f;
+                        float qj = rec.qj / 16384.0f;
+                        float qk = rec.qk / 16384.0f;
+                        float qw = rec.qw / 16384.0f;
+                        // Roll
+                        float sinr = 2.0f * (qw * qi + qj * qk);
+                        float cosr = 1.0f - 2.0f * (qi * qi + qj * qj);
+                        v[0] = atan2f(sinr, cosr) * 57.2957795f;
+                        // Pitch
+                        float sinp = 2.0f * (qw * qj - qk * qi);
+                        v[1] = fabsf(sinp) >= 1.0f ? copysignf(90.0f, sinp) : asinf(sinp) * 57.2957795f;
+                        // Yaw
+                        float siny = 2.0f * (qw * qk + qi * qj);
+                        float cosy = 1.0f - 2.0f * (qj * qj + qk * qk);
+                        v[2] = atan2f(siny, cosy) * 57.2957795f;
+                        break;
+                    }
                 }
                 for (uint8_t s = 0; s < series; s++) {
                     memcpy(bin + off, &v[s], 4); off += 4;
@@ -465,10 +495,12 @@ static esp_err_t ws_handler(httpd_req_t *req)
         bin[2] = (uint8_t)(written & 0xFF);
         bin[3] = (uint8_t)((written >> 8) & 0xFF);
 
-        httpd_ws_frame_t out = {
-            .final = true, .fragmented = false, .type = HTTPD_WS_TYPE_BINARY,
-            .payload = bin, .len = off
-        };
+        httpd_ws_frame_t out;
+        memset(&out, 0, sizeof(out));
+        out.final = true;
+        out.type = HTTPD_WS_TYPE_BINARY;
+        out.payload = bin;
+        out.len = off;
         httpd_ws_send_frame(req, &out);
         free(bin);
         free(payload);
@@ -531,16 +563,23 @@ static esp_err_t api_info_handler(httpd_req_t *req)
         strcpy(temp_buf, "null");
     }
 
-    char json[400];
+    size_t fr_count = flight_recorder_count();
+    size_t fr_capacity = flight_recorder_capacity();
+
+    char json[512];
     snprintf(json, sizeof(json),
-        "{\"serial\":\"%s\",\"product\":\"%s\",\"fw_major\":%d,\"fw_minor\":%d,\"clean_interval\":%lu,\"wifi_rssi\":%s,\"cpu_temp_c\":%s}",
+        "{\"serial\":\"%s\",\"product\":\"%s\",\"fw_major\":%d,\"fw_minor\":%d,"
+        "\"clean_interval\":%lu,\"wifi_rssi\":%s,\"cpu_temp_c\":%s,"
+        "\"flight_records\":%lu,\"flight_capacity\":%lu}",
         s_device_info.serial_number,
         s_device_info.product_type,
         s_device_info.firmware_major,
         s_device_info.firmware_minor,
         (unsigned long)clean_interval,
         rssi_buf,
-        temp_buf);
+        temp_buf,
+        (unsigned long)fr_count,
+        (unsigned long)fr_capacity);
 
     httpd_resp_set_type(req, "application/json");
     httpd_resp_send(req, json, strlen(json));
@@ -966,53 +1005,81 @@ static esp_err_t api_history_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
-// GET /api/export?range=3600
-// Returns CSV file for download
-static esp_err_t api_export_handler(httpd_req_t *req)
+// GET /api/flight-export
+// Downloads flight recorder data from PSRAM as binary
+// Format: FLTR header (12 bytes) + raw flight_record_t structs (64 bytes each)
+// Same format as file recording for compatibility
+static esp_err_t api_flight_export_handler(httpd_req_t *req)
 {
-    char query[32] = {0};
-    uint32_t range_sec = 3600;  // Default 1 hour
+    size_t total_count = flight_recorder_count();
+    if (total_count == 0) {
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "No flight data recorded");
+        return ESP_FAIL;
+    }
 
-    if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
-        char val[16];
-        if (httpd_query_key_value(query, "range", val, sizeof(val)) == ESP_OK) {
-            range_sec = atoi(val);
+    ESP_LOGI(TAG, "Flight export: %u records (binary)", (unsigned)total_count);
+
+    // Small chunk buffer - read 64 records at a time (4KB)
+    const size_t CHUNK_SIZE = 64;
+    flight_record_t *chunk = (flight_record_t *)malloc(CHUNK_SIZE * sizeof(flight_record_t));
+    if (!chunk) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "No memory");
+        return ESP_FAIL;
+    }
+
+    httpd_resp_set_type(req, "application/octet-stream");
+    httpd_resp_set_hdr(req, "Content-Disposition", "attachment; filename=\"flight_data.bin\"");
+
+    // Send header - same format as flight_recording (FLTR magic)
+    // Header: magic(4) + version(1) + record_size(1) + reserved(2) + start_timestamp(4) = 12 bytes
+    struct __attribute__((packed)) {
+        uint32_t magic;           // 0x464C5452 = "FLTR"
+        uint8_t version;
+        uint8_t record_size;
+        uint16_t reserved;
+        uint32_t start_timestamp;
+    } header = {
+        .magic = 0x464C5452,
+        .version = 1,
+        .record_size = sizeof(flight_record_t),
+        .reserved = 0,
+        .start_timestamp = 0  // Could get first record timestamp if needed
+    };
+
+    // Try to get start timestamp from first record
+    flight_record_t first_rec;
+    if (flight_recorder_get(&first_rec, 1, 0) > 0) {
+        header.start_timestamp = first_rec.timestamp;
+    }
+
+    if (httpd_resp_send_chunk(req, (const char *)&header, sizeof(header)) != ESP_OK) {
+        free(chunk);
+        return ESP_FAIL;
+    }
+
+    // Stream records in chunks
+    for (size_t offset = 0; offset < total_count; offset += CHUNK_SIZE) {
+        size_t to_read = (offset + CHUNK_SIZE > total_count) ? (total_count - offset) : CHUNK_SIZE;
+        size_t got = flight_recorder_get(chunk, to_read, offset);
+
+        if (got > 0) {
+            if (httpd_resp_send_chunk(req, (const char *)chunk, got * sizeof(flight_record_t)) != ESP_OK) {
+                ESP_LOGE(TAG, "Export chunk send failed at offset %u", (unsigned)offset);
+                free(chunk);
+                return ESP_FAIL;
+            }
+        }
+
+        // Yield to other tasks periodically
+        if (offset % 1000 == 0) {
+            vTaskDelay(1);
         }
     }
 
-    // Get all points (no downsampling for export)
-    const size_t MAX_EXPORT = 86400;  // Max 24h
-    history_entry_t *entries = (history_entry_t *)heap_caps_malloc(
-        MAX_EXPORT * sizeof(history_entry_t), MALLOC_CAP_SPIRAM);
+    httpd_resp_send_chunk(req, NULL, 0);  // End chunked response
+    free(chunk);
 
-    if (!entries) {
-        // Fallback to smaller buffer
-        entries = (history_entry_t *)malloc(3600 * sizeof(history_entry_t));
-        if (!entries) {
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "No memory");
-            return ESP_FAIL;
-        }
-    }
-
-    size_t count = history_get_range(entries, MAX_EXPORT, range_sec, 1);
-
-    httpd_resp_set_type(req, "text/csv");
-    httpd_resp_set_hdr(req, "Content-Disposition", "attachment; filename=\"astrolink_export.csv\"");
-
-    // CSV header
-    httpd_resp_sendstr_chunk(req, "timestamp_ms,pm1_0,pm2_5,pm4_0,pm10\n");
-
-    char buf[64];
-    for (size_t i = 0; i < count; i++) {
-        snprintf(buf, sizeof(buf), "%lu,%.2f,%.2f,%.2f,%.2f\n",
-                 (unsigned long)entries[i].timestamp_ms,
-                 entries[i].pm1_0, entries[i].pm2_5,
-                 entries[i].pm4_0, entries[i].pm10);
-        httpd_resp_sendstr_chunk(req, buf);
-    }
-
-    httpd_resp_sendstr_chunk(req, NULL);
-    free(entries);
+    ESP_LOGI(TAG, "Flight export complete: %u records", (unsigned)total_count);
     return ESP_OK;
 }
 
@@ -1099,7 +1166,7 @@ static esp_err_t api_recording_status_handler(httpd_req_t *req)
 }
 
 // GET /api/fs-download?file=/rec_123.bin
-// Downloads file and converts binary to CSV on the fly
+// Downloads file as binary
 static esp_err_t api_fs_download_handler(httpd_req_t *req)
 {
     if (!s_fs_mounted) {
@@ -1109,18 +1176,11 @@ static esp_err_t api_fs_download_handler(httpd_req_t *req)
 
     char query[96] = {0};
     char filename[48] = {0};
-    char raw_param[8] = {0};
 
     if (httpd_req_get_url_query_str(req, query, sizeof(query)) != ESP_OK ||
         httpd_query_key_value(query, "file", filename, sizeof(filename)) != ESP_OK) {
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Missing ?file= parameter");
         return ESP_FAIL;
-    }
-
-    // Check for raw=1 parameter (download binary as-is)
-    bool raw_download = false;
-    if (httpd_query_key_value(query, "raw", raw_param, sizeof(raw_param)) == ESP_OK) {
-        raw_download = (raw_param[0] == '1');
     }
 
     char filepath[80];
@@ -1132,77 +1192,18 @@ static esp_err_t api_fs_download_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 
-    // Check if it's a flight recording file (and not raw download)
-    bool is_flight_bin = strstr(filename, "flight_") != NULL && strstr(filename, ".bin") != NULL && !raw_download;
+    // Raw file download
+    httpd_resp_set_type(req, "application/octet-stream");
+    char disposition[96];
+    snprintf(disposition, sizeof(disposition), "attachment; filename=\"%.48s\"", filename);
+    httpd_resp_set_hdr(req, "Content-Disposition", disposition);
 
-    if (is_flight_bin) {
-        // Read and validate flight header
-        uint32_t magic;
-        uint8_t version, record_size;
-        uint16_t reserved;
-        uint32_t start_ts;
-
-        if (fread(&magic, 4, 1, f) != 1 || magic != 0x464C5452) {  // "FLTR"
-            fclose(f);
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Invalid flight file");
-            return ESP_FAIL;
-        }
-        fread(&version, 1, 1, f);
-        fread(&record_size, 1, 1, f);
-        fread(&reserved, 2, 1, f);
-        fread(&start_ts, 4, 1, f);
-
-        // Convert to CSV for download
-        httpd_resp_set_type(req, "text/csv");
-        char disposition[96];
-        snprintf(disposition, sizeof(disposition), "attachment; filename=\"%.48s.csv\"", filename);
-        httpd_resp_set_hdr(req, "Content-Disposition", disposition);
-
-        // Full flight data CSV header
-        httpd_resp_sendstr_chunk(req,
-            "timestamp,lat,lon,alt_gps_m,vel_down_ms,fix,sats,"
-            "qi,qj,qk,qw,imu_acc,"
-            "mag_x,mag_y,mag_z,heading,"
-            "pressure_hpa,temp_bmp,alt_baro_m,"
-            "co2,temp_scd,humidity,"
-            "pm1,pm25,pm4,pm10\n");
-
-        flight_record_t rec;
-        char line[256];
-        while (fread(&rec, sizeof(rec), 1, f) == 1) {
-            snprintf(line, sizeof(line),
-                "%lu,%.7f,%.7f,%.1f,%.2f,%d,%d,"
-                "%.4f,%.4f,%.4f,%.4f,%d,"
-                "%d,%d,%d,%.1f,"
-                "%.2f,%.2f,%.1f,"
-                "%d,%.2f,%.2f,"
-                "%.1f,%.1f,%.1f,%.1f\n",
-                (unsigned long)rec.timestamp,
-                rec.lat / 1e7, rec.lon / 1e7, rec.alt_mm / 1000.0f, rec.vel_down / 1000.0f,
-                rec.fix_type, rec.sats,
-                rec.qi / 16384.0f, rec.qj / 16384.0f, rec.qk / 16384.0f, rec.qw / 16384.0f,
-                rec.imu_accuracy,
-                rec.mag_x, rec.mag_y, rec.mag_z, rec.heading / 10.0f,
-                rec.pressure_pa / 100.0f, rec.bmp_temp / 100.0f, rec.baro_alt / 10.0f,
-                rec.co2, rec.scd_temp / 100.0f, rec.humidity / 100.0f,
-                rec.pm1 / 10.0f, rec.pm25 / 10.0f, rec.pm4 / 10.0f, rec.pm10 / 10.0f);
-            httpd_resp_sendstr_chunk(req, line);
-        }
-        httpd_resp_sendstr_chunk(req, NULL);
-    } else {
-        // Raw file download
-        httpd_resp_set_type(req, "application/octet-stream");
-        char disposition[96];
-        snprintf(disposition, sizeof(disposition), "attachment; filename=\"%.48s\"", filename);
-        httpd_resp_set_hdr(req, "Content-Disposition", disposition);
-
-        char buf[512];
-        size_t read;
-        while ((read = fread(buf, 1, sizeof(buf), f)) > 0) {
-            httpd_resp_send_chunk(req, buf, read);
-        }
-        httpd_resp_send_chunk(req, NULL, 0);
+    char buf[512];
+    size_t read;
+    while ((read = fread(buf, 1, sizeof(buf), f)) > 0) {
+        httpd_resp_send_chunk(req, buf, read);
     }
+    httpd_resp_send_chunk(req, NULL, 0);
 
     fclose(f);
     return ESP_OK;
@@ -1738,16 +1739,31 @@ esp_err_t http_server_start(void)
         ESP_LOGW(TAG, "LittleFS init failed, static files won't be served");
     }
 
+    // Create mutex for WebSocket thread safety
+    if (s_ws_mutex == NULL) {
+        s_ws_mutex = xSemaphoreCreateMutex();
+        if (s_ws_mutex == NULL) {
+            ESP_LOGE(TAG, "Failed to create WS mutex");
+            return ESP_ERR_NO_MEM;
+        }
+    }
+
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-    config.lru_purge_enable = true;
+    config.lru_purge_enable = false;  // Disabled - breaks WebSocket connections
     config.max_open_sockets = MAX_OPEN_SOCKETS;
     config.backlog_conn = 8;
     config.max_uri_handlers = 40;
     config.stack_size = 8192;  // Larger stack for OTA
+    config.recv_wait_timeout = 30;    // 30 seconds receive timeout (default is 5)
+    config.send_wait_timeout = 30;    // 30 seconds send timeout (default is 5)
     config.keep_alive_enable = true;
-    config.keep_alive_idle = 15;
-    config.keep_alive_interval = 5;
-    config.keep_alive_count = 3;
+    config.keep_alive_idle = 60;      // Start keepalive after 60s idle
+    config.keep_alive_interval = 15;  // Probe every 15s
+    config.keep_alive_count = 4;      // 4 probes before disconnect
+    config.ctrl_port = 32769;         // Control socket port
+    config.max_resp_headers = 8;
+    config.global_user_ctx = NULL;
+    config.global_transport_ctx = NULL;
 
     ret = httpd_start(&s_server, &config);
     if (ret != ESP_OK) {
@@ -1821,7 +1837,7 @@ esp_err_t http_server_start(void)
         .handler = ws_handler,
         .user_ctx = NULL,
         .is_websocket = true,
-        .handle_ws_control_frames = false,
+        .handle_ws_control_frames = true,  // Handle ping/pong frames
         .supported_subprotocol = NULL
     };
     httpd_register_uri_handler(s_server, &ws_uri);
@@ -2008,16 +2024,16 @@ esp_err_t http_server_start(void)
     };
     httpd_register_uri_handler(s_server, &api_history_uri);
 
-    httpd_uri_t api_export_uri = {
-        .uri = "/api/export",
+    httpd_uri_t api_flight_export_uri = {
+        .uri = "/api/flight-export",
         .method = HTTP_GET,
-        .handler = api_export_handler,
+        .handler = api_flight_export_handler,
         .user_ctx = NULL,
         .is_websocket = false,
         .handle_ws_control_frames = false,
         .supported_subprotocol = NULL
     };
-    httpd_register_uri_handler(s_server, &api_export_uri);
+    httpd_register_uri_handler(s_server, &api_flight_export_uri);
 
     httpd_uri_t api_rec_start_uri = {
         .uri = "/api/recording/start",
@@ -2171,29 +2187,78 @@ esp_err_t http_server_stop(void)
     return ret;
 }
 
+// ============================================================================
+// WebSocket Broadcast - using httpd_queue_work (official ESP-IDF pattern)
+// ============================================================================
+
+// Structure for async send - matches ESP-IDF example pattern
+struct ws_async_arg {
+    httpd_handle_t hd;
+    int fd;
+    uint8_t *data;
+    size_t len;
+    bool is_text;
+};
+
+// Async send worker - called from httpd context
+static void ws_async_send(void *arg)
+{
+    struct ws_async_arg *a = (struct ws_async_arg *)arg;
+    if (!a) return;
+
+    httpd_ws_frame_t frame;
+    memset(&frame, 0, sizeof(frame));
+    frame.final = true;
+    frame.fragmented = false;
+    frame.type = a->is_text ? HTTPD_WS_TYPE_TEXT : HTTPD_WS_TYPE_BINARY;
+    frame.payload = a->data;
+    frame.len = a->len;
+
+    httpd_ws_send_frame_async(a->hd, a->fd, &frame);
+
+    free(a->data);
+    free(a);
+}
+
 int http_server_ws_broadcast(const uint8_t *data, size_t len)
 {
     if (s_server == NULL || data == NULL || len == 0) return 0;
 
-    int sent_count = 0;
     int client_fds[MAX_OPEN_SOCKETS];
-    int ws_count = ws_get_clients(client_fds, MAX_OPEN_SOCKETS);
+    size_t fds = MAX_OPEN_SOCKETS;
+    if (httpd_get_client_list(s_server, &fds, client_fds) != ESP_OK) {
+        return 0;
+    }
 
-    httpd_ws_frame_t ws_pkt = {
-        .final = true,
-        .fragmented = false,
-        .type = HTTPD_WS_TYPE_BINARY,
-        .payload = (uint8_t *)data,
-        .len = len
-    };
-
-    for (int i = 0; i < ws_count; i++) {
+    int sent_count = 0;
+    for (size_t i = 0; i < fds; i++) {
         int fd = client_fds[i];
-        esp_err_t ret = httpd_ws_send_frame_async(s_server, fd, &ws_pkt);
-        if (ret == ESP_OK) {
-            sent_count++;
+
+        // Check if this is a WebSocket client
+        if (httpd_ws_get_fd_info(s_server, fd) != HTTPD_WS_CLIENT_WEBSOCKET) {
+            continue;
+        }
+
+        struct ws_async_arg *arg = (struct ws_async_arg *)malloc(sizeof(struct ws_async_arg));
+        if (!arg) continue;
+
+        arg->data = (uint8_t *)malloc(len);
+        if (!arg->data) {
+            free(arg);
+            continue;
+        }
+
+        memcpy(arg->data, data, len);
+        arg->hd = s_server;
+        arg->fd = fd;
+        arg->len = len;
+        arg->is_text = false;
+
+        if (httpd_queue_work(s_server, ws_async_send, arg) != ESP_OK) {
+            free(arg->data);
+            free(arg);
         } else {
-            ESP_LOGW(TAG, "Failed to send to fd=%d: %s", fd, esp_err_to_name(ret));
+            sent_count++;
         }
     }
 
@@ -2204,22 +2269,39 @@ int http_server_ws_broadcast_text(const char *data, size_t len)
 {
     if (s_server == NULL || data == NULL || len == 0) return 0;
 
-    int sent_count = 0;
     int client_fds[MAX_OPEN_SOCKETS];
-    int ws_count = ws_get_clients(client_fds, MAX_OPEN_SOCKETS);
+    size_t fds = MAX_OPEN_SOCKETS;
+    if (httpd_get_client_list(s_server, &fds, client_fds) != ESP_OK) {
+        return 0;
+    }
 
-    httpd_ws_frame_t ws_pkt = {
-        .final = true,
-        .fragmented = false,
-        .type = HTTPD_WS_TYPE_TEXT,
-        .payload = (uint8_t *)data,
-        .len = len
-    };
-
-    for (int i = 0; i < ws_count; i++) {
+    int sent_count = 0;
+    for (size_t i = 0; i < fds; i++) {
         int fd = client_fds[i];
-        esp_err_t ret = httpd_ws_send_frame_async(s_server, fd, &ws_pkt);
-        if (ret == ESP_OK) {
+
+        if (httpd_ws_get_fd_info(s_server, fd) != HTTPD_WS_CLIENT_WEBSOCKET) {
+            continue;
+        }
+
+        struct ws_async_arg *arg = (struct ws_async_arg *)malloc(sizeof(struct ws_async_arg));
+        if (!arg) continue;
+
+        arg->data = (uint8_t *)malloc(len);
+        if (!arg->data) {
+            free(arg);
+            continue;
+        }
+
+        memcpy(arg->data, data, len);
+        arg->hd = s_server;
+        arg->fd = fd;
+        arg->len = len;
+        arg->is_text = true;
+
+        if (httpd_queue_work(s_server, ws_async_send, arg) != ESP_OK) {
+            free(arg->data);
+            free(arg);
+        } else {
             sent_count++;
         }
     }
@@ -2231,4 +2313,11 @@ int http_server_ws_client_count(void)
 {
     int client_fds[MAX_OPEN_SOCKETS];
     return ws_get_clients(client_fds, MAX_OPEN_SOCKETS);
+}
+
+int http_server_ws_send_ping(void)
+{
+    // Disabled - TCP keepalive should be sufficient
+    // WebSocket ping frames cause issues with ESP-IDF httpd
+    return 0;
 }

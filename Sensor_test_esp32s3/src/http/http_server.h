@@ -45,6 +45,14 @@ int http_server_ws_broadcast_text(const char *data, size_t len);
  */
 int http_server_ws_client_count(void);
 
+/**
+ * @brief Send WebSocket ping to all clients
+ *
+ * Call this periodically (e.g., every 30s) to keep connections alive
+ * through NAT/proxies. Returns number of clients pinged.
+ */
+int http_server_ws_send_ping(void);
+
 #ifdef __cplusplus
 }
 #endif

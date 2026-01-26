@@ -733,6 +733,26 @@ header {
 .file-size { font-size: 0.75rem; color: var(--text-muted); margin-left: 10px; }
 .file-actions { display: flex; gap: 6px; }
 
+/* Drop Zone */
+.drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.drop-zone:hover {
+    border-color: var(--blue);
+    color: var(--text);
+}
+.drop-zone.drag-over {
+    border-color: var(--green);
+    background: rgba(76, 175, 80, 0.1);
+    color: var(--green);
+}
+
 /* Toast */
 .toast {
     position: fixed;

@@ -32,6 +32,7 @@
 #include "common/flight_data_collector.h"
 #include "wifi/wifi_manager.h"
 #include "http/http_server.h"
+#include "common/status_led.h"
 
 static const char *TAG = "MAIN";
 
@@ -495,12 +496,12 @@ static void ws_broadcast_task(void *arg)
     uint64_t last_scd_us = 0;
     uint64_t last_sys_us = 0;
     uint64_t last_time_us = 0;
-    const uint64_t imu_interval_us = 40000;
-    const uint64_t compass_interval_us = 40000;
-    const uint64_t bmp_interval_us = 100000;
-    const uint64_t slow_interval_us = 500000;
-    const uint64_t sys_interval_us = 500000;
-    const uint64_t time_interval_us = 1000000;
+    const uint64_t imu_interval_us = 50000;      // 20Hz IMU
+    const uint64_t compass_interval_us = 50000;  // 20Hz compass
+    const uint64_t bmp_interval_us = 200000;     // 5Hz pressure (was 10Hz)
+    const uint64_t slow_interval_us = 500000;    // 2Hz SPS30/SCD40
+    const uint64_t sys_interval_us = 1000000;    // 1Hz system stats (was 2Hz)
+    const uint64_t time_interval_us = 1000000;   // 1Hz time
     ubx_nav_pvt_t gps = {};
     qmc5883l_data_t mag = {};
     sps30_measurement_t sps = {};
@@ -513,8 +514,8 @@ static void ws_broadcast_task(void *arg)
     uint32_t last_scd_ts = 0;
 
     while (true) {
-        // Broadcast loop ~50Hz
-        vTaskDelay(pdMS_TO_TICKS(20));
+        // Broadcast loop ~10Hz (reduced for stability)
+        vTaskDelay(pdMS_TO_TICKS(100));
 
         int client_count = http_server_ws_client_count();
         if (client_count <= 0) {
@@ -697,6 +698,9 @@ static void ws_broadcast_task(void *arg)
             http_server_ws_broadcast(msg, off);
             last_time_us = now;
         }
+
+        // Ping disabled - causes issues with ESP-IDF httpd
+        // The TCP keepalive settings should be sufficient
     }
 }
 
@@ -716,6 +720,11 @@ extern "C" void app_main(void)
 
     // Wait for USB host to connect
     vTaskDelay(pdMS_TO_TICKS(2000));
+
+    // Initialize status LED early (boot indicator)
+    if (status_led_init() == ESP_OK) {
+        status_led_set(LED_STATUS_BOOT);
+    }
 
     // Set log levels (quiet by default, MAIN prints summary)
     esp_log_level_set("*", ESP_LOG_WARN);
@@ -791,8 +800,16 @@ extern "C" void app_main(void)
         .hostname = "astrolink"         // mDNS hostname
     };
 
+    status_led_set(LED_STATUS_WIFI_SEARCH);
     wifi_manager_init(&wifi_cfg);
     wifi_manager_mode_t wifi_mode = wifi_manager_get_mode();
+
+    // Update LED based on WiFi result
+    if (wifi_mode == WIFI_MGR_MODE_STA) {
+        status_led_flash(LED_STATUS_WIFI_CONNECTED, 2000);
+    } else if (wifi_mode == WIFI_MGR_MODE_AP) {
+        status_led_set(LED_STATUS_AP_MODE);
+    }
 
     // Initialize time system AFTER WiFi (needs TCP/IP stack)
     time_init();
@@ -872,9 +889,43 @@ extern "C" void app_main(void)
         }
     }
 
-    // Main loop - collect flight data at 1Hz
+    // Set default operational status (dim green = system running)
+    if (wifi_mode == WIFI_MGR_MODE_STA) {
+        status_led_set(LED_STATUS_WS_CLIENT);
+    }
+
+    ESP_LOGI(TAG, "==========================================");
+    ESP_LOGI(TAG, "System ready!");
+    ESP_LOGI(TAG, "==========================================");
+
+    // Main loop - collect flight data at 1Hz and update LED
     while (true) {
         flight_data_collector_tick();
-        vTaskDelay(pdMS_TO_TICKS(1000));
+
+        // Update LED pattern (every ~50ms from main loop perspective)
+        // But we only run main loop at 1Hz, so call update 20 times per second
+        // by using a separate approach - just update once per loop iteration
+        // The actual blinking is handled by timestamps inside status_led_update()
+
+        // Check recording status and update LED accordingly
+        if (flight_recording_active()) {
+            // If recording, show recording status (unless already set)
+            if (status_led_get() != LED_STATUS_RECORDING) {
+                status_led_set(LED_STATUS_RECORDING);
+            }
+        } else if (status_led_get() == LED_STATUS_RECORDING) {
+            // Recording stopped, revert to normal status
+            if (wifi_mode == WIFI_MGR_MODE_AP) {
+                status_led_set(LED_STATUS_AP_MODE);
+            } else {
+                status_led_set(LED_STATUS_WS_CLIENT);
+            }
+        }
+
+        // Update LED animation (call multiple times for smooth blinking)
+        for (int i = 0; i < 20; i++) {
+            status_led_update();
+            vTaskDelay(pdMS_TO_TICKS(50));
+        }
     }
 }
