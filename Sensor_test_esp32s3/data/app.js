@@ -597,7 +597,6 @@ function applySps30(d) {
     const nc4 = d.nc4;
     const nc10 = d.nc10;
     const size = d.size;
-    const ts = d.ts;
 
     // Dashboard
     if ($('pm1')) $('pm1').textContent = fmt(pm1);
@@ -933,7 +932,7 @@ function drawChart() {
     }
 
     // Get all values for Y scale (skip timestamp at index 0)
-    const allVals = data.flatMap(d => d.slice(1).filter((v, i) => i < chartSeriesCount));
+    const allVals = data.flatMap(d => d.slice(1).filter((_v, i) => i < chartSeriesCount));
     let minY = Math.min(...allVals);
     let maxY = Math.max(...allVals);
     const rangeY = maxY - minY || 1;
@@ -1047,7 +1046,7 @@ function drawChartCustom(canvasId, data, labels, unit, series) {
         return;
     }
 
-    const allVals = points.flatMap(d => d.slice(1).filter((v, i) => i < series));
+    const allVals = points.flatMap(d => d.slice(1).filter((_v, i) => i < series));
     let minY = Math.min(...allVals);
     let maxY = Math.max(...allVals);
     const rangeY = maxY - minY || 1;
@@ -1479,22 +1478,18 @@ async function deleteFile(name) {
     } catch (e) { toast('Failed', 'error'); }
 }
 
-function loadToChart(name) {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-        liveMode = false;  // Stop live updates
-        flightViewerActive = true;
-        for (let i = 0; i < flightViewerCanvasByType.length; i++) {
-            delete flightViewerCharts[i];
-        }
-        const flightSection = $('flightViewerSection');
-        if (flightSection) flightSection.classList.add('active');
-        if ($('flightInfoFile')) $('flightInfoFile').textContent = name;
-        resizeFlightViewerCharts();
-        for (let i = 0; i < flightViewerCanvasByType.length; i++) {
-            ws.send(`L,${i},${name}`);
-        }
-        showPage('files');
-        toast('Loading ' + name);
+async function loadToChart(name) {
+    liveMode = false;
+    flightViewerActive = true;
+    showPage('files');
+    toast('Loading ' + name);
+    try {
+        const res = await fetch('/api/fs-download?file=/' + encodeURIComponent(name) + '&raw=1');
+        if (!res.ok) throw new Error('Download failed');
+        const buffer = await res.arrayBuffer();
+        parseBinAndShowCharts(buffer, name);
+    } catch (e) {
+        toast('Failed to load ' + name, 'error');
     }
 }
 
@@ -1600,10 +1595,8 @@ function parseBinAndShowCharts(buffer, filename) {
     }
 
     // Header: magic(4) + version(1) + record_size(1) + reserved(2) + start_timestamp(4) = 12 bytes
-    const version = data.getUint8(4);
+    // Header: version(1) at offset 4, record_size(1) at offset 5, reserved(2) at offset 6, start_timestamp(4) at offset 8
     const recordSize = data.getUint8(5);
-    // reserved: 2 bytes at offset 6
-    const startTimestamp = data.getUint32(8, true);
 
     if (recordSize !== 64) {
         toast(`Unexpected record size: ${recordSize}`, 'error');
