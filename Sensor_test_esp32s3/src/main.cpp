@@ -889,27 +889,24 @@ extern "C" void app_main(void)
         }
     }
 
-    // Set default operational status (dim green = system running)
+    // After init: keep blue (BOOT) until GPS fix arrives
+    // AP mode keeps its orange pattern
     if (wifi_mode == WIFI_MGR_MODE_STA) {
-        status_led_set(LED_STATUS_WS_CLIENT);
+        status_led_set(LED_STATUS_BOOT);
     }
 
     ESP_LOGI(TAG, "==========================================");
     ESP_LOGI(TAG, "System ready!");
     ESP_LOGI(TAG, "==========================================");
 
-    // Main loop - collect flight data at 1Hz and update LED
+    // Main loop - collect flight data at 1Hz
+    // LED is updated by its own background task (led_task @ 33Hz)
+    bool gps_fix_seen = false;
     while (true) {
         flight_data_collector_tick();
 
-        // Update LED pattern (every ~50ms from main loop perspective)
-        // But we only run main loop at 1Hz, so call update 20 times per second
-        // by using a separate approach - just update once per loop iteration
-        // The actual blinking is handled by timestamps inside status_led_update()
-
         // Check recording status and update LED accordingly
         if (flight_recording_active()) {
-            // If recording, show recording status (unless already set)
             if (status_led_get() != LED_STATUS_RECORDING) {
                 status_led_set(LED_STATUS_RECORDING);
             }
@@ -918,14 +915,20 @@ extern "C" void app_main(void)
             if (wifi_mode == WIFI_MGR_MODE_AP) {
                 status_led_set(LED_STATUS_AP_MODE);
             } else {
-                status_led_set(LED_STATUS_WS_CLIENT);
+                status_led_set(gps_fix_seen ? LED_STATUS_WS_CLIENT : LED_STATUS_BOOT);
+            }
+        } else if (!gps_fix_seen && wifi_mode == WIFI_MGR_MODE_STA) {
+            // Check GPS fix while waiting (blue solid until fix)
+            ubx_nav_pvt_t gps_check = {};
+            shared_data_get_gps(&gps_check);
+            if (gps_check.fix_type >= 3) {
+                gps_fix_seen = true;
+                status_led_flash(LED_STATUS_GPS_FIX, 3000);  // Cyan flash 3s
+                // After flash expires, background task reverts to current status
+                status_led_set(LED_STATUS_WS_CLIENT);  // Will show after flash
             }
         }
 
-        // Update LED animation (call multiple times for smooth blinking)
-        for (int i = 0; i < 20; i++) {
-            status_led_update();
-            vTaskDelay(pdMS_TO_TICKS(50));
-        }
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }

@@ -21,9 +21,9 @@ static const char *TAG = "LED";
 
 static rmt_channel_handle_t s_rmt_channel = NULL;
 static rmt_encoder_handle_t s_encoder = NULL;
-static led_status_t s_current_status = LED_STATUS_OFF;
-static led_status_t s_temp_status = LED_STATUS_OFF;
-static uint64_t s_temp_until_us = 0;
+static volatile led_status_t s_current_status = LED_STATUS_OFF;
+static volatile led_status_t s_temp_status = LED_STATUS_OFF;
+static volatile uint64_t s_temp_until_us = 0;
 static uint64_t s_last_update_us = 0;
 static uint8_t s_blink_phase = 0;
 static bool s_initialized = false;
@@ -156,6 +156,33 @@ static esp_err_t create_ws2812_encoder(rmt_encoder_handle_t *ret_encoder)
     return ESP_OK;
 }
 
+static void set_color(const rgb_t *color)
+{
+    if (!s_initialized) return;
+    // WS2812 is GRB order
+    uint8_t grb[3] = {color->g, color->r, color->b};
+
+    rmt_transmit_config_t tx_config = {
+        .loop_count = 0,
+        .flags = {
+            .eot_level = 0,
+        }
+    };
+
+    rmt_transmit(s_rmt_channel, s_encoder, grb, sizeof(grb), &tx_config);
+    rmt_tx_wait_all_done(s_rmt_channel, 100);
+}
+
+// Background task that runs LED animations continuously
+static void led_task(void *arg)
+{
+    (void)arg;
+    while (true) {
+        status_led_update();
+        vTaskDelay(pdMS_TO_TICKS(30));  // ~33Hz for smooth animations
+    }
+}
+
 esp_err_t status_led_init(void)
 {
     if (s_initialized) {
@@ -197,28 +224,16 @@ esp_err_t status_led_init(void)
     }
 
     s_initialized = true;
+    s_last_update_us = esp_timer_get_time();
     ESP_LOGI(TAG, "Status LED initialized on GPIO %d", LED_GPIO);
 
     // Start with LED off
-    status_led_set_rgb(0, 0, 0);
+    set_color(&COLOR_OFF);
+
+    // Start background LED task - runs during entire boot and operation
+    xTaskCreate(led_task, "led", 2048, NULL, 2, NULL);
+
     return ESP_OK;
-}
-
-static void set_color(const rgb_t *color)
-{
-    if (!s_initialized) return;
-    // WS2812 is GRB order
-    uint8_t grb[3] = {color->g, color->r, color->b};
-
-    rmt_transmit_config_t tx_config = {
-        .loop_count = 0,
-        .flags = {
-            .eot_level = 0,
-        }
-    };
-
-    rmt_transmit(s_rmt_channel, s_encoder, grb, sizeof(grb), &tx_config);
-    rmt_tx_wait_all_done(s_rmt_channel, 100);
 }
 
 void status_led_set_rgb(uint8_t r, uint8_t g, uint8_t b)
@@ -262,7 +277,7 @@ void status_led_update(void)
         }
     }
 
-    // Calculate time since last phase change (for blinking)
+    // Calculate time since status was set (for cycling animations)
     uint64_t elapsed_ms = (now - s_last_update_us) / 1000;
 
     switch (active_status) {
@@ -277,23 +292,15 @@ void status_led_update(void)
 
         case LED_STATUS_WIFI_SEARCH:
             // Yellow slow blink (500ms on, 500ms off)
-            if (elapsed_ms >= 500) {
-                s_blink_phase = !s_blink_phase;
-                s_last_update_us = now;
+            {
+                uint32_t phase = (elapsed_ms / 500) % 2;
+                set_color(phase == 0 ? &COLOR_YELLOW : &COLOR_OFF);
             }
-            set_color(s_blink_phase ? &COLOR_YELLOW : &COLOR_OFF);
             break;
 
         case LED_STATUS_WIFI_CONNECTED:
-            // Green single flash then off (200ms on, 1800ms off)
-            if (s_blink_phase == 0 && elapsed_ms >= 200) {
-                s_blink_phase = 1;
-                s_last_update_us = now;
-            } else if (s_blink_phase == 1 && elapsed_ms >= 1800) {
-                s_blink_phase = 0;
-                s_last_update_us = now;
-            }
-            set_color(s_blink_phase == 0 ? &COLOR_GREEN : &COLOR_OFF);
+            // Solid green
+            set_color(&COLOR_GREEN);
             break;
 
         case LED_STATUS_AP_MODE:
@@ -329,24 +336,19 @@ void status_led_update(void)
             break;
 
         case LED_STATUS_GPS_FIX:
-            // Cyan single flash per second
-            if (s_blink_phase == 0 && elapsed_ms >= 150) {
-                s_blink_phase = 1;
-                s_last_update_us = now;
-            } else if (s_blink_phase == 1 && elapsed_ms >= 850) {
-                s_blink_phase = 0;
-                s_last_update_us = now;
+            // Cyan single flash per second (150ms on, 850ms off)
+            {
+                uint32_t cycle_ms = elapsed_ms % 1000;
+                set_color(cycle_ms < 150 ? &COLOR_CYAN : &COLOR_OFF);
             }
-            set_color(s_blink_phase == 0 ? &COLOR_CYAN : &COLOR_OFF);
             break;
 
         case LED_STATUS_ERROR:
             // Red fast blink (100ms on, 100ms off)
-            if (elapsed_ms >= 100) {
-                s_blink_phase = !s_blink_phase;
-                s_last_update_us = now;
+            {
+                uint32_t phase = (elapsed_ms / 100) % 2;
+                set_color(phase == 0 ? &COLOR_RED : &COLOR_OFF);
             }
-            set_color(s_blink_phase ? &COLOR_RED : &COLOR_OFF);
             break;
 
         default:

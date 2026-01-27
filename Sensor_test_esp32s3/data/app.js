@@ -1428,9 +1428,11 @@ async function loadFiles() {
         if (files.length === 0) {
             list.innerHTML = '<div class="file-item"><span class="file-name">No files yet</span></div>';
         } else {
+            const sysFiles = ['index.html','app.js','style.css','favicon.svg','apple-touch-icon.png'];
             list.innerHTML = files.map(f => {
                 const sizeKB = (f.size / 1024).toFixed(1);
                 const isFlightRec = f.name.endsWith('.bin') && f.name.startsWith('flight_');
+                const isSysFile = sysFiles.includes(f.name);
                 // flight_*.bin = 12 byte header + 64 byte records
                 const entries = isFlightRec ? Math.max(0, Math.floor((f.size - 12) / 64)) : 0;
                 const meta = isFlightRec ? `${sizeKB} KB · ~${entries} entries` : `${sizeKB} KB`;
@@ -1444,7 +1446,7 @@ async function loadFiles() {
                         ${isFlightRec ? `<button class="btn-sm primary" onclick="loadToChart('${f.name}')">Chart</button>` : ''}
                         <button class="btn-sm" onclick="hexDump('${f.name}')">Hex</button>
                         <a href="${downloadUrl}" class="btn-sm">Download</a>
-                        <button class="btn-sm danger" onclick="deleteFile('${f.name}')">Delete</button>
+                        ${!isSysFile ? `<button class="btn-sm danger" onclick="deleteFile('${f.name}')">Delete</button>` : ''}
                     </div>
                 </div>`;
             }).join('');

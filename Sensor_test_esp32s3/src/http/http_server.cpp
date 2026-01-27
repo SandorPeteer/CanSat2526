@@ -489,6 +489,10 @@ static esp_err_t ws_handler(httpd_req_t *req)
                 written++;
             }
             idx++;
+            // Yield every 64 records to prevent watchdog timeout during flash reads
+            if ((idx & 63) == 0) {
+                vTaskDelay(1);
+            }
         }
         fclose(f);
 
