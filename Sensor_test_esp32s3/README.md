@@ -29,7 +29,7 @@ CanSat / High-Altitude Balloon flight computer with environmental sensors.
      │ Particulate│       │                                     │
      └────────────┘       │                                     │
                           │  GPIO 17 ──────── GPS TX (UART1)    │       ┌────────────┐
-                          │  GPIO 18 ──────── GPS RX (UART1)    │──────►│  NEO-M8N   │
+                          │  GPIO 18 ──────── GPS RX (UART1)    │──────►│  M100-PRO  │
                           │                                     │       │    GPS     │
                           │  GPIO 48 ──────── WS2812 LED        │       └────────────┘
                           │                                     │
@@ -79,7 +79,7 @@ CanSat / High-Altitude Balloon flight computer with environmental sensors.
 ### UART Interfaces
 | Interface | Baud Rate | TX GPIO | RX GPIO | Device        |
 |-----------|-----------|---------|---------|---------------|
-| UART1     | 38400     | 17      | 18      | NEO-M8N GPS   |
+| UART1     | 115200    | 17      | 18      | M100-PRO GPS  |
 | UART2     | 115200    | 14      | 13      | SPS30         |
 
 ## Wiring Diagrams
@@ -134,13 +134,13 @@ GND          ──── GND (Pin 4)
                   SEL (Pin 5) -> GND (UART mode)
 ```
 
-### NEO-M8N GPS (UART)
+### M100-PRO GPS (UART)
 ```
-ESP32-S3          NEO-M8N
+ESP32-S3          M100-PRO
 ─────────         ───────
 GPIO 17 (TX) ──── RX
 GPIO 18 (RX) ──── TX
-3.3V         ──── VCC
+5V           ──── VCC
 GND          ──── GND
 ```
 
@@ -163,7 +163,7 @@ GND          ──── GND
 | BMP585      | 3.3V    | 0.5mA           | 1mA          |
 | SCD40       | 3.3V    | 15mA            | 75mA         |
 | SPS30       | 5V      | 60mA            | 80mA         |
-| NEO-M8N     | 3.3V    | 25mA            | 50mA         |
+| M100-PRO    | 5V      | 25mA            | 50mA         |
 | WS2812      | 3.3V    | 1mA             | 60mA         |
 
 **Total estimated:** ~200mA typical, ~800mA peak
