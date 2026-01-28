@@ -1,0 +1,1937 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>AstroLink Flight Data Viewer</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #0f0f23 100%);
+            color: #e0e0e0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .file-panel {
+            background: rgba(30, 30, 50, 0.8);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .file-panel input[type="file"] {
+            background: #252540;
+            border: 2px dashed #555;
+            border-radius: 8px;
+            padding: 15px 25px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-panel input[type="file"]:hover {
+            border-color: #00d4ff;
+            background: #303050;
+        }
+
+        .file-info {
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        .file-info.loaded { color: #4f4; }
+
+        /* Timeline */
+        .timeline-panel {
+            background: rgba(30, 30, 50, 0.8);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .timeline-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .timeline-btn {
+            background: linear-gradient(135deg, #252540, #353560);
+            border: 1px solid #444;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.2s;
+        }
+
+        .timeline-btn:hover { background: linear-gradient(135deg, #353560, #454580); border-color: #00d4ff; }
+        .timeline-btn:active { transform: scale(0.95); }
+        .timeline-btn.active { background: linear-gradient(135deg, #00d4ff, #7b2cbf); }
+
+        .speed-selector {
+            display: flex;
+            gap: 5px;
+        }
+
+        .speed-btn {
+            background: #252540;
+            border: 1px solid #444;
+            color: #aaa;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+
+        .speed-btn:hover { border-color: #00d4ff; color: #fff; }
+        .speed-btn.active { background: #00d4ff; color: #000; border-color: #00d4ff; }
+
+        .timeline-slider {
+            width: 100%;
+            height: 8px;
+            appearance: none;
+            -webkit-appearance: none;
+            background: #252540;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .timeline-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,212,255,0.5);
+        }
+
+        .time-display {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2em;
+            color: #00d4ff;
+            min-width: 200px;
+        }
+
+        .record-counter {
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        /* Dashboard Grid */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .gauge-card {
+            background: rgba(30, 30, 50, 0.9);
+            border: 1px solid #333;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .gauge-card h3 {
+            font-size: 0.9em;
+            color: #888;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* SVG Gauge */
+        .gauge-container {
+            position: relative;
+            width: 200px;
+            height: 120px;
+            margin: 0 auto;
+        }
+
+        .gauge-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .gauge-unit {
+            font-size: 0.8em;
+            color: #888;
+        }
+
+        /* Bar Gauge */
+        .bar-gauge {
+            height: 30px;
+            background: #1a1a2e;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 15px;
+            transition: width 0.3s ease;
+        }
+
+        .bar-label {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: bold;
+            font-size: 0.9em;
+            text-shadow: 0 0 5px #000;
+        }
+
+        /* PM Bars */
+        .pm-bars { display: flex; flex-direction: column; gap: 8px; }
+        .pm-bar-row { display: flex; align-items: center; gap: 10px; }
+        .pm-bar-label { width: 50px; font-size: 0.85em; color: #888; }
+        .pm-bar-container { flex: 1; height: 20px; background: #1a1a2e; border-radius: 10px; overflow: hidden; }
+        .pm-bar-fill { height: 100%; border-radius: 10px; transition: width 0.3s; }
+        .pm-bar-value { width: 45px; text-align: right; font-size: 0.9em; font-family: monospace; }
+
+        /* 3D Cube - NO CSS transition, animated via JS */
+        .imu-card {
+            background: rgba(30, 30, 50, 0.9);
+            border: 1px solid #333;
+            border-radius: 16px;
+            padding: 20px;
+            grid-column: span 2;
+        }
+
+        @media (max-width: 800px) {
+            .imu-card { grid-column: span 1; }
+        }
+
+        .imu-container {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .cube-scene {
+            width: 200px;
+            height: 200px;
+            perspective: 600px;
+        }
+
+        .cube {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            /* NO transition - controlled by requestAnimationFrame */
+        }
+
+        .cube-face {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            left: 40px;
+            top: 40px;
+            border: 2px solid rgba(0,212,255,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            backface-visibility: visible;
+        }
+
+        .cube-face.front  { background: rgba(0,212,255,0.3); transform: translateZ(60px); }
+        .cube-face.back   { background: rgba(0,212,255,0.2); transform: rotateY(180deg) translateZ(60px); }
+        .cube-face.right  { background: rgba(123,44,191,0.3); transform: rotateY(90deg) translateZ(60px); }
+        .cube-face.left   { background: rgba(123,44,191,0.2); transform: rotateY(-90deg) translateZ(60px); }
+        .cube-face.top    { background: rgba(0,255,136,0.3); transform: rotateX(90deg) translateZ(60px); }
+        .cube-face.bottom { background: rgba(0,255,136,0.2); transform: rotateX(-90deg) translateZ(60px); }
+
+        .euler-values {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .euler-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .euler-label {
+            width: 50px;
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        .euler-bar {
+            width: 150px;
+            height: 12px;
+            background: #1a1a2e;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .euler-bar-center {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background: #444;
+        }
+
+        .euler-bar-fill {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            transition: all 0.15s;
+        }
+
+        .euler-value {
+            width: 70px;
+            text-align: right;
+            font-family: monospace;
+        }
+
+        .imu-extra {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+            font-size: 0.85em;
+            color: #888;
+        }
+
+        .imu-extra-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .imu-extra-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .imu-extra-label { color: #666; }
+        .imu-extra-value { color: #aaa; font-family: monospace; }
+
+        /* GPS Card */
+        .gps-card {
+            background: rgba(30, 30, 50, 0.9);
+            border: 1px solid #333;
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .gps-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .gps-item {
+            text-align: center;
+        }
+
+        .gps-label {
+            font-size: 0.75em;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .gps-value {
+            font-size: 1.1em;
+            font-family: monospace;
+            margin-top: 3px;
+        }
+
+        .gps-fix {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+        }
+
+        .gps-fix.fix-none { background: #a00; }
+        .gps-fix.fix-2d { background: #a80; }
+        .gps-fix.fix-3d { background: #0a0; }
+
+        .validity-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            margin-left: 5px;
+        }
+        .validity-badge.valid { background: #0a0; color: #fff; }
+        .validity-badge.invalid { background: #a00; color: #fff; }
+
+        /* Chart Panel */
+        .chart-panel {
+            background: rgba(30, 30, 50, 0.9);
+            border: 1px solid #333;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chart-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .chart-tab {
+            background: #252540;
+            border: 1px solid #444;
+            color: #aaa;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+
+        .chart-tab:hover { border-color: #00d4ff; color: #fff; }
+        .chart-tab.active { background: linear-gradient(135deg, #00d4ff, #7b2cbf); color: #fff; border-color: transparent; }
+
+        #chart-canvas {
+            width: 100%;
+            height: 300px;
+            background: #0a0a15;
+            border-radius: 8px;
+            cursor: crosshair;
+        }
+
+        /* Hex Viewer */
+        .hex-panel {
+            background: rgba(30, 30, 50, 0.9);
+            border: 1px solid #333;
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .hex-viewer {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            background: #0a0a15;
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .hex-row {
+            display: flex;
+            gap: 20px;
+            line-height: 1.8;
+        }
+
+        .hex-offset { color: #666; min-width: 60px; }
+        .hex-bytes { color: #0af; }
+        .hex-ascii { color: #888; }
+
+        /* Colors for different data types */
+        .color-pressure { color: #ff6b6b; }
+        .color-temp { color: #ffd93d; }
+        .color-alt { color: #6bcb77; }
+        .color-co2 { color: #4d96ff; }
+        .color-pm { color: #c44dff; }
+        .color-humidity { color: #00d4ff; }
+
+        /* Compass */
+        .compass-container {
+            width: 160px;
+            height: 160px;
+            margin: 0 auto;
+            position: relative;
+            border-radius: 50%;
+            background: radial-gradient(circle, #1a1a2e 0%, #0a0a15 100%);
+            border: 4px solid #333;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 0 10px rgba(0,212,255,0.2);
+        }
+
+        .compass-rose {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .compass-mark {
+            position: absolute;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .compass-n { top: 8px; left: 50%; transform: translateX(-50%); color: #ff6b6b; }
+        .compass-s { bottom: 8px; left: 50%; transform: translateX(-50%); color: #666; }
+        .compass-e { right: 8px; top: 50%; transform: translateY(-50%); color: #666; }
+        .compass-w { left: 8px; top: 50%; transform: translateY(-50%); color: #666; }
+
+        .compass-needle-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.3s ease-out;
+        }
+
+        .needle-north {
+            position: absolute;
+            left: 50%;
+            top: 25px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 50px solid #ff4444;
+            transform: translateX(-50%);
+            filter: drop-shadow(0 0 3px rgba(255,68,68,0.5));
+        }
+
+        .needle-south {
+            position: absolute;
+            left: 50%;
+            bottom: 25px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 50px solid #555;
+            transform: translateX(-50%);
+        }
+
+        .needle-center {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 16px;
+            height: 16px;
+            background: #1a1a2e;
+            border: 3px solid #00d4ff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 8px rgba(0,212,255,0.5);
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 AstroLink Flight Data Viewer</h1>
+
+    <!-- File Selection -->
+    <div class="file-panel">
+        <input type="file" id="fileInput" accept=".bin">
+        <div id="file-info" class="file-info">Válassz egy flight_data-*.bin fájlt...</div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline-panel" id="timeline-panel" style="display: none;">
+        <div class="timeline-controls">
+            <button class="timeline-btn" id="btn-start" title="Elejére">⏮</button>
+            <button class="timeline-btn" id="btn-prev" title="Előző">⏪</button>
+            <button class="timeline-btn" id="btn-play" title="Lejátszás">▶</button>
+            <button class="timeline-btn" id="btn-next" title="Következő">⏩</button>
+            <button class="timeline-btn" id="btn-end" title="Végére">⏭</button>
+
+            <div class="speed-selector">
+                <button class="speed-btn" data-speed="0.5">0.5x</button>
+                <button class="speed-btn active" data-speed="1">1x</button>
+                <button class="speed-btn" data-speed="2">2x</button>
+                <button class="speed-btn" data-speed="5">5x</button>
+                <button class="speed-btn" data-speed="10">10x</button>
+                <button class="speed-btn" data-speed="50">50x</button>
+            </div>
+
+            <div class="time-display" id="time-display">--:--:--</div>
+            <div class="record-counter" id="record-counter">Record: 0 / 0</div>
+        </div>
+        <input type="range" class="timeline-slider" id="timeline-slider" min="0" max="100" value="0">
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard" style="display: none;">
+        <!-- Pressure Gauge -->
+        <div class="gauge-card">
+            <h3>Légnyomás</h3>
+            <div class="gauge-container">
+                <svg viewBox="0 0 200 120" id="gauge-pressure">
+                    <defs>
+                        <linearGradient id="grad-pressure" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#4d96ff"/>
+                            <stop offset="100%" style="stop-color:#ff6b6b"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#1a1a2e" stroke-width="12" stroke-linecap="round"/>
+                    <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#grad-pressure)" stroke-width="12" stroke-linecap="round"
+                          stroke-dasharray="251.2" stroke-dashoffset="251.2" id="gauge-pressure-arc"/>
+                    <circle cx="100" cy="100" r="6" fill="#fff"/>
+                    <line x1="100" y1="100" x2="100" y2="30" stroke="#fff" stroke-width="3" stroke-linecap="round" id="gauge-pressure-needle"/>
+                </svg>
+            </div>
+            <div class="gauge-value color-pressure" id="val-pressure">---</div>
+            <div class="gauge-unit">hPa</div>
+        </div>
+
+        <!-- Altitude Gauge -->
+        <div class="gauge-card">
+            <h3>Magasság (Baro)</h3>
+            <div class="gauge-container">
+                <svg viewBox="0 0 200 120" id="gauge-altitude">
+                    <defs>
+                        <linearGradient id="grad-altitude" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#6bcb77"/>
+                            <stop offset="100%" style="stop-color:#ffd93d"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#1a1a2e" stroke-width="12" stroke-linecap="round"/>
+                    <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#grad-altitude)" stroke-width="12" stroke-linecap="round"
+                          stroke-dasharray="251.2" stroke-dashoffset="251.2" id="gauge-altitude-arc"/>
+                    <circle cx="100" cy="100" r="6" fill="#fff"/>
+                    <line x1="100" y1="100" x2="100" y2="30" stroke="#fff" stroke-width="3" stroke-linecap="round" id="gauge-altitude-needle"/>
+                </svg>
+            </div>
+            <div class="gauge-value color-alt" id="val-altitude">---</div>
+            <div class="gauge-unit">m</div>
+        </div>
+
+        <!-- Temperature -->
+        <div class="gauge-card">
+            <h3>Hőmérséklet</h3>
+            <div class="bar-gauge">
+                <div class="bar-fill" id="bar-temp" style="width: 50%; background: linear-gradient(90deg, #4d96ff, #ffd93d, #ff6b6b);"></div>
+                <span class="bar-label color-temp" id="val-temp">--°C</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; color: #666; font-size: 0.8em;">
+                <span>-20°C</span>
+                <span>60°C</span>
+            </div>
+            <div style="margin-top: 15px; font-size: 0.85em; color: #888;">
+                BMP: <span id="val-temp-bmp">--</span>°C | SCD: <span id="val-temp-scd">--</span>°C
+            </div>
+        </div>
+
+        <!-- CO2 -->
+        <div class="gauge-card">
+            <h3>CO₂ Koncentráció</h3>
+            <div class="bar-gauge">
+                <div class="bar-fill" id="bar-co2" style="width: 20%; background: linear-gradient(90deg, #6bcb77, #ffd93d, #ff6b6b);"></div>
+                <span class="bar-label" id="val-co2">--- ppm</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; color: #666; font-size: 0.8em;">
+                <span>400</span>
+                <span>2000 ppm</span>
+            </div>
+        </div>
+
+        <!-- Humidity -->
+        <div class="gauge-card">
+            <h3>Páratartalom</h3>
+            <div class="bar-gauge">
+                <div class="bar-fill" id="bar-humidity" style="width: 50%; background: linear-gradient(90deg, #00d4ff, #4d96ff);"></div>
+                <span class="bar-label color-humidity" id="val-humidity">--%</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; color: #666; font-size: 0.8em;">
+                <span>0%</span>
+                <span>100%</span>
+            </div>
+        </div>
+
+        <!-- PM Sensors -->
+        <div class="gauge-card">
+            <h3>Részecskék (PM) <span style="font-weight: normal; font-size: 0.8em; color: #666;">&micro;g/m&sup3;</span></h3>
+            <div class="pm-bars">
+                <div class="pm-bar-row">
+                    <span class="pm-bar-label">PM1.0</span>
+                    <div class="pm-bar-container"><div class="pm-bar-fill" id="bar-pm1" style="background: #c44dff;"></div></div>
+                    <span class="pm-bar-value" id="val-pm1">--</span>
+                </div>
+                <div class="pm-bar-row">
+                    <span class="pm-bar-label">PM2.5</span>
+                    <div class="pm-bar-container"><div class="pm-bar-fill" id="bar-pm25" style="background: #9d4dff;"></div></div>
+                    <span class="pm-bar-value" id="val-pm25">--</span>
+                </div>
+                <div class="pm-bar-row">
+                    <span class="pm-bar-label">PM4.0</span>
+                    <div class="pm-bar-container"><div class="pm-bar-fill" id="bar-pm4" style="background: #6b4dff;"></div></div>
+                    <span class="pm-bar-value" id="val-pm4">--</span>
+                </div>
+                <div class="pm-bar-row">
+                    <span class="pm-bar-label">PM10</span>
+                    <div class="pm-bar-container"><div class="pm-bar-fill" id="bar-pm10" style="background: #4d6bff;"></div></div>
+                    <span class="pm-bar-value" id="val-pm10">--</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compass / Heading -->
+        <div class="gauge-card">
+            <h3>Iránytű (Heading)</h3>
+            <div class="compass-container" id="compass-wrapper">
+                <!-- Compass rose (fixed) -->
+                <div class="compass-rose">
+                    <div class="compass-mark compass-n">N</div>
+                    <div class="compass-mark compass-e">E</div>
+                    <div class="compass-mark compass-s">S</div>
+                    <div class="compass-mark compass-w">W</div>
+                </div>
+                <!-- Needle (rotates) -->
+                <div class="compass-needle-wrapper" id="compass-needle">
+                    <div class="needle-north"></div>
+                    <div class="needle-south"></div>
+                    <div class="needle-center"></div>
+                </div>
+            </div>
+            <div class="gauge-value" style="color: #00d4ff;" id="compass-heading">---°</div>
+            <div class="gauge-unit" id="compass-direction">--</div>
+        </div>
+
+        <!-- IMU 3D Cube -->
+        <div class="gauge-card imu-card">
+            <h3>IMU Orientáció <span class="validity-badge" id="imu-valid-badge">--</span></h3>
+            <div class="imu-container">
+                <div class="cube-scene">
+                    <div class="cube" id="imu-cube">
+                        <div class="cube-face front">FRONT</div>
+                        <div class="cube-face back">BACK</div>
+                        <div class="cube-face right">R</div>
+                        <div class="cube-face left">L</div>
+                        <div class="cube-face top">TOP</div>
+                        <div class="cube-face bottom">BOT</div>
+                    </div>
+                </div>
+                <div class="euler-values">
+                    <div class="euler-row">
+                        <span class="euler-label">Roll</span>
+                        <div class="euler-bar">
+                            <div class="euler-bar-center"></div>
+                            <div class="euler-bar-fill" id="euler-roll-bar" style="background: #ff6b6b;"></div>
+                        </div>
+                        <span class="euler-value" id="euler-roll">0.0°</span>
+                    </div>
+                    <div class="euler-row">
+                        <span class="euler-label">Pitch</span>
+                        <div class="euler-bar">
+                            <div class="euler-bar-center"></div>
+                            <div class="euler-bar-fill" id="euler-pitch-bar" style="background: #6bcb77;"></div>
+                        </div>
+                        <span class="euler-value" id="euler-pitch">0.0°</span>
+                    </div>
+                    <div class="euler-row">
+                        <span class="euler-label">Yaw</span>
+                        <div class="euler-bar">
+                            <div class="euler-bar-center"></div>
+                            <div class="euler-bar-fill" id="euler-yaw-bar" style="background: #4d96ff;"></div>
+                        </div>
+                        <span class="euler-value" id="euler-yaw">0.0°</span>
+                    </div>
+                    <div class="euler-row">
+                        <span class="euler-label">Heading</span>
+                        <div class="euler-bar" style="background: linear-gradient(90deg, #1a1a2e, #00d4ff, #1a1a2e);">
+                            <div class="euler-bar-fill" id="euler-heading-bar" style="background: #fff; width: 4px;"></div>
+                        </div>
+                        <span class="euler-value" id="val-heading">0.0°</span>
+                    </div>
+                    <div class="imu-extra">
+                        <div style="margin-bottom: 5px;">Accuracy: <span id="imu-accuracy" style="color: #aaa;">--</span></div>
+                        <div class="imu-extra-grid">
+                            <div class="imu-extra-item">
+                                <span class="imu-extra-label">Mag X:</span>
+                                <span class="imu-extra-value" id="mag-x">--</span>
+                            </div>
+                            <div class="imu-extra-item">
+                                <span class="imu-extra-label">Mag Y:</span>
+                                <span class="imu-extra-value" id="mag-y">--</span>
+                            </div>
+                            <div class="imu-extra-item">
+                                <span class="imu-extra-label">Mag Z:</span>
+                                <span class="imu-extra-value" id="mag-z">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GPS -->
+        <div class="gauge-card gps-card">
+            <h3>GPS <span class="validity-badge" id="gps-valid-badge">--</span></h3>
+            <div class="gps-grid">
+                <div class="gps-item">
+                    <div class="gps-label">Latitude</div>
+                    <div class="gps-value" id="gps-lat">---.------</div>
+                </div>
+                <div class="gps-item">
+                    <div class="gps-label">Longitude</div>
+                    <div class="gps-value" id="gps-lon">---.------</div>
+                </div>
+                <div class="gps-item">
+                    <div class="gps-label">Altitude</div>
+                    <div class="gps-value" id="gps-alt">--- m</div>
+                </div>
+                <div class="gps-item">
+                    <div class="gps-label">V. Velocity</div>
+                    <div class="gps-value" id="gps-vel">--- m/s</div>
+                </div>
+                <div class="gps-item">
+                    <div class="gps-label">Satellites</div>
+                    <div class="gps-value" id="gps-sats">--</div>
+                </div>
+                <div class="gps-item">
+                    <div class="gps-label">Fix</div>
+                    <div class="gps-value"><span class="gps-fix fix-none" id="gps-fix">No Fix</span></div>
+                </div>
+                <div class="gps-item">
+                    <div class="gps-label">PDOP</div>
+                    <div class="gps-value" id="gps-pdop">--</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-panel" id="chart-panel" style="display: none;">
+        <div class="chart-tabs">
+            <button class="chart-tab active" data-chart="altitude">Magasság</button>
+            <button class="chart-tab" data-chart="pressure">Nyomás</button>
+            <button class="chart-tab" data-chart="temperature">Hőmérséklet</button>
+            <button class="chart-tab" data-chart="co2">CO₂</button>
+            <button class="chart-tab" data-chart="humidity">Páratartalom</button>
+            <button class="chart-tab" data-chart="pm">PM</button>
+            <button class="chart-tab" data-chart="velocity">Sebesség</button>
+            <button class="chart-tab" data-chart="imu">IMU (R/P/Y)</button>
+            <button class="chart-tab" data-chart="heading">Heading</button>
+            <button class="chart-tab" data-chart="magnetometer">Magnetometer</button>
+        </div>
+        <canvas id="chart-canvas"></canvas>
+    </div>
+
+    <!-- Hex Viewer (collapsed by default) -->
+    <details class="hex-panel">
+        <summary style="cursor: pointer; padding: 10px; color: #888;">📊 Raw Hex Viewer (aktuális record)</summary>
+        <div class="hex-viewer" id="hex-viewer">
+            Válassz fájlt a megtekintéshez...
+        </div>
+    </details>
+
+    <script>
+        // ========================================================================
+        // Binary Format Definition (from flight_recorder.h)
+        // ========================================================================
+
+        const HEADER_SIZE = 12;
+        const RECORD_SIZE = 64;
+        const MAGIC = 0x464C5452; // "RTLF" little endian
+
+        // Record structure offsets (all little endian)
+        const RECORD_FIELDS = {
+            timestamp:    { offset: 0,  size: 4, type: 'uint32' },
+            lat:          { offset: 4,  size: 4, type: 'int32', scale: 1e-7 },
+            lon:          { offset: 8,  size: 4, type: 'int32', scale: 1e-7 },
+            alt_mm:       { offset: 12, size: 4, type: 'int32', scale: 0.001 },
+            vel_down:     { offset: 16, size: 2, type: 'int16', scale: 0.001 },
+            fix_type:     { offset: 18, size: 1, type: 'uint8' },
+            sats:         { offset: 19, size: 1, type: 'uint8' },
+            pdop:         { offset: 20, size: 2, type: 'uint16', scale: 0.01 },
+            gps_valid:    { offset: 22, size: 1, type: 'uint8' },
+            qi:           { offset: 23, size: 2, type: 'int16', scale: 1/16384 },
+            qj:           { offset: 25, size: 2, type: 'int16', scale: 1/16384 },
+            qk:           { offset: 27, size: 2, type: 'int16', scale: 1/16384 },
+            qw:           { offset: 29, size: 2, type: 'int16', scale: 1/16384 },
+            imu_accuracy: { offset: 31, size: 1, type: 'uint8' },
+            imu_valid:    { offset: 32, size: 1, type: 'uint8' },
+            mag_x:        { offset: 33, size: 2, type: 'int16' },
+            mag_y:        { offset: 35, size: 2, type: 'int16' },
+            mag_z:        { offset: 37, size: 2, type: 'int16' },
+            heading:      { offset: 39, size: 2, type: 'int16', scale: 0.1 },
+            pressure_pa:  { offset: 41, size: 4, type: 'int32', scale: 0.01 },  // to hPa
+            bmp_temp:     { offset: 45, size: 2, type: 'int16', scale: 0.01 },
+            baro_alt:     { offset: 47, size: 2, type: 'int16', scale: 0.1 },
+            co2:          { offset: 49, size: 2, type: 'uint16' },
+            scd_temp:     { offset: 51, size: 2, type: 'int16', scale: 0.01 },
+            humidity:     { offset: 53, size: 2, type: 'uint16', scale: 0.01 },
+            pm1:          { offset: 55, size: 2, type: 'uint16', scale: 0.1 },
+            pm25:         { offset: 57, size: 2, type: 'uint16', scale: 0.1 },
+            pm4:          { offset: 59, size: 2, type: 'uint16', scale: 0.1 },
+            pm10:         { offset: 61, size: 2, type: 'uint16', scale: 0.1 },
+            reserved:     { offset: 63, size: 1, type: 'uint8' }
+        };
+
+        // ========================================================================
+        // Global State
+        // ========================================================================
+
+        let fileBuffer = null;
+        let records = [];
+        let currentIndex = 0;
+        let isPlaying = false;
+        let playAnimationId = null;
+        let playSpeed = 1;
+        let startTimestamp = 0;
+        let currentChart = 'altitude';
+
+        // Smooth playback state - continuous time-based interpolation
+        let playbackState = {
+            lastFrameTime: 0,
+            fractionalIndex: 0,  // Floating point index for smooth interpolation
+        };
+
+        // Smooth IMU animation state
+        let imuAnimation = {
+            currentQuat: { w: 1, x: 0, y: 0, z: 0 },
+            targetQuat: { w: 1, x: 0, y: 0, z: 0 },
+            nextQuat: { w: 1, x: 0, y: 0, z: 0 },  // Look-ahead for smooth playback
+            animationId: null,
+            lastTime: 0,
+            interpolationSpeed: 8  // Higher = faster interpolation
+        };
+
+        // ========================================================================
+        // File Loading
+        // ========================================================================
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                fileBuffer = evt.target.result;
+                parseFile();
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        function parseFile() {
+            if (!fileBuffer || fileBuffer.byteLength < HEADER_SIZE) {
+                showError('Fájl túl kicsi!');
+                return;
+            }
+
+            const view = new DataView(fileBuffer);
+
+            // Check magic
+            const magic = view.getUint32(0, true);
+            if (magic !== MAGIC) {
+                showError(`Hibás magic: 0x${magic.toString(16)} (várt: 0x${MAGIC.toString(16)})`);
+                return;
+            }
+
+            const version = view.getUint8(4);
+            const recordSize = view.getUint8(5);
+            startTimestamp = view.getUint32(8, true);
+
+            if (recordSize !== RECORD_SIZE) {
+                showError(`Hibás record méret: ${recordSize} (várt: ${RECORD_SIZE})`);
+                return;
+            }
+
+            // Parse all records
+            records = [];
+            const dataStart = HEADER_SIZE;
+            const numRecords = Math.floor((fileBuffer.byteLength - dataStart) / RECORD_SIZE);
+
+            for (let i = 0; i < numRecords; i++) {
+                const offset = dataStart + i * RECORD_SIZE;
+                const record = parseRecord(view, offset);
+                records.push(record);
+            }
+
+            // Update UI
+            document.getElementById('file-info').textContent =
+                `✅ ${numRecords} record betöltve | Version: ${version} | Start: ${formatTimestamp(startTimestamp)}`;
+            document.getElementById('file-info').className = 'file-info loaded';
+
+            document.getElementById('timeline-panel').style.display = 'block';
+            document.getElementById('dashboard').style.display = 'grid';
+            document.getElementById('chart-panel').style.display = 'block';
+
+            document.getElementById('timeline-slider').max = numRecords - 1;
+
+            currentIndex = 0;
+            playbackState.fractionalIndex = 0;
+
+            // Initialize IMU animation with first record's quaternion
+            if (records.length > 0) {
+                const r = records[0];
+                imuAnimation.currentQuat = { w: r.qw, x: r.qi, y: r.qj, z: r.qk };
+                imuAnimation.targetQuat = { ...imuAnimation.currentQuat };
+            }
+
+            updateDisplay();
+            drawChart();
+            startIMUAnimation();
+        }
+
+        function parseRecord(view, offset) {
+            const record = {};
+
+            for (const [name, field] of Object.entries(RECORD_FIELDS)) {
+                let value;
+                const pos = offset + field.offset;
+
+                switch (field.type) {
+                    case 'uint8':
+                        value = view.getUint8(pos);
+                        break;
+                    case 'int16':
+                        value = view.getInt16(pos, true);
+                        break;
+                    case 'uint16':
+                        value = view.getUint16(pos, true);
+                        break;
+                    case 'int32':
+                        value = view.getInt32(pos, true);
+                        break;
+                    case 'uint32':
+                        value = view.getUint32(pos, true);
+                        break;
+                }
+
+                if (field.scale) {
+                    value *= field.scale;
+                }
+
+                record[name] = value;
+            }
+
+            // Calculate Euler angles from quaternion
+            const euler = quaternionToEuler(record.qi, record.qj, record.qk, record.qw);
+            record.roll = euler.roll;
+            record.pitch = euler.pitch;
+            record.yaw = euler.yaw;
+
+            // Store raw bytes for hex viewer
+            record._offset = offset;
+
+            return record;
+        }
+
+        function quaternionToEuler(qi, qj, qk, qw) {
+            // Roll (x-axis rotation)
+            const sinr_cosp = 2 * (qw * qi + qj * qk);
+            const cosr_cosp = 1 - 2 * (qi * qi + qj * qj);
+            const roll = Math.atan2(sinr_cosp, cosr_cosp) * 180 / Math.PI;
+
+            // Pitch (y-axis rotation)
+            const sinp = 2 * (qw * qj - qk * qi);
+            let pitch;
+            if (Math.abs(sinp) >= 1) {
+                pitch = Math.sign(sinp) * 90;
+            } else {
+                pitch = Math.asin(sinp) * 180 / Math.PI;
+            }
+
+            // Yaw (z-axis rotation)
+            const siny_cosp = 2 * (qw * qk + qi * qj);
+            const cosy_cosp = 1 - 2 * (qj * qj + qk * qk);
+            const yaw = Math.atan2(siny_cosp, cosy_cosp) * 180 / Math.PI;
+
+            return { roll, pitch, yaw };
+        }
+
+        // ========================================================================
+        // Quaternion SLERP for smooth rotation
+        // ========================================================================
+
+        function quatNormalize(q) {
+            const len = Math.sqrt(q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z);
+            if (len < 0.0001) return { w: 1, x: 0, y: 0, z: 0 };
+            return { w: q.w/len, x: q.x/len, y: q.y/len, z: q.z/len };
+        }
+
+        function quatDot(a, b) {
+            return a.w*b.w + a.x*b.x + a.y*b.y + a.z*b.z;
+        }
+
+        function quatSlerp(a, b, t) {
+            // Normalize inputs
+            a = quatNormalize(a);
+            b = quatNormalize(b);
+
+            // Compute dot product
+            let dot = quatDot(a, b);
+
+            // If negative dot, negate one quaternion to take shorter path
+            if (dot < 0) {
+                b = { w: -b.w, x: -b.x, y: -b.y, z: -b.z };
+                dot = -dot;
+            }
+
+            // If very close, use linear interpolation
+            if (dot > 0.9995) {
+                return quatNormalize({
+                    w: a.w + t * (b.w - a.w),
+                    x: a.x + t * (b.x - a.x),
+                    y: a.y + t * (b.y - a.y),
+                    z: a.z + t * (b.z - a.z)
+                });
+            }
+
+            // SLERP
+            const theta0 = Math.acos(dot);
+            const theta = theta0 * t;
+            const sinTheta = Math.sin(theta);
+            const sinTheta0 = Math.sin(theta0);
+
+            const s0 = Math.cos(theta) - dot * sinTheta / sinTheta0;
+            const s1 = sinTheta / sinTheta0;
+
+            return quatNormalize({
+                w: s0 * a.w + s1 * b.w,
+                x: s0 * a.x + s1 * b.x,
+                y: s0 * a.y + s1 * b.y,
+                z: s0 * a.z + s1 * b.z
+            });
+        }
+
+        function quatToMatrix3D(q) {
+            const { w, x, y, z } = q;
+
+            // Convert quaternion to rotation matrix (column-major for CSS)
+            const m = [
+                1 - 2*y*y - 2*z*z, 2*x*y + 2*w*z,     2*x*z - 2*w*y,     0,
+                2*x*y - 2*w*z,     1 - 2*x*x - 2*z*z, 2*y*z + 2*w*x,     0,
+                2*x*z + 2*w*y,     2*y*z - 2*w*x,     1 - 2*x*x - 2*y*y, 0,
+                0,                 0,                 0,                 1
+            ];
+
+            return `matrix3d(${m.join(',')})`;
+        }
+
+        function startIMUAnimation() {
+            if (imuAnimation.animationId) {
+                cancelAnimationFrame(imuAnimation.animationId);
+            }
+
+            function animate(time) {
+                const deltaTime = imuAnimation.lastTime ? (time - imuAnimation.lastTime) / 1000 : 0.016;
+                imuAnimation.lastTime = time;
+
+                // Smoothly interpolate toward target
+                const t = Math.min(1, deltaTime * imuAnimation.interpolationSpeed);
+                imuAnimation.currentQuat = quatSlerp(imuAnimation.currentQuat, imuAnimation.targetQuat, t);
+
+                // Apply rotation to cube
+                const cube = document.getElementById('imu-cube');
+                if (cube) {
+                    cube.style.transform = quatToMatrix3D(imuAnimation.currentQuat);
+                }
+
+                imuAnimation.animationId = requestAnimationFrame(animate);
+            }
+
+            imuAnimation.animationId = requestAnimationFrame(animate);
+        }
+
+        function showError(msg) {
+            document.getElementById('file-info').textContent = '❌ ' + msg;
+            document.getElementById('file-info').className = 'file-info';
+        }
+
+        // ========================================================================
+        // Display Update
+        // ========================================================================
+
+        function updateDisplay() {
+            if (records.length === 0) return;
+
+            const r = records[currentIndex];
+
+            // Time display
+            document.getElementById('time-display').textContent = formatTimestamp(r.timestamp);
+            document.getElementById('record-counter').textContent = `Record: ${currentIndex + 1} / ${records.length}`;
+            document.getElementById('timeline-slider').value = currentIndex;
+
+            // Pressure gauge (900-1100 hPa range)
+            const pressurePercent = clamp((r.pressure_pa - 900) / 200, 0, 1);
+            updateGauge('pressure', pressurePercent, r.pressure_pa.toFixed(1));
+            document.getElementById('val-pressure').textContent = r.pressure_pa.toFixed(1);
+
+            // Altitude gauge (0-2000m range, adjust based on your data)
+            const altMin = -100, altMax = 2000;
+            const altPercent = clamp((r.baro_alt - altMin) / (altMax - altMin), 0, 1);
+            updateGauge('altitude', altPercent, r.baro_alt.toFixed(1));
+            document.getElementById('val-altitude').textContent = r.baro_alt.toFixed(1);
+
+            // Temperature bar (-20 to 60°C range)
+            const tempPercent = clamp((r.bmp_temp + 20) / 80, 0, 1);
+            document.getElementById('bar-temp').style.width = (tempPercent * 100) + '%';
+            document.getElementById('val-temp').textContent = r.bmp_temp.toFixed(1) + '°C';
+            document.getElementById('val-temp-bmp').textContent = r.bmp_temp.toFixed(1);
+            document.getElementById('val-temp-scd').textContent = r.scd_temp.toFixed(1);
+
+            // CO2 bar (400-2000 ppm range)
+            const co2Percent = clamp((r.co2 - 400) / 1600, 0, 1);
+            document.getElementById('bar-co2').style.width = (co2Percent * 100) + '%';
+            document.getElementById('val-co2').textContent = r.co2 + ' ppm';
+
+            // Humidity bar
+            const humidityPercent = clamp(r.humidity / 100, 0, 1);
+            document.getElementById('bar-humidity').style.width = (humidityPercent * 100) + '%';
+            document.getElementById('val-humidity').textContent = r.humidity.toFixed(1) + '%';
+
+            // PM bars (0-100 µg/m³ range)
+            const pmMax = 100;
+            updatePMBar('pm1', r.pm1, pmMax);
+            updatePMBar('pm25', r.pm25, pmMax);
+            updatePMBar('pm4', r.pm4, pmMax);
+            updatePMBar('pm10', r.pm10, pmMax);
+
+            // IMU - Set target quaternion (animation loop handles smooth transition)
+            imuAnimation.targetQuat = { w: r.qw, x: r.qi, y: r.qj, z: r.qk };
+
+            // Euler bars (updated immediately for numerical display)
+            updateEulerBar('roll', r.roll);
+            updateEulerBar('pitch', r.pitch);
+            updateEulerBar('yaw', r.yaw);
+
+            // Heading bar (compass style, 0-360)
+            const headingPercent = r.heading / 360;
+            document.getElementById('euler-heading-bar').style.left = (headingPercent * 100) + '%';
+            document.getElementById('val-heading').textContent = r.heading.toFixed(1) + '°';
+
+            // Compass needle rotation (heading is where we're pointing, so rotate by heading)
+            const compassNeedle = document.getElementById('compass-needle');
+            if (compassNeedle) {
+                compassNeedle.style.transform = `rotate(${r.heading}deg)`;
+            }
+            document.getElementById('compass-heading').textContent = r.heading.toFixed(1) + '°';
+            document.getElementById('compass-direction').textContent = getCardinalDirection(r.heading);
+
+            // IMU validity and accuracy
+            const imuValidBadge = document.getElementById('imu-valid-badge');
+            if (r.imu_valid) {
+                imuValidBadge.textContent = 'VALID';
+                imuValidBadge.className = 'validity-badge valid';
+            } else {
+                imuValidBadge.textContent = 'INVALID';
+                imuValidBadge.className = 'validity-badge invalid';
+            }
+            document.getElementById('imu-accuracy').textContent = r.imu_accuracy;
+
+            // Magnetometer
+            document.getElementById('mag-x').textContent = r.mag_x;
+            document.getElementById('mag-y').textContent = r.mag_y;
+            document.getElementById('mag-z').textContent = r.mag_z;
+
+            // GPS
+            document.getElementById('gps-lat').textContent = r.lat.toFixed(7);
+            document.getElementById('gps-lon').textContent = r.lon.toFixed(7);
+            document.getElementById('gps-alt').textContent = r.alt_mm.toFixed(1) + ' m';
+            document.getElementById('gps-vel').textContent = r.vel_down.toFixed(2) + ' m/s';
+            document.getElementById('gps-sats').textContent = r.sats;
+            document.getElementById('gps-pdop').textContent = r.pdop.toFixed(2);
+
+            // GPS validity badge
+            const gpsValidBadge = document.getElementById('gps-valid-badge');
+            if (r.gps_valid) {
+                gpsValidBadge.textContent = 'VALID';
+                gpsValidBadge.className = 'validity-badge valid';
+            } else {
+                gpsValidBadge.textContent = 'INVALID';
+                gpsValidBadge.className = 'validity-badge invalid';
+            }
+
+            const fixEl = document.getElementById('gps-fix');
+            if (r.fix_type >= 3) {
+                fixEl.textContent = '3D Fix';
+                fixEl.className = 'gps-fix fix-3d';
+            } else if (r.fix_type === 2) {
+                fixEl.textContent = '2D Fix';
+                fixEl.className = 'gps-fix fix-2d';
+            } else {
+                fixEl.textContent = 'No Fix';
+                fixEl.className = 'gps-fix fix-none';
+            }
+
+            // Hex viewer
+            updateHexViewer(r);
+        }
+
+        function updateGauge(name, percent, value) {
+            const arc = document.getElementById(`gauge-${name}-arc`);
+            const needle = document.getElementById(`gauge-${name}-needle`);
+
+            // Arc (251.2 is the full arc length for our path)
+            const arcLength = 251.2;
+            arc.style.strokeDashoffset = arcLength * (1 - percent);
+
+            // Needle rotation (-90 to 90 degrees, mapped from percent)
+            const angle = -90 + percent * 180;
+            needle.style.transform = `rotate(${angle}deg)`;
+            needle.style.transformOrigin = '100px 100px';
+        }
+
+        function updatePMBar(id, value, max) {
+            const percent = clamp(value / max, 0, 1);
+            document.getElementById('bar-' + id).style.width = (percent * 100) + '%';
+            // Compact display: skip decimals if > 10, show unit only as tooltip
+            const displayVal = value >= 10 ? Math.round(value) : value.toFixed(1);
+            document.getElementById('val-' + id).textContent = displayVal;
+        }
+
+        function updateEulerBar(name, value) {
+            const bar = document.getElementById(`euler-${name}-bar`);
+            const label = document.getElementById(`euler-${name}`);
+
+            // Value range: -180 to 180, center at 0
+            const width = Math.abs(value) / 180 * 50;
+
+            if (value >= 0) {
+                bar.style.left = '50%';
+                bar.style.width = width + '%';
+            } else {
+                bar.style.left = (50 - width) + '%';
+                bar.style.width = width + '%';
+            }
+
+            label.textContent = value.toFixed(1) + '°';
+        }
+
+        function updateHexViewer(record) {
+            if (!fileBuffer) return;
+
+            const view = new DataView(fileBuffer);
+            const offset = record._offset;
+            let html = '';
+
+            for (let row = 0; row < 4; row++) {
+                const rowOffset = offset + row * 16;
+                let hexBytes = '';
+                let ascii = '';
+
+                for (let col = 0; col < 16; col++) {
+                    const byteOffset = rowOffset + col;
+                    if (byteOffset < fileBuffer.byteLength) {
+                        const byte = view.getUint8(byteOffset);
+                        hexBytes += byte.toString(16).padStart(2, '0') + ' ';
+                        ascii += (byte >= 32 && byte < 127) ? String.fromCharCode(byte) : '.';
+                    }
+                }
+
+                html += `<div class="hex-row">
+                    <span class="hex-offset">${(row * 16).toString(16).padStart(4, '0')}</span>
+                    <span class="hex-bytes">${hexBytes}</span>
+                    <span class="hex-ascii">${ascii}</span>
+                </div>`;
+            }
+
+            document.getElementById('hex-viewer').innerHTML = html;
+        }
+
+        // ========================================================================
+        // Chart Drawing
+        // ========================================================================
+
+        function drawChart() {
+            const canvas = document.getElementById('chart-canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Set actual size
+            canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+            canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+            const width = canvas.offsetWidth;
+            const height = canvas.offsetHeight;
+            const padding = { top: 20, right: 20, bottom: 40, left: 60 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+
+            // Clear
+            ctx.fillStyle = '#0a0a15';
+            ctx.fillRect(0, 0, width, height);
+
+            if (records.length === 0) return;
+
+            // Get data based on selected chart
+            let series = [];
+            let colors = [];
+            let labels = [];
+
+            switch (currentChart) {
+                case 'altitude':
+                    series = [records.map(r => r.baro_alt), records.map(r => r.alt_mm)];
+                    colors = ['#6bcb77', '#4d96ff'];
+                    labels = ['Baro', 'GPS'];
+                    break;
+                case 'pressure':
+                    series = [records.map(r => r.pressure_pa)];
+                    colors = ['#ff6b6b'];
+                    labels = ['hPa'];
+                    break;
+                case 'temperature':
+                    series = [records.map(r => r.bmp_temp), records.map(r => r.scd_temp)];
+                    colors = ['#ffd93d', '#ff6b6b'];
+                    labels = ['BMP', 'SCD'];
+                    break;
+                case 'co2':
+                    series = [records.map(r => r.co2)];
+                    colors = ['#4d96ff'];
+                    labels = ['ppm'];
+                    break;
+                case 'humidity':
+                    series = [records.map(r => r.humidity)];
+                    colors = ['#00d4ff'];
+                    labels = ['%'];
+                    break;
+                case 'pm':
+                    series = [
+                        records.map(r => r.pm1),
+                        records.map(r => r.pm25),
+                        records.map(r => r.pm4),
+                        records.map(r => r.pm10)
+                    ];
+                    colors = ['#c44dff', '#9d4dff', '#6b4dff', '#4d6bff'];
+                    labels = ['PM1', 'PM2.5', 'PM4', 'PM10'];
+                    break;
+                case 'velocity':
+                    series = [records.map(r => r.vel_down)];
+                    colors = ['#ff6b6b'];
+                    labels = ['m/s'];
+                    break;
+                case 'imu':
+                    series = [
+                        records.map(r => r.roll),
+                        records.map(r => r.pitch),
+                        records.map(r => r.yaw)
+                    ];
+                    colors = ['#ff6b6b', '#6bcb77', '#4d96ff'];
+                    labels = ['Roll', 'Pitch', 'Yaw'];
+                    break;
+                case 'heading':
+                    series = [records.map(r => r.heading)];
+                    colors = ['#00d4ff'];
+                    labels = ['Heading °'];
+                    break;
+                case 'magnetometer':
+                    series = [
+                        records.map(r => r.mag_x),
+                        records.map(r => r.mag_y),
+                        records.map(r => r.mag_z)
+                    ];
+                    colors = ['#ff6b6b', '#6bcb77', '#4d96ff'];
+                    labels = ['Mag X', 'Mag Y', 'Mag Z'];
+                    break;
+            }
+
+            // Find min/max across all series
+            let allValues = series.flat().filter(v => !isNaN(v) && isFinite(v));
+            let minVal = Math.min(...allValues);
+            let maxVal = Math.max(...allValues);
+
+            // Add some padding
+            const range = maxVal - minVal || 1;
+            minVal -= range * 0.1;
+            maxVal += range * 0.1;
+
+            // Draw grid
+            ctx.strokeStyle = '#222';
+            ctx.lineWidth = 1;
+
+            // Horizontal grid lines
+            for (let i = 0; i <= 5; i++) {
+                const y = padding.top + (i / 5) * chartHeight;
+                ctx.beginPath();
+                ctx.moveTo(padding.left, y);
+                ctx.lineTo(width - padding.right, y);
+                ctx.stroke();
+
+                // Y-axis labels
+                const value = maxVal - (i / 5) * (maxVal - minVal);
+                ctx.fillStyle = '#666';
+                ctx.font = '11px sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText(value.toFixed(1), padding.left - 5, y + 4);
+            }
+
+            // Draw series
+            for (let s = 0; s < series.length; s++) {
+                const data = series[s];
+                ctx.strokeStyle = colors[s];
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+
+                for (let i = 0; i < data.length; i++) {
+                    const x = padding.left + (i / (data.length - 1)) * chartWidth;
+                    const y = padding.top + (1 - (data[i] - minVal) / (maxVal - minVal)) * chartHeight;
+
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.stroke();
+            }
+
+            // Draw current position marker
+            const markerX = padding.left + (currentIndex / (records.length - 1)) * chartWidth;
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(markerX, padding.top);
+            ctx.lineTo(markerX, height - padding.bottom);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Draw legend
+            ctx.font = '12px sans-serif';
+            let legendX = padding.left + 10;
+            for (let i = 0; i < labels.length; i++) {
+                ctx.fillStyle = colors[i];
+                ctx.fillRect(legendX, padding.top + 5, 12, 12);
+                ctx.fillStyle = '#aaa';
+                ctx.textAlign = 'left';
+                ctx.fillText(labels[i], legendX + 16, padding.top + 15);
+                legendX += ctx.measureText(labels[i]).width + 30;
+            }
+        }
+
+        // ========================================================================
+        // Chart Click-to-Seek
+        // ========================================================================
+
+        document.getElementById('chart-canvas').addEventListener('click', function(e) {
+            if (records.length === 0) return;
+
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const width = rect.width;
+            const padding = { left: 60, right: 20 };
+            const chartWidth = width - padding.left - padding.right;
+
+            // Calculate index from click position
+            const relativeX = x - padding.left;
+            if (relativeX >= 0 && relativeX <= chartWidth) {
+                const newIndex = Math.round((relativeX / chartWidth) * (records.length - 1));
+                currentIndex = clamp(newIndex, 0, records.length - 1);
+                playbackState.fractionalIndex = currentIndex;
+                updateDisplay();
+                drawChart();
+            }
+        });
+
+        // ========================================================================
+        // Playback Controls
+        // ========================================================================
+
+        document.getElementById('btn-play').addEventListener('click', togglePlay);
+        document.getElementById('btn-start').addEventListener('click', () => {
+            currentIndex = 0;
+            playbackState.fractionalIndex = 0;
+            updateDisplay();
+            drawChart();
+        });
+        document.getElementById('btn-end').addEventListener('click', () => {
+            currentIndex = records.length - 1;
+            playbackState.fractionalIndex = currentIndex;
+            updateDisplay();
+            drawChart();
+        });
+        document.getElementById('btn-prev').addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                playbackState.fractionalIndex = currentIndex;
+                updateDisplay();
+                drawChart();
+            }
+        });
+        document.getElementById('btn-next').addEventListener('click', () => {
+            if (currentIndex < records.length - 1) {
+                currentIndex++;
+                playbackState.fractionalIndex = currentIndex;
+                updateDisplay();
+                drawChart();
+            }
+        });
+
+        document.getElementById('timeline-slider').addEventListener('input', function() {
+            currentIndex = parseInt(this.value);
+            playbackState.fractionalIndex = currentIndex;
+            updateDisplay();
+            drawChart();
+        });
+
+        document.querySelectorAll('.speed-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                playSpeed = parseFloat(this.dataset.speed);
+
+                // Adjust interpolation speed based on playback speed
+                imuAnimation.interpolationSpeed = 8 * playSpeed;
+
+                if (isPlaying) {
+                    stopPlay();
+                    startPlay();
+                }
+            });
+        });
+
+        document.querySelectorAll('.chart-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                currentChart = this.dataset.chart;
+                drawChart();
+            });
+        });
+
+        function togglePlay() {
+            if (isPlaying) {
+                stopPlay();
+            } else {
+                startPlay();
+            }
+        }
+
+        function startPlay() {
+            if (records.length === 0) return;
+
+            isPlaying = true;
+            document.getElementById('btn-play').textContent = '⏸';
+            document.getElementById('btn-play').classList.add('active');
+
+            // Initialize playback state
+            playbackState.lastFrameTime = performance.now();
+            playbackState.fractionalIndex = currentIndex;
+
+            // Set initial quaternions for interpolation
+            const r = records[currentIndex];
+            imuAnimation.currentQuat = { w: r.qw, x: r.qi, y: r.qj, z: r.qk };
+            imuAnimation.targetQuat = { ...imuAnimation.currentQuat };
+
+            // Start animation loop
+            playAnimationId = requestAnimationFrame(playbackLoop);
+        }
+
+        function playbackLoop(timestamp) {
+            if (!isPlaying) return;
+
+            const deltaTime = (timestamp - playbackState.lastFrameTime) / 1000;
+            playbackState.lastFrameTime = timestamp;
+
+            // Advance fractional index based on playback speed
+            // 1x speed = 1 record per second (since original data is 1Hz)
+            playbackState.fractionalIndex += deltaTime * playSpeed;
+
+            // Check if we reached the end
+            if (playbackState.fractionalIndex >= records.length - 1) {
+                playbackState.fractionalIndex = records.length - 1;
+                currentIndex = records.length - 1;
+                updateDisplay();
+                drawChart();
+                stopPlay();
+                return;
+            }
+
+            // Get current and next record indices
+            const prevIndex = Math.floor(playbackState.fractionalIndex);
+            const nextIndex = Math.min(prevIndex + 1, records.length - 1);
+            const t = playbackState.fractionalIndex - prevIndex;  // 0-1 interpolation factor
+
+            // Update integer index for display
+            if (prevIndex !== currentIndex) {
+                currentIndex = prevIndex;
+                // Update chart less frequently for performance
+                if (currentIndex % Math.max(1, Math.floor(playSpeed * 2)) === 0) {
+                    drawChart();
+                }
+            }
+
+            // Interpolate IMU quaternion between current and next record
+            const prevRecord = records[prevIndex];
+            const nextRecord = records[nextIndex];
+
+            const prevQuat = { w: prevRecord.qw, x: prevRecord.qi, y: prevRecord.qj, z: prevRecord.qk };
+            const nextQuat = { w: nextRecord.qw, x: nextRecord.qi, y: nextRecord.qj, z: nextRecord.qk };
+
+            // Direct SLERP between records - smooth 25Hz-like animation from 1Hz data
+            imuAnimation.currentQuat = quatSlerp(prevQuat, nextQuat, t);
+
+            // Apply rotation to cube directly (bypass the animation loop's interpolation)
+            const cube = document.getElementById('imu-cube');
+            if (cube) {
+                cube.style.transform = quatToMatrix3D(imuAnimation.currentQuat);
+            }
+
+            // Update display with current record data (non-IMU values)
+            updateDisplayNoIMU();
+
+            // Continue animation
+            playAnimationId = requestAnimationFrame(playbackLoop);
+        }
+
+        // Update display without touching IMU (that's handled by playback interpolation)
+        function updateDisplayNoIMU() {
+            if (records.length === 0) return;
+
+            const r = records[currentIndex];
+
+            // Time display
+            document.getElementById('time-display').textContent = formatTimestamp(r.timestamp);
+            document.getElementById('record-counter').textContent = `Record: ${currentIndex + 1} / ${records.length}`;
+            document.getElementById('timeline-slider').value = currentIndex;
+
+            // Pressure gauge
+            const pressurePercent = clamp((r.pressure_pa - 900) / 200, 0, 1);
+            updateGauge('pressure', pressurePercent, r.pressure_pa.toFixed(1));
+            document.getElementById('val-pressure').textContent = r.pressure_pa.toFixed(1);
+
+            // Altitude gauge
+            const altMin = -100, altMax = 2000;
+            const altPercent = clamp((r.baro_alt - altMin) / (altMax - altMin), 0, 1);
+            updateGauge('altitude', altPercent, r.baro_alt.toFixed(1));
+            document.getElementById('val-altitude').textContent = r.baro_alt.toFixed(1);
+
+            // Temperature bar
+            const tempPercent = clamp((r.bmp_temp + 20) / 80, 0, 1);
+            document.getElementById('bar-temp').style.width = (tempPercent * 100) + '%';
+            document.getElementById('val-temp').textContent = r.bmp_temp.toFixed(1) + '°C';
+            document.getElementById('val-temp-bmp').textContent = r.bmp_temp.toFixed(1);
+            document.getElementById('val-temp-scd').textContent = r.scd_temp.toFixed(1);
+
+            // CO2 bar
+            const co2Percent = clamp((r.co2 - 400) / 1600, 0, 1);
+            document.getElementById('bar-co2').style.width = (co2Percent * 100) + '%';
+            document.getElementById('val-co2').textContent = r.co2 + ' ppm';
+
+            // Humidity bar
+            const humidityPercent = clamp(r.humidity / 100, 0, 1);
+            document.getElementById('bar-humidity').style.width = (humidityPercent * 100) + '%';
+            document.getElementById('val-humidity').textContent = r.humidity.toFixed(1) + '%';
+
+            // PM bars
+            const pmMax = 100;
+            updatePMBar('pm1', r.pm1, pmMax);
+            updatePMBar('pm25', r.pm25, pmMax);
+            updatePMBar('pm4', r.pm4, pmMax);
+            updatePMBar('pm10', r.pm10, pmMax);
+
+            // Euler angles (from current interpolated quaternion)
+            const euler = quatToEuler(imuAnimation.currentQuat);
+            updateEulerBar('roll', euler.roll);
+            updateEulerBar('pitch', euler.pitch);
+            updateEulerBar('yaw', euler.yaw);
+
+            // Heading (interpolate between records)
+            const nextRecord = records[Math.min(currentIndex + 1, records.length - 1)];
+            const t = playbackState.fractionalIndex - currentIndex;
+            let heading = lerpAngle(r.heading, nextRecord.heading, t);
+
+            const headingPercent = heading / 360;
+            document.getElementById('euler-heading-bar').style.left = (headingPercent * 100) + '%';
+            document.getElementById('val-heading').textContent = heading.toFixed(1) + '°';
+
+            const compassNeedle = document.getElementById('compass-needle');
+            if (compassNeedle) {
+                compassNeedle.style.transform = `rotate(${heading}deg)`;
+            }
+            document.getElementById('compass-heading').textContent = heading.toFixed(1) + '°';
+            document.getElementById('compass-direction').textContent = getCardinalDirection(heading);
+
+            // IMU validity and accuracy
+            const imuValidBadge = document.getElementById('imu-valid-badge');
+            if (r.imu_valid) {
+                imuValidBadge.textContent = 'VALID';
+                imuValidBadge.className = 'validity-badge valid';
+            } else {
+                imuValidBadge.textContent = 'INVALID';
+                imuValidBadge.className = 'validity-badge invalid';
+            }
+            document.getElementById('imu-accuracy').textContent = r.imu_accuracy;
+
+            // Magnetometer
+            document.getElementById('mag-x').textContent = r.mag_x;
+            document.getElementById('mag-y').textContent = r.mag_y;
+            document.getElementById('mag-z').textContent = r.mag_z;
+
+            // GPS
+            document.getElementById('gps-lat').textContent = r.lat.toFixed(7);
+            document.getElementById('gps-lon').textContent = r.lon.toFixed(7);
+            document.getElementById('gps-alt').textContent = r.alt_mm.toFixed(1) + ' m';
+            document.getElementById('gps-vel').textContent = r.vel_down.toFixed(2) + ' m/s';
+            document.getElementById('gps-sats').textContent = r.sats;
+            document.getElementById('gps-pdop').textContent = r.pdop.toFixed(2);
+
+            const gpsValidBadge = document.getElementById('gps-valid-badge');
+            if (r.gps_valid) {
+                gpsValidBadge.textContent = 'VALID';
+                gpsValidBadge.className = 'validity-badge valid';
+            } else {
+                gpsValidBadge.textContent = 'INVALID';
+                gpsValidBadge.className = 'validity-badge invalid';
+            }
+
+            const fixEl = document.getElementById('gps-fix');
+            if (r.fix_type >= 3) {
+                fixEl.textContent = '3D Fix';
+                fixEl.className = 'gps-fix fix-3d';
+            } else if (r.fix_type === 2) {
+                fixEl.textContent = '2D Fix';
+                fixEl.className = 'gps-fix fix-2d';
+            } else {
+                fixEl.textContent = 'No Fix';
+                fixEl.className = 'gps-fix fix-none';
+            }
+
+            updateHexViewer(r);
+        }
+
+        // Linear interpolation for angles (handles 359->1 wraparound)
+        function lerpAngle(a, b, t) {
+            let diff = b - a;
+            if (diff > 180) diff -= 360;
+            if (diff < -180) diff += 360;
+            return (a + diff * t + 360) % 360;
+        }
+
+        // Convert quaternion to Euler angles
+        function quatToEuler(q) {
+            const { w, x, y, z } = q;
+
+            // Roll (x-axis rotation)
+            const sinr_cosp = 2 * (w * x + y * z);
+            const cosr_cosp = 1 - 2 * (x * x + y * y);
+            const roll = Math.atan2(sinr_cosp, cosr_cosp) * 180 / Math.PI;
+
+            // Pitch (y-axis rotation)
+            const sinp = 2 * (w * y - z * x);
+            let pitch;
+            if (Math.abs(sinp) >= 1) {
+                pitch = Math.sign(sinp) * 90;
+            } else {
+                pitch = Math.asin(sinp) * 180 / Math.PI;
+            }
+
+            // Yaw (z-axis rotation)
+            const siny_cosp = 2 * (w * z + x * y);
+            const cosy_cosp = 1 - 2 * (y * y + z * z);
+            const yaw = Math.atan2(siny_cosp, cosy_cosp) * 180 / Math.PI;
+
+            return { roll, pitch, yaw };
+        }
+
+        function stopPlay() {
+            isPlaying = false;
+            document.getElementById('btn-play').textContent = '▶';
+            document.getElementById('btn-play').classList.remove('active');
+            if (playAnimationId) {
+                cancelAnimationFrame(playAnimationId);
+                playAnimationId = null;
+            }
+            // Sync fractional index with integer index
+            playbackState.fractionalIndex = currentIndex;
+            drawChart();
+        }
+
+        // ========================================================================
+        // Utilities
+        // ========================================================================
+
+        function formatTimestamp(ts) {
+            if (ts < 1600000000) {
+                // Uptime in seconds
+                const h = Math.floor(ts / 3600);
+                const m = Math.floor((ts % 3600) / 60);
+                const s = ts % 60;
+                return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')} (uptime)`;
+            } else {
+                // Unix timestamp
+                const d = new Date(ts * 1000);
+                return d.toLocaleString('hu-HU');
+            }
+        }
+
+        function clamp(v, min, max) {
+            return Math.max(min, Math.min(max, v));
+        }
+
+        function getCardinalDirection(heading) {
+            const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N'];
+            const index = Math.round(heading / 45) % 8;
+            return directions[index];
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT') return;
+
+            switch (e.key) {
+                case ' ':
+                    e.preventDefault();
+                    togglePlay();
+                    break;
+                case 'ArrowLeft':
+                    if (currentIndex > 0) {
+                        currentIndex--;
+                        playbackState.fractionalIndex = currentIndex;
+                        updateDisplay();
+                        drawChart();
+                    }
+                    break;
+                case 'ArrowRight':
+                    if (currentIndex < records.length - 1) {
+                        currentIndex++;
+                        playbackState.fractionalIndex = currentIndex;
+                        updateDisplay();
+                        drawChart();
+                    }
+                    break;
+                case 'Home':
+                    currentIndex = 0;
+                    playbackState.fractionalIndex = 0;
+                    updateDisplay();
+                    drawChart();
+                    break;
+                case 'End':
+                    currentIndex = records.length - 1;
+                    playbackState.fractionalIndex = currentIndex;
+                    updateDisplay();
+                    drawChart();
+                    break;
+            }
+        });
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            if (records.length > 0) drawChart();
+        });
+    </script>
+</body>
+</html>
