@@ -1,1 +1,3 @@
-Astrolink Team CanSat project software + firmware. 
+# Astrolink Team CanSat project - 2026
+
+[CDR](https://sandorpeteer.github.io/CanSat2526/CDR_AstroLink)
