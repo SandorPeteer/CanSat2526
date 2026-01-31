@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 800" font-family="Arial, sans-serif">
+
+  <!-- Background -->
+  <rect width="1100" height="800" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="550" y="35" text-anchor="middle" font-size="22" font-weight="bold" fill="#1a1a1a">AstroLink CanSat - System Block Diagram</text>
+
+  <!-- ======== POWER SECTION (top left) ======== -->
+
+  <!-- Battery -->
+  <rect x="50" y="70" width="140" height="60" rx="6" fill="#fff8e1" stroke="#f57c00" stroke-width="2"/>
+  <text x="120" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="#e65100">18650 Li-Ion</text>
+  <text x="120" y="112" text-anchor="middle" font-size="10" fill="#ff9800">3.7V | 2670mAh | 9.75Wh</text>
+
+  <!-- Arrow to booster -->
+  <line x1="190" y1="100" x2="230" y2="100" stroke="#424242" stroke-width="2"/>
+  <polygon points="230,100 220,94 220,106" fill="#424242"/>
+
+  <!-- Booster Board -->
+  <rect x="240" y="70" width="160" height="60" rx="6" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="320" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="#1565c0">Booster Board</text>
+  <text x="320" y="112" text-anchor="middle" font-size="10" fill="#1976d2">3.7V → 5V + USB Charger</text>
+
+  <!-- Arrows to voltage rails -->
+  <line x1="400" y1="90" x2="440" y2="90" stroke="#424242" stroke-width="2"/>
+  <line x1="400" y1="110" x2="440" y2="110" stroke="#424242" stroke-width="2"/>
+
+  <!-- 5V Rail Box -->
+  <rect x="450" y="65" width="70" height="40" rx="5" fill="#ffcdd2" stroke="#d32f2f" stroke-width="2"/>
+  <text x="485" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="#c62828">5V</text>
+
+  <!-- 3.3V Rail Box -->
+  <rect x="450" y="115" width="70" height="40" rx="5" fill="#ffe0b2" stroke="#f57c00" stroke-width="2"/>
+  <text x="485" y="140" text-anchor="middle" font-size="16" font-weight="bold" fill="#e65100">3.3V</text>
+
+  <!-- ======== ESP32-S3 DevKitC-1 (tall, center-left) ======== -->
+  <rect x="100" y="180" width="180" height="420" rx="8" fill="#e8eaf6" stroke="#3949ab" stroke-width="3"/>
+  <text x="190" y="210" text-anchor="middle" font-size="14" font-weight="bold" fill="#283593">ESP32-S3</text>
+  <text x="190" y="228" text-anchor="middle" font-size="11" fill="#5c6bc0">DevKitC-1 N16R8</text>
+  <text x="190" y="245" text-anchor="middle" font-size="9" fill="#7986cb">16MB Flash / 8MB PSRAM</text>
+
+  <!-- GPIO Labels inside ESP32 -->
+  <text x="115" y="280" font-size="9" fill="#37474f" font-weight="bold">Interfaces:</text>
+
+  <text x="115" y="305" font-size="9" fill="#8e24aa">SPI1: GPIO 5,6,7,15</text>
+  <text x="115" y="325" font-size="9" fill="#d32f2f">SPI2: GPIO 35-42</text>
+  <text x="115" y="345" font-size="9" fill="#00897b">I2C: GPIO 8,9 (400kHz)</text>
+  <text x="115" y="365" font-size="9" fill="#ef6c00">UART1: GPIO 17,18</text>
+  <text x="115" y="385" font-size="9" fill="#ef6c00">UART2: GPIO 13,14</text>
+  <text x="115" y="405" font-size="9" fill="#d81b60">LED: GPIO 48</text>
+  <text x="115" y="425" font-size="9" fill="#546e7a">WiFi: Built-in 2.4GHz</text>
+
+  <!-- Power input to ESP32 -->
+  <text x="115" y="460" font-size="9" fill="#37474f" font-weight="bold">Power:</text>
+  <text x="115" y="480" font-size="9" fill="#e65100">3.3V from LDO</text>
+  <text x="115" y="500" font-size="9" fill="#37474f">~80mA avg</text>
+
+  <text x="115" y="540" font-size="9" fill="#37474f" font-weight="bold">Features:</text>
+  <text x="115" y="560" font-size="9" fill="#37474f">Dual-core 240MHz</text>
+  <text x="115" y="578" font-size="9" fill="#37474f">FreeRTOS</text>
+
+  <!-- ======== WS2812 LED (below ESP32) ======== -->
+  <rect x="130" y="620" width="120" height="45" rx="5" fill="#fce4ec" stroke="#d81b60" stroke-width="2"/>
+  <text x="190" y="642" text-anchor="middle" font-size="11" font-weight="bold" fill="#c2185b">WS2812B LED</text>
+  <text x="190" y="657" text-anchor="middle" font-size="9" fill="#e91e63">GPIO48 | 3.3V | 20mA</text>
+
+  <!-- Line from ESP32 to LED -->
+  <line x1="190" y1="600" x2="190" y2="620" stroke="#d81b60" stroke-width="2"/>
+
+  <!-- ======== SENSOR COLUMN (right side) ======== -->
+
+  <!-- BNO085 IMU - SPI1 - 3.3V -->
+  <rect x="420" y="190" width="200" height="65" rx="6" fill="#f3e5f5" stroke="#8e24aa" stroke-width="2"/>
+  <text x="520" y="215" text-anchor="middle" font-size="13" font-weight="bold" fill="#7b1fa2">BNO085 IMU</text>
+  <text x="520" y="232" text-anchor="middle" font-size="10" fill="#9c27b0">9-DoF AHRS | Quaternion output</text>
+  <text x="520" y="247" text-anchor="middle" font-size="9" fill="#757575">SPI1 (10MHz) | 3.3V | 12mA</text>
+
+  <!-- E22-900M30S LoRa - SPI2 - 3.3V -->
+  <rect x="420" y="270" width="200" height="65" rx="6" fill="#ffebee" stroke="#d32f2f" stroke-width="2"/>
+  <text x="520" y="295" text-anchor="middle" font-size="13" font-weight="bold" fill="#c62828">E22-900M30S LoRa</text>
+  <text x="520" y="312" text-anchor="middle" font-size="10" fill="#e53935">SX1262 | 868MHz | 30dBm</text>
+  <text x="520" y="327" text-anchor="middle" font-size="9" fill="#757575">SPI2 | 3.3V | 120mA TX / 5mA RX</text>
+
+  <!-- Antenna -->
+  <rect x="680" y="280" width="90" height="45" rx="5" fill="#ffcdd2" stroke="#d32f2f" stroke-width="1.5"/>
+  <text x="725" y="302" text-anchor="middle" font-size="11" font-weight="bold" fill="#c62828">Antenna</text>
+  <text x="725" y="317" text-anchor="middle" font-size="9" fill="#e53935">868MHz | 50Ω</text>
+
+  <!-- BMP585 - I2C - 5V -->
+  <rect x="420" y="350" width="200" height="65" rx="6" fill="#e0f2f1" stroke="#00897b" stroke-width="2"/>
+  <text x="520" y="375" text-anchor="middle" font-size="13" font-weight="bold" fill="#00695c">BMP585 Barometer</text>
+  <text x="520" y="392" text-anchor="middle" font-size="10" fill="#00897b">Pressure + Temperature</text>
+  <text x="520" y="407" text-anchor="middle" font-size="9" fill="#757575">I2C 0x47 | 5V | 0.5mA</text>
+
+  <!-- SCD40 - I2C - 3.3V -->
+  <rect x="420" y="430" width="200" height="65" rx="6" fill="#e0f2f1" stroke="#00897b" stroke-width="2"/>
+  <text x="520" y="455" text-anchor="middle" font-size="13" font-weight="bold" fill="#00695c">SCD40 CO2 Sensor</text>
+  <text x="520" y="472" text-anchor="middle" font-size="10" fill="#00897b">CO2 + Humidity + Temp</text>
+  <text x="520" y="487" text-anchor="middle" font-size="9" fill="#757575">I2C 0x62 | 3.3V | 15mA</text>
+
+  <!-- QMC5883L - I2C - 3.3V -->
+  <rect x="420" y="510" width="200" height="65" rx="6" fill="#e0f2f1" stroke="#00897b" stroke-width="2"/>
+  <text x="520" y="535" text-anchor="middle" font-size="13" font-weight="bold" fill="#00695c">QMC5883L Mag</text>
+  <text x="520" y="552" text-anchor="middle" font-size="10" fill="#00897b">3-axis Magnetometer</text>
+  <text x="520" y="567" text-anchor="middle" font-size="9" fill="#757575">I2C 0x0D | 3.3V | 2mA</text>
+
+  <!-- M100-Pro GPS - UART1 - 5V -->
+  <rect x="420" y="590" width="200" height="65" rx="6" fill="#fff3e0" stroke="#ef6c00" stroke-width="2"/>
+  <text x="520" y="615" text-anchor="middle" font-size="13" font-weight="bold" fill="#e65100">M100-Pro GPS</text>
+  <text x="520" y="632" text-anchor="middle" font-size="10" fill="#f57c00">GNSS (GPS/GLONASS/BeiDou)</text>
+  <text x="520" y="647" text-anchor="middle" font-size="9" fill="#757575">UART1 115200 | 5V | 25mA</text>
+
+  <!-- SPS30 - UART2 - 5V -->
+  <rect x="420" y="670" width="200" height="65" rx="6" fill="#fff3e0" stroke="#ef6c00" stroke-width="2"/>
+  <text x="520" y="695" text-anchor="middle" font-size="13" font-weight="bold" fill="#e65100">SPS30 PM Sensor</text>
+  <text x="520" y="712" text-anchor="middle" font-size="10" fill="#f57c00">PM1.0 / PM2.5 / PM4.0 / PM10</text>
+  <text x="520" y="727" text-anchor="middle" font-size="9" fill="#757575">UART2 115200 | 5V | 60mA</text>
+
+  <!-- ======== DATA LINES (from ESP32 to sensors) ======== -->
+
+  <!-- SPI1 to BNO085 (purple) -->
+  <line x1="280" y1="305" x2="350" y2="305" stroke="#8e24aa" stroke-width="2"/>
+  <line x1="350" y1="305" x2="350" y2="222" stroke="#8e24aa" stroke-width="2"/>
+  <line x1="350" y1="222" x2="420" y2="222" stroke="#8e24aa" stroke-width="2"/>
+  <polygon points="420,222 410,217 410,227" fill="#8e24aa"/>
+  <rect x="352" y="255" width="30" height="14" rx="2" fill="#f3e5f5" stroke="#8e24aa"/>
+  <text x="367" y="265" text-anchor="middle" font-size="8" font-weight="bold" fill="#8e24aa">SPI1</text>
+
+  <!-- SPI2 to LoRa (red) -->
+  <line x1="280" y1="325" x2="340" y2="325" stroke="#d32f2f" stroke-width="2"/>
+  <line x1="340" y1="325" x2="340" y2="302" stroke="#d32f2f" stroke-width="2"/>
+  <line x1="340" y1="302" x2="420" y2="302" stroke="#d32f2f" stroke-width="2"/>
+  <polygon points="420,302 410,297 410,307" fill="#d32f2f"/>
+  <rect x="342" y="306" width="30" height="14" rx="2" fill="#ffebee" stroke="#d32f2f"/>
+  <text x="357" y="316" text-anchor="middle" font-size="8" font-weight="bold" fill="#d32f2f">SPI2</text>
+
+  <!-- LoRa to Antenna -->
+  <line x1="620" y1="302" x2="680" y2="302" stroke="#d32f2f" stroke-width="2"/>
+  <polygon points="680,302 670,297 670,307" fill="#d32f2f"/>
+
+  <!-- I2C bus (teal) - vertical line with branches -->
+  <line x1="280" y1="345" x2="380" y2="345" stroke="#00897b" stroke-width="2"/>
+  <line x1="380" y1="345" x2="380" y2="542" stroke="#00897b" stroke-width="2"/>
+
+  <!-- I2C to BMP585 -->
+  <line x1="380" y1="382" x2="420" y2="382" stroke="#00897b" stroke-width="2"/>
+  <polygon points="420,382 410,377 410,387" fill="#00897b"/>
+  <circle cx="380" cy="382" r="4" fill="#00897b"/>
+
+  <!-- I2C to SCD40 -->
+  <line x1="380" y1="462" x2="420" y2="462" stroke="#00897b" stroke-width="2"/>
+  <polygon points="420,462 410,457 410,467" fill="#00897b"/>
+  <circle cx="380" cy="462" r="4" fill="#00897b"/>
+
+  <!-- I2C to QMC5883L -->
+  <line x1="380" y1="542" x2="420" y2="542" stroke="#00897b" stroke-width="2"/>
+  <polygon points="420,542 410,537 410,547" fill="#00897b"/>
+  <circle cx="380" cy="542" r="4" fill="#00897b"/>
+
+  <rect x="382" y="400" width="25" height="14" rx="2" fill="#e0f2f1" stroke="#00897b"/>
+  <text x="395" y="410" text-anchor="middle" font-size="8" font-weight="bold" fill="#00897b">I2C</text>
+
+  <!-- UART1 to GPS (orange) -->
+  <line x1="280" y1="365" x2="330" y2="365" stroke="#ef6c00" stroke-width="2"/>
+  <line x1="330" y1="365" x2="330" y2="622" stroke="#ef6c00" stroke-width="2"/>
+  <line x1="330" y1="622" x2="420" y2="622" stroke="#ef6c00" stroke-width="2"/>
+  <polygon points="420,622 410,617 410,627" fill="#ef6c00"/>
+  <rect x="332" y="490" width="38" height="14" rx="2" fill="#fff3e0" stroke="#ef6c00"/>
+  <text x="351" y="500" text-anchor="middle" font-size="8" font-weight="bold" fill="#ef6c00">UART1</text>
+
+  <!-- UART2 to SPS30 (orange) -->
+  <line x1="280" y1="385" x2="320" y2="385" stroke="#ef6c00" stroke-width="2"/>
+  <line x1="320" y1="385" x2="320" y2="702" stroke="#ef6c00" stroke-width="2"/>
+  <line x1="320" y1="702" x2="420" y2="702" stroke="#ef6c00" stroke-width="2"/>
+  <polygon points="420,702 410,697 410,707" fill="#ef6c00"/>
+  <rect x="322" y="570" width="38" height="14" rx="2" fill="#fff3e0" stroke="#ef6c00"/>
+  <text x="341" y="580" text-anchor="middle" font-size="8" font-weight="bold" fill="#ef6c00">UART2</text>
+
+  <!-- ======== POWER LINES ======== -->
+
+  <!-- 5V Rail (RED) - vertical line on right side -->
+  <line x1="520" y1="85" x2="660" y2="85" stroke="#d32f2f" stroke-width="3" stroke-dasharray="8,4"/>
+  <line x1="660" y1="85" x2="660" y2="750" stroke="#d32f2f" stroke-width="3" stroke-dasharray="8,4"/>
+
+  <!-- 5V to BMP585 -->
+  <line x1="620" y1="382" x2="660" y2="382" stroke="#d32f2f" stroke-width="2" stroke-dasharray="6,3"/>
+  <circle cx="660" cy="382" r="4" fill="#d32f2f"/>
+
+  <!-- 5V to GPS -->
+  <line x1="620" y1="622" x2="660" y2="622" stroke="#d32f2f" stroke-width="2" stroke-dasharray="6,3"/>
+  <circle cx="660" cy="622" r="4" fill="#d32f2f"/>
+
+  <!-- 5V to SPS30 -->
+  <line x1="620" y1="702" x2="660" y2="702" stroke="#d32f2f" stroke-width="2" stroke-dasharray="6,3"/>
+  <circle cx="660" cy="702" r="4" fill="#d32f2f"/>
+
+  <!-- 5V Label -->
+  <rect x="645" y="755" width="30" height="18" rx="3" fill="#ffcdd2" stroke="#d32f2f"/>
+  <text x="660" y="768" text-anchor="middle" font-size="10" font-weight="bold" fill="#c62828">5V</text>
+
+  <!-- 3.3V Rail (ORANGE) - vertical line -->
+  <line x1="520" y1="135" x2="700" y2="135" stroke="#f57c00" stroke-width="3" stroke-dasharray="8,4"/>
+  <line x1="700" y1="135" x2="700" y2="750" stroke="#f57c00" stroke-width="3" stroke-dasharray="8,4"/>
+
+  <!-- 3.3V to ESP32 -->
+  <line x1="485" y1="155" x2="485" y2="170" stroke="#f57c00" stroke-width="2" stroke-dasharray="6,3"/>
+  <line x1="280" y1="170" x2="485" y2="170" stroke="#f57c00" stroke-width="2" stroke-dasharray="6,3"/>
+  <line x1="280" y1="170" x2="280" y2="180" stroke="#f57c00" stroke-width="2" stroke-dasharray="6,3"/>
+
+  <!-- 3.3V to BNO085 -->
+  <line x1="620" y1="222" x2="700" y2="222" stroke="#f57c00" stroke-width="2" stroke-dasharray="6,3"/>
+  <circle cx="700" cy="222" r="4" fill="#f57c00"/>
+
+  <!-- 3.3V to LoRa -->
+  <line x1="620" y1="302" x2="640" y2="302" stroke="#f57c00" stroke-width="2" stroke-dasharray="6,3"/>
+  <line x1="640" y1="302" x2="640" y2="260" stroke="#f57c00" stroke-width="2" stroke-dasharray="6,3"/>
+  <line x1="640" y1="260" x2="700" y2="260" stroke="#f57c00" stroke-width="2" stroke-dasharray="6,3"/>
+  <circle cx="700" cy="260" r="4" fill="#f57c00"/>
+
+  <!-- 3.3V to SCD40 -->
+  <line x1="620" y1="462" x2="700" y2="462" stroke="#f57c00" stroke-width="2" stroke-dasharray="6,3"/>
+  <circle cx="700" cy="462" r="4" fill="#f57c00"/>
+
+  <!-- 3.3V to QMC5883L -->
+  <line x1="620" y1="542" x2="700" y2="542" stroke="#f57c00" stroke-width="2" stroke-dasharray="6,3"/>
+  <circle cx="700" cy="542" r="4" fill="#f57c00"/>
+
+  <!-- 3.3V to WS2812 LED -->
+  <line x1="250" y1="642" x2="290" y2="642" stroke="#f57c00" stroke-width="2" stroke-dasharray="6,3"/>
+  <line x1="290" y1="642" x2="290" y2="750" stroke="#f57c00" stroke-width="2" stroke-dasharray="6,3"/>
+  <line x1="290" y1="750" x2="700" y2="750" stroke="#f57c00" stroke-width="2" stroke-dasharray="6,3"/>
+
+  <!-- 3.3V Label -->
+  <rect x="683" y="755" width="35" height="18" rx="3" fill="#ffe0b2" stroke="#f57c00"/>
+  <text x="700" y="768" text-anchor="middle" font-size="10" font-weight="bold" fill="#e65100">3.3V</text>
+
+  <!-- ======== LEGEND ======== -->
+  <rect x="800" y="190" width="200" height="280" rx="8" fill="#fafafa" stroke="#bdbdbd" stroke-width="1"/>
+  <text x="900" y="218" text-anchor="middle" font-size="14" font-weight="bold" fill="#424242">Legend</text>
+
+  <!-- Data lines -->
+  <text x="815" y="248" font-size="10" fill="#424242" font-weight="bold">Data Lines:</text>
+
+  <line x1="820" y1="268" x2="870" y2="268" stroke="#8e24aa" stroke-width="2"/>
+  <text x="880" y="272" font-size="10" fill="#424242">SPI1 (BNO085)</text>
+
+  <line x1="820" y1="292" x2="870" y2="292" stroke="#d32f2f" stroke-width="2"/>
+  <text x="880" y="296" font-size="10" fill="#424242">SPI2 (LoRa)</text>
+
+  <line x1="820" y1="316" x2="870" y2="316" stroke="#00897b" stroke-width="2"/>
+  <text x="880" y="320" font-size="10" fill="#424242">I2C Bus</text>
+
+  <line x1="820" y1="340" x2="870" y2="340" stroke="#ef6c00" stroke-width="2"/>
+  <text x="880" y="344" font-size="10" fill="#424242">UART</text>
+
+  <!-- Power lines -->
+  <text x="815" y="374" font-size="10" fill="#424242" font-weight="bold">Power Rails:</text>
+
+  <line x1="820" y1="394" x2="870" y2="394" stroke="#d32f2f" stroke-width="3" stroke-dasharray="6,3"/>
+  <text x="880" y="398" font-size="10" fill="#424242">5V (red)</text>
+
+  <line x1="820" y1="418" x2="870" y2="418" stroke="#f57c00" stroke-width="3" stroke-dasharray="6,3"/>
+  <text x="880" y="422" font-size="10" fill="#424242">3.3V (orange)</text>
+
+  <!-- Power summary -->
+  <line x1="815" y1="440" x2="985" y2="440" stroke="#e0e0e0" stroke-width="1"/>
+  <text x="900" y="458" text-anchor="middle" font-size="9" fill="#616161">Peak: ~1.25W (~338mA @ 3.7V)</text>
+  <text x="900" y="472" text-anchor="middle" font-size="9" fill="#616161">Avg: ~930mW (~251mA)</text>
+
+  <!-- ======== POWER BUDGET BOX ======== -->
+  <rect x="800" y="500" width="200" height="200" rx="8" fill="#fff8e1" stroke="#f9a825" stroke-width="1"/>
+  <text x="900" y="525" text-anchor="middle" font-size="12" font-weight="bold" fill="#f57f17">Power Budget</text>
+
+  <text x="815" y="550" font-size="9" fill="#424242">ESP32-S3: 80mA (3.3V)</text>
+  <text x="815" y="567" font-size="9" fill="#424242">BNO085: 12mA (3.3V)</text>
+  <text x="815" y="584" font-size="9" fill="#424242">E22 LoRa: 120mA TX (3.3V)</text>
+  <text x="815" y="601" font-size="9" fill="#424242">BMP585: 0.5mA (5V)</text>
+  <text x="815" y="618" font-size="9" fill="#424242">SCD40: 15mA (3.3V)</text>
+  <text x="815" y="635" font-size="9" fill="#424242">QMC5883L: 2mA (3.3V)</text>
+  <text x="815" y="652" font-size="9" fill="#424242">GPS: 25mA (5V)</text>
+  <text x="815" y="669" font-size="9" fill="#424242">SPS30: 60mA (5V)</text>
+  <text x="815" y="686" font-size="9" fill="#424242">WS2812: 20mA (3.3V)</text>
+
+  <!-- Runtime box at bottom -->
+  <rect x="800" y="710" width="200" height="50" rx="6" fill="#c8e6c9" stroke="#388e3c" stroke-width="1"/>
+  <text x="900" y="732" text-anchor="middle" font-size="11" font-weight="bold" fill="#2e7d32">Battery Runtime</text>
+  <text x="900" y="750" text-anchor="middle" font-size="12" fill="#388e3c">~8.5 hours (2670mAh)</text>
+
+</svg>

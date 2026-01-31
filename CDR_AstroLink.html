@@ -390,16 +390,9 @@
 </ul>
 
 <h4>System Block Diagram</h4>
-<div class="image-placeholder">
-    [TODO: Insert system block diagram showing:<br>
-    ESP32-S3 connected to:<br>
-    - SPI: BNO085 IMU<br>
-    - I2C: BMP585, SCD40, QMC5883L<br>
-    - UART1: GPS (M100-Pro)<br>
-    - UART2: SPS30<br>
-    - LoRa module (SX1278/SX1262)<br>
-    - Power system (LiPo + regulators)<br>
-    - Status LED (WS2812)]
+<div style="text-align: center; margin: 1em 0;">
+    <img src="block_diagram.svg" alt="AstroLink CanSat System Block Diagram" style="max-width: 100%; border: 1px solid #ccc;">
+    <p style="font-size: 9pt; color: #666; margin-top: 0.5em;"><em>Figure: System block diagram showing all components and connections</em></p>
 </div>
 
 <h3>2.2. Mechanical/structural design</h3>
@@ -522,7 +515,25 @@
 <h4>LoRa Communication</h4>
 <p>The current design uses an SX1278-based LoRa module operating at 433.2 MHz. The system is designed to allow module replacement if required to comply with Hungarian ISM band regulations (868 MHz band). The E22-900M30S (SX1262, 915 MHz) module is available as an alternative.</p>
 
-<div class="todo">[TODO: Add LoRa module pinout and connection details]</div>
+<p><strong>LoRa Module (EBYTE E22-900M30S) SPI2 Connection:</strong></p>
+<table>
+    <tr>
+        <th>E22 Pin</th>
+        <th>Function</th>
+        <th>ESP32-S3 GPIO</th>
+    </tr>
+    <tr><td>SCK (18)</td><td>SPI Clock</td><td>GPIO36</td></tr>
+    <tr><td>MISO (16)</td><td>SPI Data Out</td><td>GPIO37</td></tr>
+    <tr><td>MOSI (17)</td><td>SPI Data In</td><td>GPIO35</td></tr>
+    <tr><td>NSS (19)</td><td>Chip Select</td><td>GPIO38</td></tr>
+    <tr><td>NRST (15)</td><td>Reset (active low)</td><td>GPIO39</td></tr>
+    <tr><td>BUSY (14)</td><td>State Indicator</td><td>GPIO40</td></tr>
+    <tr><td>DIO1 (13)</td><td>Interrupt</td><td>GPIO41</td></tr>
+    <tr><td>RXEN (6)</td><td>RX Enable</td><td>GPIO42</td></tr>
+    <tr><td>TXEN (7)</td><td>TX Enable</td><td>GPIO2</td></tr>
+    <tr><td>VCC (9,10)</td><td>Power</td><td>3.3V</td></tr>
+    <tr><td>GND (1-5,11,12,20,22)</td><td>Ground</td><td>GND</td></tr>
+</table>
 
 <h4>Circuit Diagram</h4>
 <div class="image-placeholder">
@@ -994,9 +1005,9 @@
     </tr>
     <tr>
         <td>Power consumption</td>
-        <td>~243 mA avg / ~1.2W</td>
+        <td>~251 mA avg / ~1.25W</td>
         <td>4+ hours operation</td>
-        <td>Yes (~8.8 hours)</td>
+        <td>Yes (~8.5 hours)</td>
     </tr>
     <tr>
         <td>Total cost</td>
@@ -1031,9 +1042,9 @@
     </tr>
     <tr>
         <td>BMP585 Barometer</td>
-        <td>3.3</td>
+        <td>5.0</td>
         <td>0.5</td>
-        <td>1.7</td>
+        <td>2.5</td>
     </tr>
     <tr>
         <td>SCD40 CO2 Sensor</td>
@@ -1055,9 +1066,9 @@
     </tr>
     <tr>
         <td>M100-Pro HGLRC GPS</td>
-        <td>3.3</td>
+        <td>5.0</td>
         <td>25</td>
-        <td>83</td>
+        <td>125</td>
     </tr>
     <tr>
         <td>LoRa Module (SX1278)</td>
@@ -1075,7 +1086,7 @@
         <td><strong>Total power (sum of all)</strong></td>
         <td><strong>/</strong></td>
         <td><strong>/</strong></td>
-        <td><strong>~1207 mW</strong></td>
+        <td><strong>~1250 mW</strong></td>
     </tr>
 </table>
 
@@ -1089,16 +1100,16 @@
 
 <p><strong>Power consumption analysis:</strong></p>
 <ul>
-    <li>Total system power (from table above): ~1207 mW peak</li>
-    <li>Average power (considering LoRa TX duty cycle ~10%): ~900 mW</li>
-    <li>Average current at 3.7V: 900 mW / 3.7V = <strong>~243 mA</strong></li>
+    <li>Total system power (from table above): ~1250 mW peak</li>
+    <li>Average power (considering LoRa TX duty cycle ~10%): ~930 mW</li>
+    <li>Average current at 3.7V: 930 mW / 3.7V = <strong>~251 mA</strong></li>
 </ul>
 
 <p><strong>Estimated runtime:</strong></p>
 <ul>
     <li>Runtime = Capacity / Average current</li>
-    <li>Runtime = 2670 mAh / 243 mA = <strong>~11 hours</strong></li>
-    <li>With 80% efficiency margin: <strong>~8.8 hours</strong></li>
+    <li>Runtime = 2670 mAh / 251 mA = <strong>~10.6 hours</strong></li>
+    <li>With 80% efficiency margin: <strong>~8.5 hours</strong></li>
 </ul>
 
 <p><strong>Conclusion:</strong> The battery provides more than double the required 4-hour minimum operating time, ensuring sufficient margin for the mission and post-landing recovery operations.</p>
