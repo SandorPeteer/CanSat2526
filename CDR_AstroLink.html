@@ -7,7 +7,7 @@
     <style>
         @page {
             size: A4;
-            margin: 2cm;
+            margin: 2.5cm 2cm 2.5cm 2cm;
         }
 
         * {
@@ -17,66 +17,70 @@
         body {
             font-family: Verdana, Geneva, sans-serif;
             font-size: 11pt;
-            line-height: 1.4;
+            line-height: 1.5;
             color: #000;
-            max-width: 17cm;
+            max-width: 21cm;
             margin: 0 auto;
-            padding: 1cm;
+            padding: 2cm;
             background: #fff;
         }
 
         h1 {
-            font-size: 22pt;
+            font-size: 24pt;
             text-align: center;
-            margin-bottom: 0.3em;
-            margin-top: 0;
+            margin-bottom: 0.5em;
+            page-break-after: avoid;
         }
 
         h2 {
-            font-size: 13pt;
-            margin-top: 1.2em;
-            margin-bottom: 0.4em;
+            font-size: 14pt;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
             border-bottom: 1px solid #333;
-            padding-bottom: 0.15em;
+            padding-bottom: 0.2em;
+            page-break-after: avoid;
         }
 
         h3 {
-            font-size: 11pt;
-            margin-top: 1em;
-            margin-bottom: 0.3em;
+            font-size: 12pt;
+            margin-top: 1.2em;
+            margin-bottom: 0.4em;
+            page-break-after: avoid;
         }
 
         h4 {
-            font-size: 10pt;
+            font-size: 11pt;
             font-style: italic;
-            margin-top: 0.8em;
-            margin-bottom: 0.2em;
+            margin-top: 1em;
+            margin-bottom: 0.3em;
+            page-break-after: avoid;
         }
 
         p {
-            margin: 0.4em 0;
+            margin: 0.5em 0;
             text-align: justify;
         }
 
         ul, ol {
-            margin: 0.4em 0;
-            padding-left: 1.5em;
+            margin: 0.5em 0;
+            padding-left: 2em;
         }
 
         li {
-            margin: 0.2em 0;
+            margin: 0.3em 0;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 0.8em 0;
-            font-size: 9pt;
+            margin: 1em 0;
+            font-size: 10pt;
+            page-break-inside: avoid;
         }
 
         th, td {
             border: 1px solid #333;
-            padding: 4px 6px;
+            padding: 6px 8px;
             text-align: left;
         }
 
@@ -85,173 +89,173 @@
             font-weight: bold;
         }
 
-        /* Cover page styling */
         .cover-page {
             text-align: center;
-            min-height: 95vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            padding-top: 6cm;
-            border-bottom: 3px double #000;
-            margin-bottom: 1cm;
+            page-break-after: always;
+            padding-top: 5cm;
         }
 
         .cover-page h1 {
-            font-size: 26pt;
-            margin-bottom: 0.1em;
+            font-size: 28pt;
+            margin-bottom: 0.2em;
         }
 
         .cover-page h2 {
-            font-size: 18pt;
+            font-size: 20pt;
             border: none;
             margin-top: 0;
-            margin-bottom: 2em;
         }
 
         .cover-info {
-            margin-top: auto;
-            padding-bottom: 2cm;
+            margin-top: 8cm;
             text-align: left;
-            font-size: 11pt;
+            font-size: 12pt;
         }
 
         .cover-info p {
-            margin: 0.6em 0;
+            margin: 0.8em 0;
             text-align: left;
         }
 
-        /* TOC styling */
         .toc {
-            min-height: 90vh;
-            border-bottom: 3px double #000;
-            margin-bottom: 1cm;
-            padding-bottom: 1cm;
+            page-break-after: always;
         }
 
         .toc h2 {
             text-align: center;
             border: none;
-            font-size: 14pt;
-            margin-bottom: 1em;
         }
 
-        .toc-list {
+        .toc ul {
             list-style: none;
             padding-left: 0;
-            margin: 0;
         }
 
-        .toc-list li {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            margin: 0.3em 0;
-            font-size: 10pt;
-        }
-
-        .toc-list li.main-section {
+        .toc > ul > li {
+            margin: 0.8em 0;
             font-weight: bold;
-            margin-top: 0.6em;
-            font-size: 11pt;
         }
 
-        .toc-list li.sub-section {
+        .toc ul ul {
             padding-left: 1.5em;
+            font-weight: normal;
         }
 
-        .toc-title {
+        .toc ul ul li {
+            margin: 0.4em 0;
+        }
+
+        .toc li {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .toc li > a {
             flex: 1;
-            border-bottom: 1px dotted #666;
+            text-decoration: none;
+            color: #000;
+            border-bottom: 1px dotted #999;
             margin-right: 0.5em;
         }
 
+        .toc li > a:hover {
+            color: #0066cc;
+        }
+
         .toc-page {
-            min-width: 1.5em;
+            min-width: 2em;
             text-align: right;
+        }
+
+        .toc li > ul {
+            flex-basis: 100%;
         }
 
         .todo {
             background-color: #fff3cd;
             border: 1px solid #ffc107;
-            padding: 6px 10px;
-            margin: 0.4em 0;
+            padding: 8px 12px;
+            margin: 0.5em 0;
+            border-radius: 4px;
             font-style: italic;
             color: #856404;
-            font-size: 10pt;
         }
 
         .image-placeholder {
             border: 2px dashed #999;
             background-color: #f5f5f5;
-            padding: 1.5em;
+            padding: 2em;
             text-align: center;
-            margin: 0.8em 0;
+            margin: 1em 0;
             color: #666;
-            min-height: 120px;
-            font-size: 9pt;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .section {
+            page-break-inside: avoid;
+        }
+
+        .page-break {
+            page-break-before: always;
         }
 
         .signature-line {
-            margin-top: 2em;
+            margin-top: 3em;
             border-top: 1px solid #000;
-            width: 50%;
-            padding-top: 0.3em;
+            width: 60%;
+            padding-top: 0.5em;
         }
 
-        hr.section-break {
-            border: none;
-            border-top: 2px solid #333;
-            margin: 1.5em 0 1em 0;
+        .energy-table td:nth-child(2),
+        .energy-table td:nth-child(3),
+        .energy-table td:nth-child(4) {
+            text-align: center;
         }
 
-        /* Print styles */
+        .req-table td:nth-child(2),
+        .req-table td:nth-child(3),
+        .req-table td:nth-child(4) {
+            text-align: center;
+        }
+
+        .team-table td:nth-child(3),
+        .team-table td:nth-child(4) {
+            text-align: center;
+        }
+
         @media print {
             body {
                 padding: 0;
-                max-width: none;
             }
-
-            .cover-page {
-                page-break-after: always;
-                min-height: auto;
-                height: 100vh;
-                border-bottom: none;
-            }
-
-            .toc {
-                page-break-after: always;
-                min-height: auto;
-                border-bottom: none;
-            }
-
-            .page-break {
-                page-break-before: always;
-            }
-
             .todo {
                 background-color: #fff3cd !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
-
             th {
                 background-color: #b8cce4 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
-
-            .image-placeholder {
-                background-color: #f5f5f5 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+            @page {
+                @bottom-center {
+                    content: counter(page);
+                }
             }
+        }
+
+        /* Page numbers for print - footer style */
+        body {
+            counter-reset: page;
         }
     </style>
 </head>
 <body>
 
-<!-- ==================== COVER PAGE ==================== -->
+<!-- COVER PAGE -->
 <div class="cover-page">
     <h1>Critical Design Review</h1>
     <h2>(CDR)</h2>
@@ -264,31 +268,14 @@
     </div>
 </div>
 
-<!-- ==================== TABLE OF CONTENTS ==================== -->
+<!-- TABLE OF CONTENTS -->
 <div class="toc">
     <h2>Table of Contents</h2>
-    <ul class="toc-list">
-        <li class="main-section"><span class="toc-title">1. INTRODUCTION</span><span class="toc-page">3</span></li>
-        <li class="sub-section"><span class="toc-title">1.1. Introduction of the team</span><span class="toc-page">3</span></li>
-        <li class="sub-section"><span class="toc-title">1.2. Mission objectives</span><span class="toc-page">3</span></li>
-        <li class="main-section"><span class="toc-title">2. CANSAT DESCRIPTION</span><span class="toc-page">4</span></li>
-        <li class="sub-section"><span class="toc-title">2.1. Overview of the mission</span><span class="toc-page">4</span></li>
-        <li class="sub-section"><span class="toc-title">2.2. Mechanical/structural design</span><span class="toc-page">5</span></li>
-        <li class="sub-section"><span class="toc-title">2.3. Electrical design</span><span class="toc-page">6</span></li>
-        <li class="sub-section"><span class="toc-title">2.4. Software design</span><span class="toc-page">7</span></li>
-        <li class="sub-section"><span class="toc-title">2.5. Recovery system</span><span class="toc-page">9</span></li>
-        <li class="sub-section"><span class="toc-title">2.6. Ground station</span><span class="toc-page">10</span></li>
-        <li class="main-section"><span class="toc-title">3. PROJECT PLANNING</span><span class="toc-page">11</span></li>
-        <li class="sub-section"><span class="toc-title">3.1. Time schedule of CanSat preparation</span><span class="toc-page">11</span></li>
-        <li class="sub-section"><span class="toc-title">3.2. Resource estimation</span><span class="toc-page">11</span></li>
-        <li class="main-section"><span class="toc-title">4. OUTREACH PROGRAMME</span><span class="toc-page">13</span></li>
-        <li class="main-section"><span class="toc-title">5. REQUIREMENTS</span><span class="toc-page">14</span></li>
-        <li class="sub-section"><span class="toc-title">5.1. Preliminary energy budget</span><span class="toc-page">15</span></li>
-    </ul>
+    <div id="toc-content"></div>
 </div>
 
-<!-- ==================== 1. INTRODUCTION ==================== -->
-<h2 class="page-break">1. INTRODUCTION</h2>
+<!-- 1. INTRODUCTION -->
+<h2>1. INTRODUCTION</h2>
 
 <h3>1.1. Introduction of the team</h3>
 
@@ -296,7 +283,7 @@
 
 <h4>Team Members</h4>
 
-<table>
+<table class="team-table">
     <tr>
         <th>Name</th>
         <th>Role</th>
@@ -377,14 +364,14 @@
 <h4>Success Criteria</h4>
 <ul>
     <li>Successfully deploy from the launch vehicle and descend under parachute</li>
-    <li>Collect continuous sensor data throughout the flight</li>
+    <li>Collect continuous sensor data throughout the flight (temperature, pressure, particulate matter, GPS position)</li>
     <li>Transmit real-time telemetry to the ground station via LoRa</li>
     <li>Store all flight data onboard for post-flight analysis</li>
     <li>Safely land and be recovered intact</li>
     <li>Remain operational for at least 4 hours after landing</li>
 </ul>
 
-<!-- ==================== 2. CANSAT DESCRIPTION ==================== -->
+<!-- 2. CANSAT DESCRIPTION -->
 <h2 class="page-break">2. CANSAT DESCRIPTION</h2>
 
 <h3>2.1. Overview of the mission</h3>
@@ -396,26 +383,33 @@
     <li><strong>Microcontroller:</strong> ESP32-S3 (dual-core, WiFi capable)</li>
     <li><strong>Primary sensors:</strong> BMP585 (pressure/temperature), GPS module (M100-Pro HGLRC)</li>
     <li><strong>Secondary mission sensor:</strong> SPS30 particulate matter sensor</li>
-    <li><strong>Supporting sensors:</strong> BNO085 IMU, SCD40 (CO2/humidity), QMC5883L (magnetometer)</li>
-    <li><strong>Communication:</strong> LoRa radio (SX1278 at 433.2 MHz / 868 MHz ISM band)</li>
-    <li><strong>Power:</strong> Li-Ion 18650 battery with voltage regulation</li>
+    <li><strong>Supporting sensors:</strong> BNO085 IMU (orientation), SCD40 (CO2/humidity), QMC5883L (magnetometer)</li>
+    <li><strong>Communication:</strong> LoRa radio (SX1278 at 433.2 MHz, with option for 868 MHz ISM band)</li>
+    <li><strong>Power:</strong> LiPo battery with voltage regulation</li>
     <li><strong>Recovery:</strong> Parachute system</li>
 </ul>
 
 <h4>System Block Diagram</h4>
 <div class="image-placeholder">
-    [TODO: Insert system block diagram showing ESP32-S3 connected to:<br>
-    SPI: BNO085 IMU | I2C: BMP585, SCD40, QMC5883L | UART1: GPS | UART2: SPS30 | LoRa module | Power system | Status LED]
+    [TODO: Insert system block diagram showing:<br>
+    ESP32-S3 connected to:<br>
+    - SPI: BNO085 IMU<br>
+    - I2C: BMP585, SCD40, QMC5883L<br>
+    - UART1: GPS (M100-Pro)<br>
+    - UART2: SPS30<br>
+    - LoRa module (SX1278/SX1262)<br>
+    - Power system (LiPo + regulators)<br>
+    - Status LED (WS2812)]
 </div>
 
-<h3 class="page-break">2.2. Mechanical/structural design</h3>
+<h3>2.2. Mechanical/structural design</h3>
 
-<p>The CanSat structure is designed to fit within the standard dimensions (66 mm diameter, 115 mm height) while protecting all components during launch, descent, and landing. The structure is 3D printed using a combination of materials.</p>
+<p>The CanSat structure is designed to fit within the standard dimensions (66 mm diameter, 115 mm height) while protecting all components during launch, descent, and landing. The structure is 3D printed using a combination of materials selected for their specific properties.</p>
 
 <h4>Materials</h4>
 <ul>
-    <li><strong>TPU (Thermoplastic Polyurethane):</strong> Shock-absorbing components and flexible mounting points</li>
-    <li><strong>PETG (Polyethylene Terephthalate Glycol):</strong> Rigid structural components requiring higher strength</li>
+    <li><strong>TPU (Thermoplastic Polyurethane):</strong> Used for shock-absorbing components and flexible mounting points. Different shore hardness values are used depending on the required flexibility.</li>
+    <li><strong>PETG (Polyethylene Terephthalate Glycol):</strong> Used for rigid structural components requiring higher strength and temperature resistance.</li>
 </ul>
 
 <h4>Structural Layout</h4>
@@ -433,23 +427,44 @@
         <th>Material</th>
         <th>Purpose</th>
     </tr>
-    <tr><td class="todo">[TODO: Main body]</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td></tr>
-    <tr><td class="todo">[TODO: Top cap]</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td></tr>
-    <tr><td class="todo">[TODO: Bottom cap]</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td></tr>
-    <tr><td class="todo">[TODO: Sensor mount]</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td></tr>
-    <tr><td class="todo">[TODO: Battery holder]</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td></tr>
+    <tr>
+        <td class="todo">[TODO: Main body]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td class="todo">[TODO: Top cap]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td class="todo">[TODO: Bottom cap]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td class="todo">[TODO: Sensor mount]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td class="todo">[TODO: Battery holder]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
 </table>
 
 <h3 class="page-break">2.3. Electrical design</h3>
 
-<p>The electrical system is built around the ESP32-S3 microcontroller, providing sufficient processing power, memory, and connectivity for our mission requirements.</p>
+<p>The electrical system is built around the ESP32-S3 microcontroller, which provides sufficient processing power, memory, and connectivity options for our mission requirements.</p>
 
 <h4>Microcontroller Specifications</h4>
 <ul>
     <li><strong>MCU:</strong> ESP32-S3-DevKitC-1 N16R8</li>
     <li><strong>Processor:</strong> Dual-core Xtensa LX7 @ 240 MHz</li>
-    <li><strong>RAM:</strong> 512 KB SRAM + 8 MB PSRAM</li>
+    <li><strong>RAM:</strong> 512 KB SRAM + 8 MB PSRAM (external)</li>
     <li><strong>Flash:</strong> 16 MB (quad SPI)</li>
+    <li><strong>Interfaces:</strong> SPI, I2C, UART, GPIO</li>
 </ul>
 
 <h4>Sensor Connections</h4>
@@ -463,7 +478,7 @@
     <tr>
         <td>BNO085 (IMU)</td>
         <td>SPI</td>
-        <td>GPIO5,6,7,15,10,11</td>
+        <td>GPIO5 (SCK), GPIO6 (MOSI), GPIO7 (MISO), GPIO15 (CS), GPIO10 (INT), GPIO11 (RST)</td>
         <td>SPI Mode</td>
     </tr>
     <tr>
@@ -488,7 +503,7 @@
         <td>M100-Pro HGLRC (GPS)</td>
         <td>UART1</td>
         <td>GPIO17 (TX), GPIO18 (RX)</td>
-        <td>38400 baud</td>
+        <td>115200 baud</td>
     </tr>
     <tr>
         <td>SPS30 (Particulate)</td>
@@ -505,7 +520,8 @@
 </table>
 
 <h4>LoRa Communication</h4>
-<p>Current design uses SX1278-based LoRa module at 433.2 MHz. System allows module replacement for 868 MHz ISM band compliance. The E22-900M30S (SX1262) is available as alternative.</p>
+<p>The current design uses an SX1278-based LoRa module operating at 433.2 MHz. The system is designed to allow module replacement if required to comply with Hungarian ISM band regulations (868 MHz band). The E22-900M30S (SX1262, 915 MHz) module is available as an alternative.</p>
+
 <div class="todo">[TODO: Add LoRa module pinout and connection details]</div>
 
 <h4>Circuit Diagram</h4>
@@ -517,13 +533,14 @@
 <ul>
     <li><strong>Battery:</strong> Cellevia CL-18650-29E/1S1P (Li-Ion 18650 cell)</li>
     <li><strong>Nominal Voltage:</strong> 3.7V</li>
-    <li><strong>Capacity:</strong> 2670 mAh (2.67 Ah) / 9.75 Wh</li>
-    <li><strong>Voltage Regulator:</strong> 3.3V LDO for MCU and sensors, 5V boost for SPS30</li>
+    <li><strong>Capacity:</strong> 2670 mAh (2.67 Ah)</li>
+    <li><strong>Energy:</strong> 9.75 Wh</li>
+    <li><strong>Voltage Regulator:</strong> 3.3V LDO for MCU and most sensors, 5V boost converter for SPS30</li>
 </ul>
 
 <h3 class="page-break">2.4. Software design</h3>
 
-<p>The CanSat firmware is developed using ESP-IDF framework with FreeRTOS for real-time task management.</p>
+<p>The CanSat firmware is developed using the ESP-IDF framework with FreeRTOS for real-time task management. The software architecture is designed for reliability, modularity, and efficient data handling.</p>
 
 <h4>Development Environment</h4>
 <ul>
@@ -534,7 +551,7 @@
 </ul>
 
 <h4>Software Architecture</h4>
-<p>Multi-task architecture with dedicated task per sensor:</p>
+<p>The firmware uses a multi-task architecture where each sensor has its own dedicated task running at an appropriate priority and frequency:</p>
 
 <table>
     <tr>
@@ -543,21 +560,56 @@
         <th>Frequency</th>
         <th>Purpose</th>
     </tr>
-    <tr><td>gps_task</td><td>8</td><td>~1 Hz</td><td>GPS UBX protocol parsing, position/velocity</td></tr>
-    <tr><td>sps30_task</td><td>10</td><td>~1 Hz</td><td>Particulate matter measurement (secondary mission)</td></tr>
-    <tr><td>bno085_task</td><td>5</td><td>50 Hz</td><td>IMU quaternion, acceleration, gyroscope</td></tr>
-    <tr><td>bmp585_task</td><td>6</td><td>10 Hz</td><td>Pressure, temperature, altitude</td></tr>
-    <tr><td>scd40_task</td><td>6</td><td>1 Hz</td><td>CO2, temperature, humidity</td></tr>
-    <tr><td>lora_task</td><td>7</td><td>Variable</td><td>Telemetry transmission</td></tr>
+    <tr>
+        <td>gps_task</td>
+        <td>8</td>
+        <td>~1 Hz</td>
+        <td>GPS UBX protocol parsing, position/velocity data</td>
+    </tr>
+    <tr>
+        <td>sps30_task</td>
+        <td>10</td>
+        <td>~1 Hz</td>
+        <td>Particulate matter measurement (secondary mission)</td>
+    </tr>
+    <tr>
+        <td>bno085_task</td>
+        <td>5</td>
+        <td>50 Hz</td>
+        <td>IMU quaternion, acceleration, gyroscope</td>
+    </tr>
+    <tr>
+        <td>bmp585_task</td>
+        <td>6</td>
+        <td>10 Hz</td>
+        <td>Pressure, temperature, altitude calculation</td>
+    </tr>
+    <tr>
+        <td>scd40_task</td>
+        <td>6</td>
+        <td>1 Hz</td>
+        <td>CO2, temperature, humidity</td>
+    </tr>
+    <tr>
+        <td>lora_task</td>
+        <td>7</td>
+        <td>Variable</td>
+        <td>Telemetry transmission to ground station</td>
+    </tr>
 </table>
 
 <h4>Program Flow Diagram</h4>
 <div class="image-placeholder">
-    [TODO: Insert software flowchart showing initialization, sensor loops, data storage, LoRa TX, flight state machine]
+    [TODO: Insert software flowchart showing:<br>
+    1. Initialization sequence<br>
+    2. Sensor task loops<br>
+    3. Data collection and storage<br>
+    4. LoRa transmission<br>
+    5. Flight state machine (pre-flight, flight, landed)]
 </div>
 
 <h4>On-Board Data Handling (OBDH)</h4>
-<p>Compact 64-byte binary record format:</p>
+<p>The system uses a compact 64-byte binary record format to store flight data efficiently:</p>
 
 <table>
     <tr>
@@ -565,26 +617,58 @@
         <th>Size (bytes)</th>
         <th>Description</th>
     </tr>
-    <tr><td>Timestamp</td><td>4</td><td>Unix time or uptime</td></tr>
-    <tr><td>GPS data</td><td>20</td><td>Lat, lon, alt, velocity, fix, sats</td></tr>
-    <tr><td>Orientation</td><td>10</td><td>Quaternion + accuracy</td></tr>
-    <tr><td>Magnetometer</td><td>8</td><td>X, Y, Z + heading</td></tr>
-    <tr><td>BMP585</td><td>8</td><td>Pressure, temp, altitude</td></tr>
-    <tr><td>SCD40</td><td>6</td><td>CO2, temp, humidity</td></tr>
-    <tr><td>SPS30</td><td>8</td><td>PM1.0, PM2.5, PM4.0, PM10</td></tr>
-    <tr><td><strong>Total</strong></td><td><strong>64</strong></td><td>Per sample record</td></tr>
+    <tr>
+        <td>Timestamp</td>
+        <td>4</td>
+        <td>Unix time or uptime in seconds</td>
+    </tr>
+    <tr>
+        <td>GPS data</td>
+        <td>20</td>
+        <td>Latitude, longitude, altitude, velocity, fix type, satellites</td>
+    </tr>
+    <tr>
+        <td>Orientation</td>
+        <td>10</td>
+        <td>Quaternion (i, j, k, w) and accuracy status</td>
+    </tr>
+    <tr>
+        <td>Magnetometer</td>
+        <td>8</td>
+        <td>X, Y, Z raw values and computed heading</td>
+    </tr>
+    <tr>
+        <td>BMP585</td>
+        <td>8</td>
+        <td>Pressure (Pa), temperature, barometric altitude</td>
+    </tr>
+    <tr>
+        <td>SCD40</td>
+        <td>6</td>
+        <td>CO2 (ppm), temperature, humidity</td>
+    </tr>
+    <tr>
+        <td>SPS30</td>
+        <td>8</td>
+        <td>PM1.0, PM2.5, PM4.0, PM10 concentrations</td>
+    </tr>
+    <tr>
+        <td><strong>Total</strong></td>
+        <td><strong>64</strong></td>
+        <td>Per sample record size</td>
+    </tr>
 </table>
 
 <h4>Data Storage</h4>
 <ul>
-    <li><strong>PSRAM buffer:</strong> Up to 86,400 records (24h at 1 Hz)</li>
-    <li><strong>LittleFS:</strong> Persistent storage of flight recordings</li>
-    <li><strong>Data per flight:</strong> ~7.5 KB (descent) + pre/post data</li>
+    <li><strong>PSRAM buffer:</strong> Up to 86,400 records (24 hours at 1 Hz) in ring buffer</li>
+    <li><strong>LittleFS:</strong> Persistent storage of flight recordings as binary files</li>
+    <li><strong>Estimated data per flight:</strong> ~64 bytes × 120 seconds = ~7.5 KB (descent only), plus pre/post flight data</li>
 </ul>
 
 <h3 class="page-break">2.5. Recovery system</h3>
 
-<p>The recovery system ensures safe descent and landing meeting the required 8-11 m/s descent rate.</p>
+<p>The recovery system ensures safe descent and landing of the CanSat while meeting the required descent rate of 8-11 m/s.</p>
 
 <h4>Parachute Specifications</h4>
 <div class="todo">[TODO: Németh Imre - Add parachute details:
@@ -594,13 +678,21 @@
     <li>Material</li>
     <li>Line length and material</li>
     <li>Attachment method to CanSat</li>
-</ul>]</div>
+</ul>
+]</div>
 
 <h4>Descent Rate Calculation</h4>
-<div class="todo">[TODO: Add calculation showing expected descent rate based on mass (300-350g), parachute area, drag coefficient]</div>
+<div class="todo">[TODO: Add calculation showing expected descent rate based on:
+<ul>
+    <li>CanSat mass (target: 300-350g)</li>
+    <li>Parachute area</li>
+    <li>Drag coefficient</li>
+    <li>Expected descent rate result</li>
+</ul>
+]</div>
 
 <h4>Estimated Descent Duration</h4>
-<p>From 1000 m altitude at 10 m/s descent rate: approximately <strong>100 seconds</strong>.</p>
+<p>From 1000 m altitude at 10 m/s descent rate: approximately 100 seconds.</p>
 
 <h4>Recovery System Diagram</h4>
 <div class="image-placeholder">
@@ -612,70 +704,164 @@
 
 <h3>2.6. Ground station</h3>
 
-<p>The ground station receives telemetry via LoRa radio link and provides real-time visualization and logging.</p>
+<p>The ground station receives telemetry data from the CanSat via LoRa radio link and provides real-time visualization and data logging capabilities.</p>
 
 <h4>Hardware Components</h4>
 <ul>
-    <li><strong>Receiver:</strong> LoRa module (SX1278/SX1262) connected to laptop</li>
+    <li><strong>Receiver:</strong> LoRa module (SX1278/SX1262) connected to laptop/computer</li>
     <li><strong>Antenna:</strong> <span class="todo">[TODO: Specify antenna type and gain]</span></li>
     <li><strong>Computer:</strong> Laptop running ground station software</li>
 </ul>
 
 <h4>Ground Station Software</h4>
-<p>Web-based interface providing:</p>
+<p>The ground station features a web-based interface providing:</p>
 <ul>
     <li>Real-time GPS position tracking and map display</li>
-    <li>Live sensor data visualization</li>
+    <li>Live sensor data visualization (temperature, pressure, altitude, particulate matter)</li>
     <li>3D orientation display from IMU data</li>
-    <li>Data logging and flight playback</li>
-    <li>Connection status indicators</li>
+    <li>Data logging to file for post-flight analysis</li>
+    <li>Flight data playback and charting</li>
+    <li>Connection status and signal quality indicators</li>
 </ul>
 
-<div class="image-placeholder">
-    [TODO: Insert screenshot of ground station interface]
+<div style="text-align: center; margin: 1em 0;">
+    <img src="FlightViewer_CanSat.png" alt="Flight Data Viewer Interface" style="max-width: 100%; border: 1px solid #ccc;">
+    <p style="font-size: 9pt; color: #666; margin-top: 0.5em;"><em>Figure: Flight Data Viewer - Web-based interface for reviewing recorded flight data</em></p>
 </div>
 
 <h4>Radio Frequency</h4>
-<p><strong>Preferred:</strong> 433 MHz ISM band (current testing at 433.2 MHz)<br>
-<strong>Alternative:</strong> 868 MHz ISM band (Hungarian amateur regulations compliant)<br>
-Frequency changeable via software on launch day.</p>
+<p><strong>Preferred frequency band:</strong> 433 MHz ISM band (current testing at 433.2 MHz)</p>
+<p><strong>Alternative:</strong> 868 MHz ISM band (compliant with Hungarian amateur radio regulations)</p>
+<p>The system is designed to allow frequency changes via software configuration, even on the day of the launch event.</p>
 
-<!-- ==================== 3. PROJECT PLANNING ==================== -->
+<!-- 3. PROJECT PLANNING -->
 <h2 class="page-break">3. PROJECT PLANNING</h2>
 
 <h3>3.1. Time schedule of CanSat preparation</h3>
 
-<div class="todo">[TODO: Add Gantt chart or timeline showing design, procurement, prototyping, software development, hardware integration, testing, CDR submission (16 Feb 2026), final assembly, launch preparation]</div>
+<div class="todo">[TODO: Add Gantt chart or timeline showing:
+<ul>
+    <li>Design phase (completed dates)</li>
+    <li>Component procurement</li>
+    <li>Prototyping phase</li>
+    <li>Software development milestones</li>
+    <li>Hardware integration</li>
+    <li>Testing phases</li>
+    <li>CDR submission (16 February 2026)</li>
+    <li>Final assembly</li>
+    <li>Launch campaign preparation</li>
+</ul>
+]</div>
 
 <h3>3.2. Resource estimation</h3>
 
 <h4>3.2.1. Budget</h4>
+
 <p>Total budget must not exceed 500 EUR. Exchange rate: 400 HUF/EUR.</p>
 
 <table>
     <tr>
         <th>Component</th>
-        <th>Qty</th>
-        <th>Unit (EUR)</th>
+        <th>Quantity</th>
+        <th>Unit Price (EUR)</th>
         <th>Total (EUR)</th>
         <th>Sponsored</th>
     </tr>
-    <tr><td>ESP32-S3-DevKitC-1 N16R8</td><td>1</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td></tr>
-    <tr><td>BNO085 IMU</td><td>1</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td></tr>
-    <tr><td>BMP585 Pressure Sensor</td><td>1</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td></tr>
-    <tr><td>SCD40 CO2 Sensor</td><td>1</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td></tr>
-    <tr><td>QMC5883L Magnetometer</td><td>1</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td></tr>
-    <tr><td>SPS30 Particulate Sensor</td><td>1</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td></tr>
-    <tr><td>M100-Pro HGLRC GPS</td><td>1</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td></tr>
-    <tr><td>LoRa Module (SX1278)</td><td>2</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td></tr>
-    <tr><td>Li-Ion Battery (Cellevia CL-18650-29E)</td><td>1</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td></tr>
-    <tr><td>3D Printing Filament (TPU/PETG)</td><td>-</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td></tr>
-    <tr><td>Parachute materials</td><td>-</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td></tr>
-    <tr><td>Wires, connectors, misc</td><td>-</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td><td class="todo">[TODO]</td></tr>
-    <tr><td><strong>TOTAL</strong></td><td></td><td></td><td class="todo"><strong>[TODO]</strong></td><td></td></tr>
+    <tr>
+        <td>ESP32-S3-DevKitC-1 N16R8</td>
+        <td>1</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>BNO085 IMU</td>
+        <td>1</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>BMP585 Pressure Sensor</td>
+        <td>1</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>SCD40 CO2 Sensor</td>
+        <td>1</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>QMC5883L Magnetometer</td>
+        <td>1</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>SPS30 Particulate Sensor</td>
+        <td>1</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>M100-Pro HGLRC GPS</td>
+        <td>1</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>LoRa Module (SX1278)</td>
+        <td>2</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Li-Ion Battery (Cellevia CL-18650-29E)</td>
+        <td>1</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>3D Printing Filament (TPU/PETG)</td>
+        <td>-</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Parachute materials</td>
+        <td>-</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Wires, connectors, misc</td>
+        <td>-</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td><strong>TOTAL</strong></td>
+        <td></td>
+        <td></td>
+        <td class="todo"><strong>[TODO]</strong></td>
+        <td></td>
+    </tr>
 </table>
 
 <h4>3.2.2. External support</h4>
+
 <div class="todo">[TODO: List sponsors, supporting institutions, facilities access, etc.]</div>
 
 <h4>3.2.3. Test plan</h4>
@@ -687,17 +873,57 @@ Frequency changeable via software on launch day.</p>
         <th>Method</th>
         <th>Status</th>
     </tr>
-    <tr><td>Sensor validation</td><td>Verify accurate readings</td><td>Compare with reference</td><td class="todo">[TODO]</td></tr>
-    <tr><td>LoRa range test</td><td>Verify >1 km range</td><td>Ground distance test + RSSI</td><td class="todo">[TODO]</td></tr>
-    <tr><td>Power endurance</td><td>Verify 4+ hour battery</td><td>Full operation until depletion</td><td class="todo">[TODO]</td></tr>
-    <tr><td>Vibration test</td><td>Structural integrity</td><td>Shake test</td><td class="todo">[TODO]</td></tr>
-    <tr><td>Drop test</td><td>Parachute + descent rate</td><td>Drop from height</td><td class="todo">[TODO]</td></tr>
-    <tr><td>Impact test</td><td>Landing survival</td><td>Drop at expected velocity</td><td class="todo">[TODO]</td></tr>
-    <tr><td>Cold test</td><td>Low temp operation</td><td>Freezer at -10°C</td><td class="todo">[TODO]</td></tr>
-    <tr><td>Integration test</td><td>Full system verification</td><td>Mission simulation</td><td class="todo">[TODO]</td></tr>
+    <tr>
+        <td>Sensor validation</td>
+        <td>Verify all sensors provide accurate readings</td>
+        <td>Compare with reference instruments</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>LoRa range test</td>
+        <td>Verify communication range exceeds 1 km</td>
+        <td>Ground-level distance test with RSSI logging</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Power endurance</td>
+        <td>Verify 4+ hour battery life</td>
+        <td>Full system operation until battery depletion</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Vibration test</td>
+        <td>Verify structural integrity under launch conditions</td>
+        <td>Shake test / vibration table</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Drop test</td>
+        <td>Verify parachute deployment and descent rate</td>
+        <td>Drop from height with full system active</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Impact test</td>
+        <td>Verify survival of landing impact</td>
+        <td>Drop onto various surfaces at expected velocity</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Cold test</td>
+        <td>Verify operation at low temperatures</td>
+        <td>Operation in freezer at -10°C</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Integration test</td>
+        <td>Full system functional verification</td>
+        <td>Complete mission simulation</td>
+        <td class="todo">[TODO]</td>
+    </tr>
 </table>
 
-<!-- ==================== 4. OUTREACH PROGRAMME ==================== -->
+<!-- 4. OUTREACH PROGRAMME -->
 <h2 class="page-break">4. OUTREACH PROGRAMME</h2>
 
 <div class="todo">[TODO: Add outreach information:
@@ -709,73 +935,175 @@ Frequency changeable via software on launch day.</p>
     <li>Planned activities before launch</li>
     <li>Logo/branding materials</li>
     <li>Photos of outreach activities</li>
-</ul>]</div>
+</ul>
+]</div>
 
-<!-- ==================== 5. REQUIREMENTS ==================== -->
+<!-- 5. REQUIREMENTS -->
 <h2 class="page-break">5. REQUIREMENTS</h2>
 
-<p>Summary of how AstroLink CanSat meets competition requirements:</p>
+<p>The following table summarizes how the AstroLink CanSat meets the competition requirements:</p>
 
-<table>
+<table class="req-table">
     <tr>
         <th>Characteristic</th>
         <th>Quantity (unit)</th>
         <th>Requirement</th>
-        <th>Eligible</th>
+        <th>Eligible (Yes/No)</th>
     </tr>
-    <tr><td>Height of CanSat</td><td class="todo">[TODO] mm</td><td>≤ 115 mm</td><td class="todo">[TODO]</td></tr>
-    <tr><td>Mass of CanSat</td><td class="todo">[TODO] g</td><td>300-350 g</td><td class="todo">[TODO]</td></tr>
-    <tr><td>Diameter of CanSat</td><td class="todo">[TODO] mm</td><td>≤ 66 mm</td><td class="todo">[TODO]</td></tr>
-    <tr><td>Recovery system length</td><td class="todo">[TODO] m</td><td>-</td><td class="todo">[TODO]</td></tr>
-    <tr><td>Flight time scheduled</td><td>~100 s</td><td>≤ 120 s recommended</td><td>Yes</td></tr>
-    <tr><td>Calculated descent rate</td><td class="todo">[TODO] m/s</td><td>5-12 m/s (8-11 rec.)</td><td class="todo">[TODO]</td></tr>
-    <tr><td>Radio frequency</td><td>433.2 / 868 MHz</td><td>HU amateur regs</td><td>Yes</td></tr>
-    <tr><td>Power consumption</td><td>~243 mA / ~1.2W</td><td>4+ hours operation</td><td>Yes (~8.8h)</td></tr>
-    <tr><td>Total cost</td><td class="todo">[TODO] EUR</td><td>≤ 500 EUR</td><td class="todo">[TODO]</td></tr>
+    <tr>
+        <td>Height of the CanSat</td>
+        <td class="todo">[TODO] mm</td>
+        <td>≤ 115 mm</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Mass of the CanSat</td>
+        <td class="todo">[TODO] g</td>
+        <td>300-350 g</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Diameter of the CanSat</td>
+        <td class="todo">[TODO] mm</td>
+        <td>≤ 66 mm</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Length of the recovery system</td>
+        <td class="todo">[TODO] m</td>
+        <td>-</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Flight time scheduled</td>
+        <td>~100 s</td>
+        <td>≤ 120 s recommended</td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td>Calculated descent rate</td>
+        <td class="todo">[TODO] m/s</td>
+        <td>5-12 m/s (8-11 recommended)</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Radio frequency used</td>
+        <td>433.2 MHz / 868 MHz</td>
+        <td>Hungarian amateur regulations</td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td>Power consumption</td>
+        <td>~243 mA avg / ~1.2W</td>
+        <td>4+ hours operation</td>
+        <td>Yes (~8.8 hours)</td>
+    </tr>
+    <tr>
+        <td>Total cost</td>
+        <td class="todo">[TODO] EUR</td>
+        <td>≤ 500 EUR</td>
+        <td class="todo">[TODO]</td>
+    </tr>
 </table>
 
 <h3>5.1. Preliminary energy budget</h3>
 
-<p>Power consumption of each component:</p>
+<p>The following table details the power consumption of each component:</p>
 
-<table>
+<table class="energy-table">
     <tr>
         <th>Device</th>
         <th>Voltage (V)</th>
         <th>Current (mA)</th>
         <th>Power (mW)</th>
     </tr>
-    <tr><td>ESP32-S3 MCU</td><td>3.3</td><td>80 (typical)</td><td>264</td></tr>
-    <tr><td>BNO085 IMU</td><td>3.3</td><td>12</td><td>40</td></tr>
-    <tr><td>BMP585 Barometer</td><td>3.3</td><td>0.5</td><td>1.7</td></tr>
-    <tr><td>SCD40 CO2 Sensor</td><td>3.3</td><td>15</td><td>50</td></tr>
-    <tr><td>QMC5883L Magnetometer</td><td>3.3</td><td>2</td><td>6.6</td></tr>
-    <tr><td>SPS30 Particulate Sensor</td><td>5.0</td><td>60</td><td>300</td></tr>
-    <tr><td>M100-Pro HGLRC GPS</td><td>3.3</td><td>25</td><td>83</td></tr>
-    <tr><td>LoRa Module (SX1278)</td><td>3.3</td><td>120 (TX)</td><td>396</td></tr>
-    <tr><td>WS2812 Status LED</td><td>3.3</td><td>20</td><td>66</td></tr>
-    <tr><td><strong>Total power</strong></td><td><strong>/</strong></td><td><strong>/</strong></td><td><strong>~1207 mW</strong></td></tr>
+    <tr>
+        <td>ESP32-S3 MCU</td>
+        <td>3.3</td>
+        <td>80 (typical)</td>
+        <td>264</td>
+    </tr>
+    <tr>
+        <td>BNO085 IMU</td>
+        <td>3.3</td>
+        <td>12</td>
+        <td>40</td>
+    </tr>
+    <tr>
+        <td>BMP585 Barometer</td>
+        <td>3.3</td>
+        <td>0.5</td>
+        <td>1.7</td>
+    </tr>
+    <tr>
+        <td>SCD40 CO2 Sensor</td>
+        <td>3.3</td>
+        <td>15</td>
+        <td>50</td>
+    </tr>
+    <tr>
+        <td>QMC5883L Magnetometer</td>
+        <td>3.3</td>
+        <td>2</td>
+        <td>6.6</td>
+    </tr>
+    <tr>
+        <td>SPS30 Particulate Sensor</td>
+        <td>5.0</td>
+        <td>60</td>
+        <td>300</td>
+    </tr>
+    <tr>
+        <td>M100-Pro HGLRC GPS</td>
+        <td>3.3</td>
+        <td>25</td>
+        <td>83</td>
+    </tr>
+    <tr>
+        <td>LoRa Module (SX1278)</td>
+        <td>3.3</td>
+        <td>120 (TX)</td>
+        <td>396</td>
+    </tr>
+    <tr>
+        <td>WS2812 Status LED</td>
+        <td>3.3</td>
+        <td>20</td>
+        <td>66</td>
+    </tr>
+    <tr>
+        <td><strong>Total power (sum of all)</strong></td>
+        <td><strong>/</strong></td>
+        <td><strong>/</strong></td>
+        <td><strong>~1207 mW</strong></td>
+    </tr>
 </table>
 
 <h4>Battery Life Calculation</h4>
-<p><strong>Battery:</strong> Cellevia CL-18650-29E/1S1P — Capacity: 2670 mAh, Energy: 9.75 Wh, Voltage: 3.7V</p>
+<p><strong>Battery:</strong> Cellevia CL-18650-29E/1S1P</p>
+<ul>
+    <li><strong>Capacity:</strong> 2670 mAh</li>
+    <li><strong>Energy:</strong> 9.75 Wh</li>
+    <li><strong>Nominal voltage:</strong> 3.7V</li>
+</ul>
 
 <p><strong>Power consumption analysis:</strong></p>
 <ul>
-    <li>Peak power: ~1207 mW</li>
-    <li>Average power (LoRa TX ~10% duty): ~900 mW</li>
-    <li>Average current at 3.7V: <strong>~243 mA</strong></li>
+    <li>Total system power (from table above): ~1207 mW peak</li>
+    <li>Average power (considering LoRa TX duty cycle ~10%): ~900 mW</li>
+    <li>Average current at 3.7V: 900 mW / 3.7V = <strong>~243 mA</strong></li>
 </ul>
 
 <p><strong>Estimated runtime:</strong></p>
 <ul>
+    <li>Runtime = Capacity / Average current</li>
     <li>Runtime = 2670 mAh / 243 mA = <strong>~11 hours</strong></li>
     <li>With 80% efficiency margin: <strong>~8.8 hours</strong></li>
 </ul>
 
-<p><strong>Conclusion:</strong> Battery provides more than double the required 4-hour minimum, ensuring sufficient margin for mission and recovery.</p>
+<p><strong>Conclusion:</strong> The battery provides more than double the required 4-hour minimum operating time, ensuring sufficient margin for the mission and post-landing recovery operations.</p>
 
-<hr class="section-break">
+<hr>
 
 <h3>Declaration</h3>
 
@@ -786,6 +1114,81 @@ Frequency changeable via software on launch day.</p>
 <div class="signature-line">
     &nbsp;
 </div>
+
+<script>
+// Dynamic Table of Contents Generator with Page Numbers
+document.addEventListener('DOMContentLoaded', function() {
+    generateTOC();
+});
+
+function generateTOC() {
+    const tocContainer = document.getElementById('toc-content');
+    const headings = document.querySelectorAll('h2, h3');
+
+    let tocHTML = '<ul>';
+    let currentH2 = null;
+    let subList = '';
+
+    headings.forEach((heading, index) => {
+        // Skip TOC heading itself
+        if (heading.closest('.toc')) return;
+
+        const text = heading.textContent;
+        const id = 'section-' + index;
+        heading.id = id;
+
+        if (heading.tagName === 'H2') {
+            // Close previous sublist if exists
+            if (subList) {
+                tocHTML += subList + '</ul></li>';
+                subList = '';
+            }
+            tocHTML += `<li><a href="#${id}">${text}</a><span class="toc-page" data-target="${id}"></span>`;
+            currentH2 = true;
+        } else if (heading.tagName === 'H3' && currentH2) {
+            if (!subList) {
+                subList = '<ul>';
+            }
+            subList += `<li><a href="#${id}">${text}</a><span class="toc-page" data-target="${id}"></span></li>`;
+        }
+    });
+
+    // Close last item
+    if (subList) {
+        tocHTML += subList + '</ul></li>';
+    }
+    tocHTML += '</ul>';
+
+    tocContainer.innerHTML = tocHTML;
+
+    // Calculate page numbers (approximate based on position)
+    calculatePageNumbers();
+}
+
+function calculatePageNumbers() {
+    const pageHeight = 1122; // A4 page height in pixels at 96dpi (297mm)
+    const tocPages = document.querySelectorAll('.toc-page');
+
+    tocPages.forEach(span => {
+        const targetId = span.dataset.target;
+        const target = document.getElementById(targetId);
+        if (target) {
+            const rect = target.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const absoluteTop = rect.top + scrollTop;
+            // Page 1 is cover, page 2 is TOC, content starts on page 3
+            const pageNum = Math.floor(absoluteTop / pageHeight) + 1;
+            span.textContent = pageNum;
+        }
+    });
+}
+
+// Recalculate on window resize
+window.addEventListener('resize', calculatePageNumbers);
+
+// Recalculate before print
+window.addEventListener('beforeprint', calculatePageNumbers);
+</script>
 
 </body>
 </html>
