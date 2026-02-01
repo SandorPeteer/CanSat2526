@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AstroLink - Critical Design Review (CDR)</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2.5cm 2cm 2.5cm 2cm;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Verdana, Geneva, sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #000;
+            max-width: 21cm;
+            margin: 0 auto;
+            padding: 2cm;
+            background: #fff;
+        }
+
+        h1 {
+            font-size: 24pt;
+            text-align: center;
+            margin-bottom: 0.5em;
+            page-break-after: avoid;
+        }
+
+        h2 {
+            font-size: 14pt;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            border-bottom: 1px solid #333;
+            padding-bottom: 0.2em;
+            page-break-after: avoid;
+        }
+
+        h3 {
+            font-size: 12pt;
+            margin-top: 1.2em;
+            margin-bottom: 0.4em;
+            page-break-after: avoid;
+        }
+
+        h4 {
+            font-size: 11pt;
+            font-style: italic;
+            margin-top: 1em;
+            margin-bottom: 0.3em;
+            page-break-after: avoid;
+        }
+
+        p {
+            margin: 0.5em 0;
+            text-align: justify;
+        }
+
+        ul, ol {
+            margin: 0.5em 0;
+            padding-left: 2em;
+        }
+
+        li {
+            margin: 0.3em 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1em 0;
+            font-size: 10pt;
+            page-break-inside: avoid;
+        }
+
+        th, td {
+            border: 1px solid #333;
+            padding: 6px 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #b8cce4;
+            font-weight: bold;
+        }
+
+        .cover-page {
+            text-align: center;
+            page-break-after: always;
+            padding-top: 5cm;
+        }
+
+        .cover-page h1 {
+            font-size: 28pt;
+            margin-bottom: 0.2em;
+        }
+
+        .cover-page h2 {
+            font-size: 20pt;
+            border: none;
+            margin-top: 0;
+        }
+
+        .cover-info {
+            margin-top: 8cm;
+            text-align: left;
+            font-size: 12pt;
+        }
+
+        .cover-info p {
+            margin: 0.8em 0;
+            text-align: left;
+        }
+
+        .toc {
+            page-break-after: always;
+        }
+
+        .toc h2 {
+            text-align: center;
+            border: none;
+        }
+
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .toc > ul > li {
+            margin: 0.8em 0;
+            font-weight: bold;
+        }
+
+        .toc ul ul {
+            padding-left: 1.5em;
+            font-weight: normal;
+        }
+
+        .toc ul ul li {
+            margin: 0.4em 0;
+        }
+
+        .toc li {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .toc li > a {
+            flex: 1;
+            text-decoration: none;
+            color: #000;
+            border-bottom: 1px dotted #999;
+            margin-right: 0.5em;
+        }
+
+        .toc li > a:hover {
+            color: #0066cc;
+        }
+
+        .toc-page {
+            min-width: 2em;
+            text-align: right;
+        }
+
+        .toc li > ul {
+            flex-basis: 100%;
+        }
+
+        .todo {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 8px 12px;
+            margin: 0.5em 0;
+            border-radius: 4px;
+            font-style: italic;
+            color: #856404;
+        }
+
+        .image-placeholder {
+            border: 2px dashed #999;
+            background-color: #f5f5f5;
+            padding: 2em;
+            text-align: center;
+            margin: 1em 0;
+            color: #666;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .section {
+            page-break-inside: avoid;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+
+        .signature-line {
+            margin-top: 3em;
+            border-top: 1px solid #000;
+            width: 60%;
+            padding-top: 0.5em;
+        }
+
+        .energy-table td:nth-child(2),
+        .energy-table td:nth-child(3),
+        .energy-table td:nth-child(4) {
+            text-align: center;
+        }
+
+        .req-table td:nth-child(2),
+        .req-table td:nth-child(3),
+        .req-table td:nth-child(4) {
+            text-align: center;
+        }
+
+        .team-table td:nth-child(3),
+        .team-table td:nth-child(4) {
+            text-align: center;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+            .todo {
+                background-color: #fff3cd !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            th {
+                background-color: #b8cce4 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            @page {
+                @bottom-center {
+                    content: counter(page);
+                }
+            }
+        }
+
+        /* Page numbers for print - footer style */
+        body {
+            counter-reset: page;
+        }
+    </style>
+</head>
+<body>
+
+<!-- COVER PAGE -->
+<div class="cover-page">
+    <h1>Critical Design Review</h1>
+    <h2>(CDR)</h2>
+
+    <div class="cover-info">
+        <p><strong>Team:</strong> AstroLink</p>
+        <p><strong>School Name &amp; City:</strong> Miskolci Szakképzési Centrum Kandó Kálmán Informatikai Technikum, Miskolc</p>
+        <p><strong>Date:</strong> February 2026</p>
+        <p><strong>Video link:</strong> <span class="todo">[TODO: Insert YouTube/Google Drive video link here]</span></p>
+    </div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+    <h2>Table of Contents</h2>
+    <div id="toc-content"></div>
+</div>
+
+<!-- 1. INTRODUCTION -->
+<h2>1. INTRODUCTION</h2>
+
+<h3>1.1. Introduction of the team</h3>
+
+<p>Team AstroLink is a group of students from the Kandó Kálmán Informatikai Technikum in Miskolc, Hungary. Our team combines expertise in software development, electronics, 3D design, and communication systems to create a comprehensive CanSat solution for atmospheric research.</p>
+
+<h4>Team Members</h4>
+
+<table class="team-table">
+    <tr>
+        <th>Name</th>
+        <th>Role</th>
+        <th>Responsibilities</th>
+        <th>Time Spent</th>
+    </tr>
+    <tr>
+        <td>Szászfai László</td>
+        <td>Software Developer</td>
+        <td>Firmware development, sensor integration, embedded C/C++ programming</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Németh Imre</td>
+        <td>Recovery System Engineer</td>
+        <td>Parachute design, testing, and deployment mechanism</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Nagy Marcell</td>
+        <td>Mechanical Designer</td>
+        <td>3D modeling, structural design, CAD drawings</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Fodor Levente Gábor</td>
+        <td>Communications Engineer</td>
+        <td>Web interface development, LoRa radio communication</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Szilágyi Zsombor</td>
+        <td>Electronics Engineer</td>
+        <td>Circuit design, PCB layout, hardware integration</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Szilágyi Bálint</td>
+        <td>Web Developer</td>
+        <td>Ground station web interface, data visualization</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+</table>
+
+<h4>Mentors</h4>
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Role</th>
+    </tr>
+    <tr>
+        <td>Sándor Péter</td>
+        <td>Hardware, software, and design mentor</td>
+    </tr>
+    <tr>
+        <td>Sike László</td>
+        <td>Documentation and deadline management mentor</td>
+    </tr>
+</table>
+
+<h3>1.2. Mission objectives</h3>
+
+<p>The AstroLink CanSat mission focuses on measuring air quality parameters at different atmospheric layers during descent. Our primary scientific objective is to create a vertical profile of particulate matter concentration from approximately 1 km altitude down to ground level.</p>
+
+<h4>Primary Mission</h4>
+<p>Measure atmospheric temperature and pressure during descent to calculate altitude and descent rate.</p>
+
+<h4>Secondary Mission</h4>
+<p>Investigate the vertical distribution of airborne particulate matter (PM1.0, PM2.5, PM4.0, PM10) using the Sensirion SPS30 sensor. This data will help understand how air pollution varies with altitude and can provide insights into:</p>
+<ul>
+    <li>Particulate matter concentration gradients in the lower atmosphere</li>
+    <li>The relationship between altitude and air quality</li>
+    <li>Potential sources of pollution at different atmospheric layers</li>
+    <li>Correlation between meteorological conditions (temperature, humidity) and particle distribution</li>
+</ul>
+
+<h4>Success Criteria</h4>
+<ul>
+    <li>Successfully deploy from the launch vehicle and descend under parachute</li>
+    <li>Collect continuous sensor data throughout the flight (temperature, pressure, particulate matter, GPS position)</li>
+    <li>Transmit real-time telemetry to the ground station via LoRa</li>
+    <li>Store all flight data onboard for post-flight analysis</li>
+    <li>Safely land and be recovered intact</li>
+    <li>Remain operational for at least 4 hours after landing</li>
+</ul>
+
+<!-- 2. CANSAT DESCRIPTION -->
+<h2 class="page-break">2. CANSAT DESCRIPTION</h2>
+
+<h3>2.1. Overview of the mission</h3>
+
+<p>The AstroLink CanSat will be launched on a rocket to an altitude of approximately 1 km, where it will be ejected and descend under a parachute system at a rate of 8-11 m/s. During descent, it will continuously measure atmospheric parameters using its sensor suite and transmit data to the ground station via LoRa radio link while simultaneously storing all data onboard. The satellite will remain active for at least 4 hours after landing to facilitate recovery.</p>
+
+<h4>Critical Components and Systems</h4>
+<ul>
+    <li><strong>Microcontroller:</strong> ESP32-S3 (dual-core, WiFi capable)</li>
+    <li><strong>Primary sensors:</strong> BMP585 (pressure/temperature), GPS module (M100-Pro HGLRC)</li>
+    <li><strong>Secondary mission sensor:</strong> SPS30 particulate matter sensor</li>
+    <li><strong>Supporting sensors:</strong> BNO085 IMU (orientation), SCD40 (CO2/humidity), QMC5883L (magnetometer)</li>
+    <li><strong>Communication:</strong> LoRa radio (SX1278 at 433.2 MHz, with option for 868 MHz ISM band)</li>
+    <li><strong>Power:</strong> LiPo battery with voltage regulation</li>
+    <li><strong>Recovery:</strong> Parachute system</li>
+</ul>
+
+<h4>System Block Diagram</h4>
+<div style="text-align: center; margin: 1em 0;">
+    <div class="mxgraph" style="max-width:100%;border:1px solid #ccc;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;xml&quot;:&quot;&lt;mxfile host=\&quot;app.diagrams.net\&quot;&gt;&lt;diagram name=\&quot;1 oldal\&quot; id=\&quot;vHl38z38AX6xv8_jfIYL\&quot;&gt;&lt;mxGraphModel grid=\&quot;1\&quot; page=\&quot;1\&quot; gridSize=\&quot;10\&quot; guides=\&quot;1\&quot; tooltips=\&quot;1\&quot; connect=\&quot;1\&quot; arrows=\&quot;1\&quot; fold=\&quot;1\&quot; pageScale=\&quot;1\&quot; pageWidth=\&quot;827\&quot; pageHeight=\&quot;1169\&quot; math=\&quot;0\&quot; shadow=\&quot;0\&quot;&gt;&lt;root&gt;&lt;mxCell id=\&quot;0\&quot;/&gt;&lt;mxCell id=\&quot;1\&quot; parent=\&quot;0\&quot;/&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-20\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-1\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#a20025;strokeColor=#6F0000;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-6\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;380\&quot; y=\&quot;210\&quot;/&gt;&lt;mxPoint x=\&quot;485\&quot; y=\&quot;210\&quot;/&gt;&lt;mxPoint x=\&quot;485\&quot; y=\&quot;120\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-21\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-1\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#6d8764;strokeColor=#3A5431;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-2\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;380\&quot; y=\&quot;260\&quot;/&gt;&lt;mxPoint x=\&quot;510\&quot; y=\&quot;260\&quot;/&gt;&lt;mxPoint x=\&quot;510\&quot; y=\&quot;220\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-23\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-1\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#fad9d5;strokeColor=#ae4132;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-3\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;380\&quot; y=\&quot;310\&quot;/&gt;&lt;mxPoint x=\&quot;460\&quot; y=\&quot;310\&quot;/&gt;&lt;mxPoint x=\&quot;460\&quot; y=\&quot;500\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-26\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-1\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#fad7ac;strokeColor=#b46504;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-4\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-27\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-1\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#fad7ac;strokeColor=#b46504;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-5\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;420\&quot; y=\&quot;382\&quot;/&gt;&lt;mxPoint x=\&quot;420\&quot; y=\&quot;600\&quot;/&gt;&lt;/Array&gt;&lt;mxPoint x=\&quot;420\&quot; y=\&quot;599.9999999999998\&quot; as=\&quot;targetPoint\&quot;/&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-1\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#76608a;fontColor=#ffffff;strokeColor=#432D57;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;ESP32-S3&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;N16R8 (16MB /8MB PSRAM)&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;Interfaces:&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;SPI1: GPIO 5,6,7,15&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;background-color: transparent;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;SPI2: GPIO 35-42&amp;lt;/font&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;I2C: GPIO 8,9&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;UART1: GPIO 17,18&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;UART2: GPIO 13,14&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;LED: GPIO 48&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;WiFi: Built-in&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;270\&quot; width=\&quot;220\&quot; x=\&quot;160\&quot; y=\&quot;180\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-18\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-2\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fillColor=#6d8764;strokeColor=#3A5431;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-8\&quot; value=\&quot;\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-2\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#6D8764;fontColor=#ffffff;strokeColor=#3A5431;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;E22-900M30S&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;LoRa (SPI2) | 3.3V | 120mA&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;250\&quot; x=\&quot;540\&quot; y=\&quot;190\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-3\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fad9d5;strokeColor=#ae4132;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;BMP585&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;Pressure (I2C) | 5V | 0.5mA&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;250\&quot; x=\&quot;540\&quot; y=\&quot;470\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-4\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fad7ac;strokeColor=#b46504;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;M100-Pro GPS&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;GNSS (UART1) | 5V | 25mA&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;250\&quot; x=\&quot;540\&quot; y=\&quot;670\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-5\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fad7ac;strokeColor=#b46504;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 16px;&amp;quot;&amp;gt;SPS30&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 16px;&amp;quot;&amp;gt;PM Sensor (UART2) | 5V | 25mA&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;250\&quot; x=\&quot;540\&quot; y=\&quot;570\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-6\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#a20025;strokeColor=#6F0000;fontColor=#ffffff;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;BNO085 IMU&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;9-DoF (SPI1) |3.3V | 12mA&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;250\&quot; x=\&quot;540\&quot; y=\&quot;90\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-7\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fad9d5;strokeColor=#ae4132;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;SCD40&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;CO2 (I2C) | 3.3V |15mA&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;250\&quot; x=\&quot;540\&quot; y=\&quot;280\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-8\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#6d8764;fontColor=#ffffff;strokeColor=#3A5431;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 19px;&amp;quot;&amp;gt;Antenna&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 19px;&amp;quot;&amp;gt;433MHz&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;80\&quot; width=\&quot;93\&quot; x=\&quot;890\&quot; y=\&quot;180\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-28\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-9\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-16\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-9\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#e3c800;fontColor=#000000;strokeColor=#B09500;\&quot; value=\&quot;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;POWER&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;320\&quot; width=\&quot;210\&quot; x=\&quot;-90\&quot; y=\&quot;130\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-10\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;18650 Li-ion&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;3.7V | 2670mAh&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;180\&quot; x=\&quot;-75\&quot; y=\&quot;200\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-12\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 19px;&amp;quot;&amp;gt;Booster Board&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 19px;&amp;quot;&amp;gt;3.7V -&amp;amp;gt;5V + Charger&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;180\&quot; x=\&quot;-75\&quot; y=\&quot;285\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-31\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-13\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;fillColor=#ffcd28;strokeColor=#d79b00;gradientColor=#ffa500;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-1\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-13\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;3.3V&amp;lt;/font&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;60\&quot; x=\&quot;45\&quot; y=\&quot;370\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-14\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;5V&amp;lt;/font&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;60\&quot; x=\&quot;-75\&quot; y=\&quot;370\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-32\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-16\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fillColor=#e51400;strokeColor=#B20000;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-4\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;15\&quot; y=\&quot;800\&quot;/&gt;&lt;mxPoint x=\&quot;810\&quot; y=\&quot;800\&quot;/&gt;&lt;mxPoint x=\&quot;810\&quot; y=\&quot;700\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-16\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 16px;&amp;quot;&amp;gt;Power Summary&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 16px;&amp;quot;&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 16px;&amp;quot;&amp;gt;Peak: ~1,25W&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 16px;&amp;quot;&amp;gt;Avg: ~930mW (~251mA)&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 16px;&amp;quot;&amp;gt;Runtime: ~8.5 hours&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;110\&quot; width=\&quot;180\&quot; x=\&quot;-75\&quot; y=\&quot;500\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-17\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fad9d5;strokeColor=#ae4132;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;QMC5883L&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;Mag (I2C) | 3.3V | 2mA&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;250\&quot; x=\&quot;540\&quot; y=\&quot;370\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-24\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; style=\&quot;endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#fad9d5;strokeColor=#ae4132;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-7\&quot; value=\&quot;\&quot;&gt;&lt;mxGeometry height=\&quot;50\&quot; relative=\&quot;1\&quot; width=\&quot;50\&quot; as=\&quot;geometry\&quot;&gt;&lt;mxPoint x=\&quot;460\&quot; y=\&quot;310\&quot; as=\&quot;sourcePoint\&quot;/&gt;&lt;mxPoint x=\&quot;440\&quot; y=\&quot;390\&quot; as=\&quot;targetPoint\&quot;/&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-25\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; style=\&quot;endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#fad9d5;strokeColor=#ae4132;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-17\&quot; value=\&quot;\&quot;&gt;&lt;mxGeometry height=\&quot;50\&quot; relative=\&quot;1\&quot; width=\&quot;50\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;/&gt;&lt;mxPoint x=\&quot;460\&quot; y=\&quot;400\&quot; as=\&quot;sourcePoint\&quot;/&gt;&lt;mxPoint x=\&quot;380\&quot; y=\&quot;260\&quot; as=\&quot;targetPoint\&quot;/&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-29\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-12\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.59;entryY=0.024;entryDx=0;entryDy=0;entryPerimeter=0;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-13\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-30\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-12\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.448;entryY=0.04;entryDx=0;entryDy=0;entryPerimeter=0;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-14\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-33\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; style=\&quot;endArrow=classic;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fillColor=#e51400;strokeColor=#B20000;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-5\&quot; value=\&quot;\&quot;&gt;&lt;mxGeometry height=\&quot;50\&quot; relative=\&quot;1\&quot; width=\&quot;50\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;810\&quot; y=\&quot;600\&quot;/&gt;&lt;/Array&gt;&lt;mxPoint x=\&quot;810\&quot; y=\&quot;700\&quot; as=\&quot;sourcePoint\&quot;/&gt;&lt;mxPoint x=\&quot;470\&quot; y=\&quot;750\&quot; as=\&quot;targetPoint\&quot;/&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-34\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; style=\&quot;endArrow=classic;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fillColor=#e51400;strokeColor=#B20000;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-3\&quot; value=\&quot;\&quot;&gt;&lt;mxGeometry height=\&quot;50\&quot; relative=\&quot;1\&quot; width=\&quot;50\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;810\&quot; y=\&quot;500\&quot;/&gt;&lt;/Array&gt;&lt;mxPoint x=\&quot;810\&quot; y=\&quot;600\&quot; as=\&quot;sourcePoint\&quot;/&gt;&lt;mxPoint x=\&quot;660\&quot; y=\&quot;630\&quot; as=\&quot;targetPoint\&quot;/&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-35\&quot; parent=\&quot;1\&quot; style=\&quot;text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;SPI1&amp;lt;/font&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;40\&quot; width=\&quot;56\&quot; x=\&quot;414\&quot; y=\&quot;180\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-36\&quot; parent=\&quot;1\&quot; style=\&quot;text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;SPI2&amp;lt;/font&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;40\&quot; width=\&quot;56\&quot; x=\&quot;414\&quot; y=\&quot;230\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-37\&quot; parent=\&quot;1\&quot; style=\&quot;text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;I2C&amp;lt;/font&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;35\&quot; width=\&quot;46\&quot; x=\&quot;414\&quot; y=\&quot;280\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-38\&quot; parent=\&quot;1\&quot; style=\&quot;text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;UART1&amp;lt;/font&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;40\&quot; width=\&quot;80\&quot; x=\&quot;440\&quot; y=\&quot;570\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-39\&quot; parent=\&quot;1\&quot; style=\&quot;text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;UART2&amp;lt;/font&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;40\&quot; width=\&quot;80\&quot; x=\&quot;440\&quot; y=\&quot;670\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-40\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;5V&amp;lt;/font&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;30\&quot; width=\&quot;60\&quot; x=\&quot;440\&quot; y=\&quot;770\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-41\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 17px;&amp;quot;&amp;gt;3.3V&amp;lt;/font&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;30\&quot; width=\&quot;60\&quot; x=\&quot;110\&quot; y=\&quot;360\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;/root&gt;&lt;/mxGraphModel&gt;&lt;/diagram&gt;&lt;/mxfile&gt;&quot;}"></div>
+    <script type="text/javascript" src="https://viewer.diagrams.net/js/viewer-static.min.js"></script>
+    <p style="font-size: 9pt; color: #666; margin-top: 0.5em;"><em>Figure: System block diagram showing all components and connections</em></p>
+</div>
+
+<h3>2.2. Mechanical/structural design</h3>
+
+<p>The CanSat structure is designed to fit within the standard dimensions (66 mm diameter, 115 mm height) while protecting all components during launch, descent, and landing. The structure is 3D printed using a combination of materials selected for their specific properties.</p>
+
+<h4>Materials</h4>
+<ul>
+    <li><strong>TPU (Thermoplastic Polyurethane):</strong> Used for shock-absorbing components and flexible mounting points. Different shore hardness values are used depending on the required flexibility.</li>
+    <li><strong>PETG (Polyethylene Terephthalate Glycol):</strong> Used for rigid structural components requiring higher strength and temperature resistance.</li>
+</ul>
+
+<h4>Structural Layout</h4>
+<div class="todo">[TODO: Describe the internal layout - where each component is mounted, how layers/sections are organized]</div>
+
+<h4>Mechanical Drawings</h4>
+<div class="image-placeholder">
+    [TODO: Insert 3D CAD model views - isometric, top, side views with dimensions]
+</div>
+
+<h4>Component List</h4>
+<table>
+    <tr>
+        <th>Part</th>
+        <th>Material</th>
+        <th>Purpose</th>
+    </tr>
+    <tr>
+        <td class="todo">[TODO: Main body]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td class="todo">[TODO: Top cap]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td class="todo">[TODO: Bottom cap]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td class="todo">[TODO: Sensor mount]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td class="todo">[TODO: Battery holder]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+</table>
+
+<h3 class="page-break">2.3. Electrical design</h3>
+
+<p>The electrical system is built around the ESP32-S3 microcontroller, which provides sufficient processing power, memory, and connectivity options for our mission requirements.</p>
+
+<h4>Microcontroller Specifications</h4>
+<ul>
+    <li><strong>MCU:</strong> ESP32-S3-DevKitC-1 N16R8</li>
+    <li><strong>Processor:</strong> Dual-core Xtensa LX7 @ 240 MHz</li>
+    <li><strong>RAM:</strong> 512 KB SRAM + 8 MB PSRAM (external)</li>
+    <li><strong>Flash:</strong> 16 MB (quad SPI)</li>
+    <li><strong>Interfaces:</strong> SPI, I2C, UART, GPIO</li>
+</ul>
+
+<h4>Sensor Connections</h4>
+<table>
+    <tr>
+        <th>Sensor</th>
+        <th>Interface</th>
+        <th>Pins</th>
+        <th>Address/Speed</th>
+    </tr>
+    <tr>
+        <td>BNO085 (IMU)</td>
+        <td>SPI</td>
+        <td>GPIO5 (SCK), GPIO6 (MOSI), GPIO7 (MISO), GPIO15 (CS), GPIO10 (INT), GPIO11 (RST)</td>
+        <td>SPI Mode</td>
+    </tr>
+    <tr>
+        <td>BMP585 (Pressure)</td>
+        <td>I2C</td>
+        <td>GPIO8 (SDA), GPIO9 (SCL)</td>
+        <td>0x47, 400 kHz</td>
+    </tr>
+    <tr>
+        <td>SCD40 (CO2)</td>
+        <td>I2C</td>
+        <td>GPIO8 (SDA), GPIO9 (SCL)</td>
+        <td>0x62, 400 kHz</td>
+    </tr>
+    <tr>
+        <td>QMC5883L (Magnetometer)</td>
+        <td>I2C</td>
+        <td>GPIO8 (SDA), GPIO9 (SCL)</td>
+        <td>0x0D, 400 kHz</td>
+    </tr>
+    <tr>
+        <td>M100-Pro HGLRC (GPS)</td>
+        <td>UART1</td>
+        <td>GPIO17 (TX), GPIO18 (RX)</td>
+        <td>115200 baud</td>
+    </tr>
+    <tr>
+        <td>SPS30 (Particulate)</td>
+        <td>UART2</td>
+        <td>GPIO14 (TX), GPIO13 (RX)</td>
+        <td>115200 baud</td>
+    </tr>
+    <tr>
+        <td>WS2812 (Status LED)</td>
+        <td>GPIO</td>
+        <td>GPIO48</td>
+        <td>-</td>
+    </tr>
+</table>
+
+<h4>LoRa Communication</h4>
+<p>The current design uses an SX1278-based LoRa module operating at 433.2 MHz. The system is designed to allow module replacement if required to comply with Hungarian ISM band regulations (868 MHz band). The E22-900M30S (SX1262, 915 MHz) module is available as an alternative.</p>
+
+<p><strong>LoRa Module (EBYTE E22-900M30S) SPI2 Connection:</strong></p>
+<table>
+    <tr>
+        <th>E22 Pin</th>
+        <th>Function</th>
+        <th>ESP32-S3 GPIO</th>
+    </tr>
+    <tr><td>SCK (18)</td><td>SPI Clock</td><td>GPIO36</td></tr>
+    <tr><td>MISO (16)</td><td>SPI Data Out</td><td>GPIO37</td></tr>
+    <tr><td>MOSI (17)</td><td>SPI Data In</td><td>GPIO35</td></tr>
+    <tr><td>NSS (19)</td><td>Chip Select</td><td>GPIO38</td></tr>
+    <tr><td>NRST (15)</td><td>Reset (active low)</td><td>GPIO39</td></tr>
+    <tr><td>BUSY (14)</td><td>State Indicator</td><td>GPIO40</td></tr>
+    <tr><td>DIO1 (13)</td><td>Interrupt</td><td>GPIO41</td></tr>
+    <tr><td>RXEN (6)</td><td>RX Enable</td><td>GPIO42</td></tr>
+    <tr><td>TXEN (7)</td><td>TX Enable</td><td>GPIO2</td></tr>
+    <tr><td>VCC (9,10)</td><td>Power</td><td>3.3V</td></tr>
+    <tr><td>GND (1-5,11,12,20,22)</td><td>Ground</td><td>GND</td></tr>
+</table>
+
+<h4>Circuit Diagram</h4>
+<div class="image-placeholder">
+    [TODO: Insert circuit/wiring diagram showing all connections]
+</div>
+
+<h4>Power System</h4>
+<ul>
+    <li><strong>Battery:</strong> Cellevia CL-18650-29E/1S1P (Li-Ion 18650 cell)</li>
+    <li><strong>Nominal Voltage:</strong> 3.7V</li>
+    <li><strong>Capacity:</strong> 2670 mAh (2.67 Ah)</li>
+    <li><strong>Energy:</strong> 9.75 Wh</li>
+    <li><strong>Voltage Regulator:</strong> 3.3V LDO for MCU and most sensors, 5V boost converter for SPS30</li>
+</ul>
+
+<h3 class="page-break">2.4. Software design</h3>
+
+<p>The CanSat firmware is developed using the ESP-IDF framework with FreeRTOS for real-time task management. The software architecture is designed for reliability, modularity, and efficient data handling.</p>
+
+<h4>Development Environment</h4>
+<ul>
+    <li><strong>Framework:</strong> ESP-IDF (Espressif IoT Development Framework)</li>
+    <li><strong>Build System:</strong> PlatformIO</li>
+    <li><strong>Programming Language:</strong> C/C++</li>
+    <li><strong>RTOS:</strong> FreeRTOS</li>
+</ul>
+
+<h4>Software Architecture</h4>
+<p>The firmware uses a multi-task architecture where each sensor has its own dedicated task running at an appropriate priority and frequency:</p>
+
+<table>
+    <tr>
+        <th>Task</th>
+        <th>Priority</th>
+        <th>Frequency</th>
+        <th>Purpose</th>
+    </tr>
+    <tr>
+        <td>gps_task</td>
+        <td>8</td>
+        <td>~1 Hz</td>
+        <td>GPS UBX protocol parsing, position/velocity data</td>
+    </tr>
+    <tr>
+        <td>sps30_task</td>
+        <td>10</td>
+        <td>~1 Hz</td>
+        <td>Particulate matter measurement (secondary mission)</td>
+    </tr>
+    <tr>
+        <td>bno085_task</td>
+        <td>5</td>
+        <td>50 Hz</td>
+        <td>IMU quaternion, acceleration, gyroscope</td>
+    </tr>
+    <tr>
+        <td>bmp585_task</td>
+        <td>6</td>
+        <td>10 Hz</td>
+        <td>Pressure, temperature, altitude calculation</td>
+    </tr>
+    <tr>
+        <td>scd40_task</td>
+        <td>6</td>
+        <td>1 Hz</td>
+        <td>CO2, temperature, humidity</td>
+    </tr>
+    <tr>
+        <td>lora_task</td>
+        <td>7</td>
+        <td>Variable</td>
+        <td>Telemetry transmission to ground station</td>
+    </tr>
+</table>
+
+<h4>Program Flow Diagram</h4>
+<div class="image-placeholder">
+    [TODO: Insert software flowchart showing:<br>
+    1. Initialization sequence<br>
+    2. Sensor task loops<br>
+    3. Data collection and storage<br>
+    4. LoRa transmission<br>
+    5. Flight state machine (pre-flight, flight, landed)]
+</div>
+
+<h4>On-Board Data Handling (OBDH)</h4>
+<p>The system uses a compact 64-byte binary record format to store flight data efficiently:</p>
+
+<table>
+    <tr>
+        <th>Data Field</th>
+        <th>Size (bytes)</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td>Timestamp</td>
+        <td>4</td>
+        <td>Unix time or uptime in seconds</td>
+    </tr>
+    <tr>
+        <td>GPS data</td>
+        <td>20</td>
+        <td>Latitude, longitude, altitude, velocity, fix type, satellites</td>
+    </tr>
+    <tr>
+        <td>Orientation</td>
+        <td>10</td>
+        <td>Quaternion (i, j, k, w) and accuracy status</td>
+    </tr>
+    <tr>
+        <td>Magnetometer</td>
+        <td>8</td>
+        <td>X, Y, Z raw values and computed heading</td>
+    </tr>
+    <tr>
+        <td>BMP585</td>
+        <td>8</td>
+        <td>Pressure (Pa), temperature, barometric altitude</td>
+    </tr>
+    <tr>
+        <td>SCD40</td>
+        <td>6</td>
+        <td>CO2 (ppm), temperature, humidity</td>
+    </tr>
+    <tr>
+        <td>SPS30</td>
+        <td>8</td>
+        <td>PM1.0, PM2.5, PM4.0, PM10 concentrations</td>
+    </tr>
+    <tr>
+        <td><strong>Total</strong></td>
+        <td><strong>64</strong></td>
+        <td>Per sample record size</td>
+    </tr>
+</table>
+
+<h4>Data Storage</h4>
+<ul>
+    <li><strong>PSRAM buffer:</strong> Up to 86,400 records (24 hours at 1 Hz) in ring buffer</li>
+    <li><strong>LittleFS:</strong> Persistent storage of flight recordings as binary files</li>
+    <li><strong>Estimated data per flight:</strong> ~64 bytes × 120 seconds = ~7.5 KB (descent only), plus pre/post flight data</li>
+</ul>
+
+<h3 class="page-break">2.5. Recovery system</h3>
+
+<p>The recovery system ensures safe descent and landing of the CanSat while meeting the required descent rate of 8-11 m/s.</p>
+
+<h4>Parachute Specifications</h4>
+<div class="todo">[TODO: Németh Imre - Add parachute details:
+<ul>
+    <li>Parachute type (round, cruciform, etc.)</li>
+    <li>Diameter/size</li>
+    <li>Material</li>
+    <li>Line length and material</li>
+    <li>Attachment method to CanSat</li>
+</ul>
+]</div>
+
+<h4>Descent Rate Calculation</h4>
+<div class="todo">[TODO: Add calculation showing expected descent rate based on:
+<ul>
+    <li>CanSat mass (target: 300-350g)</li>
+    <li>Parachute area</li>
+    <li>Drag coefficient</li>
+    <li>Expected descent rate result</li>
+</ul>
+]</div>
+
+<h4>Estimated Descent Duration</h4>
+<p>From 1000 m altitude at 10 m/s descent rate: approximately 100 seconds.</p>
+
+<h4>Recovery System Diagram</h4>
+<div class="image-placeholder">
+    [TODO: Insert diagram/photo of parachute attachment and deployment mechanism]
+</div>
+
+<h4>Testing Results</h4>
+<div class="todo">[TODO: Add any drop test results if already performed]</div>
+
+<h3>2.6. Ground station</h3>
+
+<p>The ground station receives telemetry data from the CanSat via LoRa radio link and provides real-time visualization and data logging capabilities.</p>
+
+<h4>Hardware Components</h4>
+<ul>
+    <li><strong>Receiver:</strong> LoRa module (SX1278/SX1262) connected to laptop/computer</li>
+    <li><strong>Antenna:</strong> <span class="todo">[TODO: Specify antenna type and gain]</span></li>
+    <li><strong>Computer:</strong> Laptop running ground station software</li>
+</ul>
+
+<h4>Ground Station Software</h4>
+<p>The ground station features a web-based interface providing:</p>
+<ul>
+    <li>Real-time GPS position tracking and map display</li>
+    <li>Live sensor data visualization (temperature, pressure, altitude, particulate matter)</li>
+    <li>3D orientation display from IMU data</li>
+    <li>Data logging to file for post-flight analysis</li>
+    <li>Flight data playback and charting</li>
+    <li>Connection status and signal quality indicators</li>
+</ul>
+
+<div style="text-align: center; margin: 1em 0;">
+    <img src="FlightViewer_CanSat.png" alt="Flight Data Viewer Interface" style="max-width: 100%; border: 1px solid #ccc;">
+    <p style="font-size: 9pt; color: #666; margin-top: 0.5em;"><em>Figure: Flight Data Viewer - Web-based interface for reviewing recorded flight data</em></p>
+</div>
+
+<h4>Radio Frequency</h4>
+<p><strong>Preferred frequency band:</strong> 433 MHz ISM band (current testing at 433.2 MHz)</p>
+<p><strong>Alternative:</strong> 868 MHz ISM band (compliant with Hungarian amateur radio regulations)</p>
+<p>The system is designed to allow frequency changes via software configuration, even on the day of the launch event.</p>
+
+<!-- 3. PROJECT PLANNING -->
+<h2 class="page-break">3. PROJECT PLANNING</h2>
+
+<h3>3.1. Time schedule of CanSat preparation</h3>
+
+<div class="todo">[TODO: Add Gantt chart or timeline showing:
+<ul>
+    <li>Design phase (completed dates)</li>
+    <li>Component procurement</li>
+    <li>Prototyping phase</li>
+    <li>Software development milestones</li>
+    <li>Hardware integration</li>
+    <li>Testing phases</li>
+    <li>CDR submission (16 February 2026)</li>
+    <li>Final assembly</li>
+    <li>Launch campaign preparation</li>
+</ul>
+]</div>
+
+<h3>3.2. Resource estimation</h3>
+
+<h4>3.2.1. Budget</h4>
+
+<p>Total budget must not exceed 500 EUR. Exchange rate: 400 HUF/EUR.</p>
+
+<table>
+    <tr>
+        <th>Component</th>
+        <th>Quantity</th>
+        <th>Unit Price (EUR)</th>
+        <th>Total (EUR)</th>
+        <th>Sponsored</th>
+    </tr>
+    <tr>
+        <td>ESP32-S3-DevKitC-1 N16R8</td>
+        <td>1</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>BNO085 IMU</td>
+        <td>1</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>BMP585 Pressure Sensor</td>
+        <td>1</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>SCD40 CO2 Sensor</td>
+        <td>1</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>QMC5883L Magnetometer</td>
+        <td>1</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>SPS30 Particulate Sensor</td>
+        <td>1</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>M100-Pro HGLRC GPS</td>
+        <td>1</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>LoRa Module (SX1278)</td>
+        <td>2</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Li-Ion Battery (Cellevia CL-18650-29E)</td>
+        <td>1</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>3D Printing Filament (TPU/PETG)</td>
+        <td>-</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Parachute materials</td>
+        <td>-</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Wires, connectors, misc</td>
+        <td>-</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td><strong>TOTAL</strong></td>
+        <td></td>
+        <td></td>
+        <td class="todo"><strong>[TODO]</strong></td>
+        <td></td>
+    </tr>
+</table>
+
+<h4>3.2.2. External support</h4>
+
+<div class="todo">[TODO: List sponsors, supporting institutions, facilities access, etc.]</div>
+
+<h4>3.2.3. Test plan</h4>
+
+<table>
+    <tr>
+        <th>Test</th>
+        <th>Purpose</th>
+        <th>Method</th>
+        <th>Status</th>
+    </tr>
+    <tr>
+        <td>Sensor validation</td>
+        <td>Verify all sensors provide accurate readings</td>
+        <td>Compare with reference instruments</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>LoRa range test</td>
+        <td>Verify communication range exceeds 1 km</td>
+        <td>Ground-level distance test with RSSI logging</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Power endurance</td>
+        <td>Verify 4+ hour battery life</td>
+        <td>Full system operation until battery depletion</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Vibration test</td>
+        <td>Verify structural integrity under launch conditions</td>
+        <td>Shake test / vibration table</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Drop test</td>
+        <td>Verify parachute deployment and descent rate</td>
+        <td>Drop from height with full system active</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Impact test</td>
+        <td>Verify survival of landing impact</td>
+        <td>Drop onto various surfaces at expected velocity</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Cold test</td>
+        <td>Verify operation at low temperatures</td>
+        <td>Operation in freezer at -10°C</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Integration test</td>
+        <td>Full system functional verification</td>
+        <td>Complete mission simulation</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+</table>
+
+<!-- 4. OUTREACH PROGRAMME -->
+<h2 class="page-break">4. OUTREACH PROGRAMME</h2>
+
+<div class="todo">[TODO: Add outreach information:
+<ul>
+    <li>Social media platforms (Instagram, Facebook, etc.) with links</li>
+    <li>Website/blog URL if available</li>
+    <li>School presentations</li>
+    <li>Media coverage (local news, school newspaper)</li>
+    <li>Planned activities before launch</li>
+    <li>Logo/branding materials</li>
+    <li>Photos of outreach activities</li>
+</ul>
+]</div>
+
+<!-- 5. REQUIREMENTS -->
+<h2 class="page-break">5. REQUIREMENTS</h2>
+
+<p>The following table summarizes how the AstroLink CanSat meets the competition requirements:</p>
+
+<table class="req-table">
+    <tr>
+        <th>Characteristic</th>
+        <th>Quantity (unit)</th>
+        <th>Requirement</th>
+        <th>Eligible (Yes/No)</th>
+    </tr>
+    <tr>
+        <td>Height of the CanSat</td>
+        <td class="todo">[TODO] mm</td>
+        <td>≤ 115 mm</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Mass of the CanSat</td>
+        <td class="todo">[TODO] g</td>
+        <td>300-350 g</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Diameter of the CanSat</td>
+        <td class="todo">[TODO] mm</td>
+        <td>≤ 66 mm</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Length of the recovery system</td>
+        <td class="todo">[TODO] m</td>
+        <td>-</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Flight time scheduled</td>
+        <td>~100 s</td>
+        <td>≤ 120 s recommended</td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td>Calculated descent rate</td>
+        <td class="todo">[TODO] m/s</td>
+        <td>5-12 m/s (8-11 recommended)</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+    <tr>
+        <td>Radio frequency used</td>
+        <td>433.2 MHz / 868 MHz</td>
+        <td>Hungarian amateur regulations</td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td>Power consumption</td>
+        <td>~251 mA avg / ~1.25W</td>
+        <td>4+ hours operation</td>
+        <td>Yes (~8.5 hours)</td>
+    </tr>
+    <tr>
+        <td>Total cost</td>
+        <td class="todo">[TODO] EUR</td>
+        <td>≤ 500 EUR</td>
+        <td class="todo">[TODO]</td>
+    </tr>
+</table>
+
+<h3>5.1. Preliminary energy budget</h3>
+
+<p>The following table details the power consumption of each component:</p>
+
+<table class="energy-table">
+    <tr>
+        <th>Device</th>
+        <th>Voltage (V)</th>
+        <th>Current (mA)</th>
+        <th>Power (mW)</th>
+    </tr>
+    <tr>
+        <td>ESP32-S3 MCU</td>
+        <td>3.3</td>
+        <td>80 (typical)</td>
+        <td>264</td>
+    </tr>
+    <tr>
+        <td>BNO085 IMU</td>
+        <td>3.3</td>
+        <td>12</td>
+        <td>40</td>
+    </tr>
+    <tr>
+        <td>BMP585 Barometer</td>
+        <td>5.0</td>
+        <td>0.5</td>
+        <td>2.5</td>
+    </tr>
+    <tr>
+        <td>SCD40 CO2 Sensor</td>
+        <td>3.3</td>
+        <td>15</td>
+        <td>50</td>
+    </tr>
+    <tr>
+        <td>QMC5883L Magnetometer</td>
+        <td>3.3</td>
+        <td>2</td>
+        <td>6.6</td>
+    </tr>
+    <tr>
+        <td>SPS30 Particulate Sensor</td>
+        <td>5.0</td>
+        <td>60</td>
+        <td>300</td>
+    </tr>
+    <tr>
+        <td>M100-Pro HGLRC GPS</td>
+        <td>5.0</td>
+        <td>25</td>
+        <td>125</td>
+    </tr>
+    <tr>
+        <td>LoRa Module (SX1278)</td>
+        <td>3.3</td>
+        <td>120 (TX)</td>
+        <td>396</td>
+    </tr>
+    <tr>
+        <td>WS2812 Status LED</td>
+        <td>3.3</td>
+        <td>20</td>
+        <td>66</td>
+    </tr>
+    <tr>
+        <td><strong>Total power (sum of all)</strong></td>
+        <td><strong>/</strong></td>
+        <td><strong>/</strong></td>
+        <td><strong>~1250 mW</strong></td>
+    </tr>
+</table>
+
+<h4>Battery Life Calculation</h4>
+<p><strong>Battery:</strong> Cellevia CL-18650-29E/1S1P</p>
+<ul>
+    <li><strong>Capacity:</strong> 2670 mAh</li>
+    <li><strong>Energy:</strong> 9.75 Wh</li>
+    <li><strong>Nominal voltage:</strong> 3.7V</li>
+</ul>
+
+<p><strong>Power consumption analysis:</strong></p>
+<ul>
+    <li>Total system power (from table above): ~1250 mW peak</li>
+    <li>Average power (considering LoRa TX duty cycle ~10%): ~930 mW</li>
+    <li>Average current at 3.7V: 930 mW / 3.7V = <strong>~251 mA</strong></li>
+</ul>
+
+<p><strong>Estimated runtime:</strong></p>
+<ul>
+    <li>Runtime = Capacity / Average current</li>
+    <li>Runtime = 2670 mAh / 251 mA = <strong>~10.6 hours</strong></li>
+    <li>With 80% efficiency margin: <strong>~8.5 hours</strong></li>
+</ul>
+
+<p><strong>Conclusion:</strong> The battery provides more than double the required 4-hour minimum operating time, ensuring sufficient margin for the mission and post-landing recovery operations.</p>
+
+<hr>
+
+<h3>Declaration</h3>
+
+<p><strong>On behalf of the team, I confirm that our CanSat meets all the requirements set out in the official guidelines for the CanSat Hungary 2026 competition.</strong></p>
+
+<p><strong>Signature, place and date:</strong></p>
+
+<div class="signature-line">
+    &nbsp;
+</div>
+
+<script>
+// Dynamic Table of Contents Generator with Page Numbers
+document.addEventListener('DOMContentLoaded', function() {
+    generateTOC();
+});
+
+function generateTOC() {
+    const tocContainer = document.getElementById('toc-content');
+    const headings = document.querySelectorAll('h2, h3');
+
+    let tocHTML = '<ul>';
+    let currentH2 = null;
+    let subList = '';
+
+    headings.forEach((heading, index) => {
+        // Skip TOC heading itself
+        if (heading.closest('.toc')) return;
+
+        const text = heading.textContent;
+        const id = 'section-' + index;
+        heading.id = id;
+
+        if (heading.tagName === 'H2') {
+            // Close previous sublist if exists
+            if (subList) {
+                tocHTML += subList + '</ul></li>';
+                subList = '';
+            }
+            tocHTML += `<li><a href="#${id}">${text}</a><span class="toc-page" data-target="${id}"></span>`;
+            currentH2 = true;
+        } else if (heading.tagName === 'H3' && currentH2) {
+            if (!subList) {
+                subList = '<ul>';
+            }
+            subList += `<li><a href="#${id}">${text}</a><span class="toc-page" data-target="${id}"></span></li>`;
+        }
+    });
+
+    // Close last item
+    if (subList) {
+        tocHTML += subList + '</ul></li>';
+    }
+    tocHTML += '</ul>';
+
+    tocContainer.innerHTML = tocHTML;
+
+    // Calculate page numbers (approximate based on position)
+    calculatePageNumbers();
+}
+
+function calculatePageNumbers() {
+    const pageHeight = 1122; // A4 page height in pixels at 96dpi (297mm)
+    const tocPages = document.querySelectorAll('.toc-page');
+
+    tocPages.forEach(span => {
+        const targetId = span.dataset.target;
+        const target = document.getElementById(targetId);
+        if (target) {
+            const rect = target.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const absoluteTop = rect.top + scrollTop;
+            // Page 1 is cover, page 2 is TOC, content starts on page 3
+            const pageNum = Math.floor(absoluteTop / pageHeight) + 1;
+            span.textContent = pageNum;
+        }
+    });
+}
+
+// Recalculate on window resize
+window.addEventListener('resize', calculatePageNumbers);
+
+// Recalculate before print
+window.addEventListener('beforeprint', calculatePageNumbers);
+</script>
+
+</body>
+</html>
