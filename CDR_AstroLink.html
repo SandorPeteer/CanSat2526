@@ -550,6 +550,46 @@
     <li><strong>Voltage Regulator:</strong> 3.3V LDO for MCU and most sensors, 5V boost converter for SPS30</li>
 </ul>
 
+<h4>GPS Navigation Module</h4>
+<p>Navigation is handled by the <strong>HGLRC M100_MINI</strong> GPS module, selected for its compact form factor and performance characteristics suitable for high-altitude applications.</p>
+
+<p><strong>System Architecture:</strong></p>
+<ul>
+    <li><strong>Processing Speed:</strong> The ESP32-S3 dual-core @ 240 MHz effortlessly manages the GPS module's high 10 Hz update rate alongside concurrent data acquisition tasks.</li>
+    <li><strong>Hardware UART:</strong> Dedicated hardware serial ports (HardwareSerial) enable stable communication with the GPS module without software-induced overhead.</li>
+    <li><strong>Space Efficiency:</strong> Manual integration allowed for flexible component placement within the cylindrical chassis, optimizing the Center of Gravity (CoG).</li>
+</ul>
+
+<p><strong>Hardware Integration:</strong></p>
+<p>The system was implemented using point-to-point wiring (perfboard) rather than a custom PCB. While this approach facilitated rapid prototyping and iteration, it demanded heightened attention to mechanical protection.</p>
+
+<p><strong>Assembly and Vibration Proofing:</strong></p>
+<ul>
+    <li><strong>Wiring:</strong> Multi-stranded silicone wires were used instead of solid-core wires to prevent fatigue-induced snapping.</li>
+    <li><strong>Insulation:</strong> All solder joints are insulated with heat-shrink tubing to prevent short circuits.</li>
+    <li><strong>Securing Components:</strong> Modules and wire harnesses are secured to the CanSat internal frame using hot glue or cable ties for effective strain relief.</li>
+</ul>
+
+<p><strong>Software Implementation (ESP32-S3 Specific):</strong></p>
+<ul>
+    <li><strong>Protocol:</strong> UBX binary protocol (u-blox proprietary) for efficient, low-overhead communication</li>
+    <li><strong>Baud Rate:</strong> Serial port initialized at 115,200 bps, matching the GPS module's default configuration</li>
+    <li><strong>Data Buffering:</strong> The ESP32-S3's ample SRAM allows for buffering UBX messages without data loss</li>
+</ul>
+
+<p><strong>Flight Profile and Operating Environment:</strong></p>
+<p>The HGLRC M100_MINI's specifications (50 km altitude, 500 m/s velocity limits) comfortably exceed the CanSat competition requirements. The primary concern for manual soldering is the mechanical load (G-forces) during liftoff.</p>
+<ul>
+    <li><strong>Testing Procedure:</strong> A rigorous "Shake Test" is performed to verify that solder joints remain intact and the GPS fix is not lost due to intermittent connector movement.</li>
+</ul>
+
+<p><strong>Pre-Flight Checklist:</strong></p>
+<ul>
+    <li><strong>Antenna Orientation:</strong> The ceramic patch antenna faces upward, clear of metal components or the ESP32's EMI shield.</li>
+    <li><strong>Cable Management:</strong> Wires are neatly routed and secured, ensuring no interference with the parachute deployment mechanism.</li>
+    <li><strong>LED Status:</strong> Upon power-up, the ESP32 status LED and the GPS PPS LED (blinking blue/green) must confirm a successful boot-up and a 3D Fix.</li>
+</ul>
+
 <h3 class="page-break">2.4. Software design</h3>
 
 <p>The CanSat firmware is developed using the ESP-IDF framework with FreeRTOS for real-time task management. The software architecture is designed for reliability, modularity, and efficient data handling.</p>
@@ -683,25 +723,21 @@
 <p>The recovery system ensures safe descent and landing of the CanSat while meeting the required descent rate of 8-11 m/s.</p>
 
 <h4>Parachute Specifications</h4>
-<div class="todo">[TODO: Németh Imre - Add parachute details:
 <ul>
-    <li>Parachute type (round, cruciform, etc.)</li>
-    <li>Diameter/size</li>
-    <li>Material</li>
-    <li>Line length and material</li>
-    <li>Attachment method to CanSat</li>
+    <li><strong>Type:</strong> Round parachute with central vent hole</li>
+    <li><strong>Color:</strong> Pink (high visibility for aerial and ground recovery)</li>
+    <li><strong>Material:</strong> Handcrafted fabric, custom cut and sewn</li>
+    <li><strong>Suspension lines:</strong> Shoelaces (durable and elastic), equal length (<span class="todo">[TODO: specify length in cm]</span>) for balanced load distribution</li>
+    <li><strong>Design feature:</strong> Central vent hole allows excess air to escape, preventing oscillation and ensuring stable descent even in windy conditions</li>
 </ul>
-]</div>
 
 <h4>Descent Rate Calculation</h4>
-<div class="todo">[TODO: Add calculation showing expected descent rate based on:
+<p><strong>Target descent rate:</strong> <span class="todo">[TODO: specify actual measured/calculated value]</span> m/s (requirement: 8-11 m/s)</p>
 <ul>
-    <li>CanSat mass (target: 300-350g)</li>
-    <li>Parachute area</li>
-    <li>Drag coefficient</li>
-    <li>Expected descent rate result</li>
+    <li><strong>CanSat mass:</strong> <span class="todo">[TODO: specify final mass]</span> g (target: 300-350g)</li>
+    <li><strong>Parachute effective area:</strong> <span class="todo">[TODO: calculate from diameter]</span></li>
+    <li><strong>Drag coefficient (Cd):</strong> ~0.75-0.8 (typical for round parachute with vent)</li>
 </ul>
-]</div>
 
 <h4>Estimated Descent Duration</h4>
 <p>From 1000 m altitude at 10 m/s descent rate: approximately 100 seconds.</p>
