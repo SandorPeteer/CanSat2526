@@ -1,0 +1,189 @@
+<mxfile host="app.diagrams.net" modified="2026-02-03T12:00:00.000Z" agent="Claude" version="22.1.2">
+  <diagram name="Program Flow" id="program-flow-diagram">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Title -->
+        <mxCell id="title" value="AstroLink CanSat - Program Flow Diagram" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="400" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== INITIALIZATION SEQUENCE ==================== -->
+        <mxCell id="init-group" value="1. Initialization Sequence" style="swimlane;horizontal=1;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="280" height="420" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="start" value="Power ON" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1" vertex="1" parent="init-group">
+          <mxGeometry x="90" y="45" width="100" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="init-hw" value="Initialize Hardware&#xa;(GPIO, UART, SPI, I2C)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11" vertex="1" parent="init-group">
+          <mxGeometry x="65" y="100" width="150" height="45" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="init-sensors" value="Initialize Sensors&#xa;(BNO085, BMP585, SCD40,&#xa;QMC5883L, SPS30, GPS)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11" vertex="1" parent="init-group">
+          <mxGeometry x="65" y="160" width="150" height="55" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="init-storage" value="Initialize Storage&#xa;(LittleFS, PSRAM buffer)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11" vertex="1" parent="init-group">
+          <mxGeometry x="65" y="230" width="150" height="45" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="init-lora" value="Initialize LoRa&#xa;(SX1278, 433.2 MHz)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11" vertex="1" parent="init-group">
+          <mxGeometry x="65" y="290" width="150" height="45" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="init-wifi" value="Initialize WiFi AP&#xa;+ HTTP Server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11" vertex="1" parent="init-group">
+          <mxGeometry x="65" y="350" width="150" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- Init arrows -->
+        <mxCell id="arr1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="init-group" source="start" target="init-hw">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arr2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="init-group" source="init-hw" target="init-sensors">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arr3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="init-group" source="init-sensors" target="init-storage">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arr4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="init-group" source="init-storage" target="init-lora">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arr5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="init-group" source="init-lora" target="init-wifi">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== SENSOR TASK LOOPS ==================== -->
+        <mxCell id="tasks-group" value="2. FreeRTOS Sensor Tasks (Parallel)" style="swimlane;horizontal=1;startSize=30;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="340" y="80" width="500" height="200" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="task-gps" value="gps_task&#xa;Priority: 8&#xa;~10 Hz (UBX)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10" vertex="1" parent="tasks-group">
+          <mxGeometry x="20" y="45" width="85" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="task-imu" value="bno085_task&#xa;Priority: 5&#xa;~100 Hz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10" vertex="1" parent="tasks-group">
+          <mxGeometry x="115" y="45" width="85" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="task-baro" value="bmp585_task&#xa;Priority: 6&#xa;~50 Hz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10" vertex="1" parent="tasks-group">
+          <mxGeometry x="210" y="45" width="85" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="task-sps" value="sps30_task&#xa;Priority: 10&#xa;~1 Hz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10" vertex="1" parent="tasks-group">
+          <mxGeometry x="305" y="45" width="85" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="task-co2" value="scd40_task&#xa;Priority: 7&#xa;~0.2 Hz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10" vertex="1" parent="tasks-group">
+          <mxGeometry x="400" y="45" width="85" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="task-lora" value="lora_task&#xa;Priority: 9&#xa;~1 Hz TX" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10" vertex="1" parent="tasks-group">
+          <mxGeometry x="115" y="125" width="85" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="task-storage" value="storage_task&#xa;Priority: 4&#xa;~1 Hz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10" vertex="1" parent="tasks-group">
+          <mxGeometry x="210" y="125" width="85" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="task-led" value="led_task&#xa;Priority: 3&#xa;Status LED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10" vertex="1" parent="tasks-group">
+          <mxGeometry x="305" y="125" width="85" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== DATA FLOW ==================== -->
+        <mxCell id="data-group" value="3. Data Collection &amp; Storage" style="swimlane;horizontal=1;startSize=30;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="340" y="300" width="300" height="200" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sensor-data" value="Sensor Data&#xa;(64-byte record)" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11" vertex="1" parent="data-group">
+          <mxGeometry x="100" y="40" width="100" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="psram" value="PSRAM Ring Buffer&#xa;(86,400 records)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10" vertex="1" parent="data-group">
+          <mxGeometry x="30" y="110" width="100" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="littlefs" value="LittleFS&#xa;(Binary files)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10" vertex="1" parent="data-group">
+          <mxGeometry x="170" y="110" width="100" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="arr-psram" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="data-group" source="sensor-data" target="psram">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arr-lfs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="data-group" source="sensor-data" target="littlefs">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== LORA TRANSMISSION ==================== -->
+        <mxCell id="lora-group" value="4. LoRa Transmission" style="swimlane;horizontal=1;startSize=30;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="660" y="300" width="200" height="200" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="lora-packet" value="Build Telemetry&#xa;Packet" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11" vertex="1" parent="lora-group">
+          <mxGeometry x="50" y="40" width="100" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="lora-tx" value="LoRa TX&#xa;(433.2 MHz)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11" vertex="1" parent="lora-group">
+          <mxGeometry x="50" y="100" width="100" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ground" value="Ground Station" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11" vertex="1" parent="lora-group">
+          <mxGeometry x="50" y="155" width="100" height="35" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="arr-lora1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="lora-group" source="lora-packet" target="lora-tx">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arr-lora2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="lora-group" source="lora-tx" target="ground">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== FLIGHT STATE MACHINE ==================== -->
+        <mxCell id="fsm-group" value="5. Flight State Machine" style="swimlane;horizontal=1;startSize=30;fillColor=#f8cecc;strokeColor=#b85450;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="520" width="820" height="180" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="state-preflight" value="PRE-FLIGHT&#xa;&#xa;• Waiting on ground&#xa;• GPS fix acquisition&#xa;• System checks&#xa;• WiFi AP active" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=left;spacingLeft=5" vertex="1" parent="fsm-group">
+          <mxGeometry x="30" y="45" width="150" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="state-flight" value="FLIGHT&#xa;&#xa;• Altitude increasing&#xa;• High-rate data logging&#xa;• LoRa TX active&#xa;• All sensors running" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=left;spacingLeft=5" vertex="1" parent="fsm-group">
+          <mxGeometry x="250" y="45" width="150" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="state-descent" value="DESCENT&#xa;&#xa;• Altitude decreasing&#xa;• Parachute deployed&#xa;• Continuous logging&#xa;• Recovery beacon" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;align=left;spacingLeft=5" vertex="1" parent="fsm-group">
+          <mxGeometry x="470" y="45" width="150" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="state-landed" value="LANDED&#xa;&#xa;• Altitude stable&#xa;• Save flight data&#xa;• WiFi AP for download&#xa;• GPS beacon active" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;align=left;spacingLeft=5" vertex="1" parent="fsm-group">
+          <mxGeometry x="690" y="45" width="110" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- State transitions -->
+        <mxCell id="trans1" value="Launch&#xa;detected" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=9" edge="1" parent="fsm-group" source="state-preflight" target="state-flight">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="trans2" value="Apogee&#xa;reached" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=9" edge="1" parent="fsm-group" source="state-flight" target="state-descent">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="trans3" value="Ground&#xa;contact" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=9" edge="1" parent="fsm-group" source="state-descent" target="state-landed">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Connection from init to tasks -->
+        <mxCell id="main-flow1" value="Start Tasks" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" edge="1" parent="1" source="init-wifi" target="tasks-group">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="320" y="475"/>
+              <mxPoint x="320" y="180"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
