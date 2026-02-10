@@ -398,20 +398,27 @@
 
 <h3>2.2. Mechanical/structural design</h3>
 
-<p>The CanSat structure is designed to fit within the standard dimensions (66 mm diameter, 115 mm height) while protecting all components during launch, descent, and landing. The structure is 3D printed using a combination of materials selected for their specific properties.</p>
+<p>The CanSat structure is designed to fit within the standard dimensions (66 mm diameter, 115 mm height) while protecting all components during launch, descent, and landing.</p>
 
 <h4>Materials</h4>
 <ul>
-    <li><strong>TPU (Thermoplastic Polyurethane):</strong> Used for shock-absorbing components and flexible mounting points. Different shore hardness values are used depending on the required flexibility.</li>
-    <li><strong>PETG (Polyethylene Terephthalate Glycol):</strong> Used for rigid structural components requiring higher strength and temperature resistance.</li>
+    <li><strong>ABS (Acrylonitrile Butadiene Styrene):</strong> The entire structure is 3D printed from ABS, chosen for its excellent impact resistance, rigidity, and temperature stability (-20°C to +80°C operating range).</li>
 </ul>
 
 <h4>Structural Layout</h4>
-<div class="todo">[TODO: Describe the internal layout - where each component is mounted, how layers/sections are organized]</div>
+<p>The internal layout is organized in a modular vertical structure supported by three struts:</p>
+<ul>
+    <li><strong>Bottom section:</strong> SPS30 particulate sensor with vibration dampeners and hexagonal ventilation grille for airflow</li>
+    <li><strong>Lower-middle section:</strong> 2x Li-Ion 18650 batteries mounted vertically in dedicated cylindrical holders</li>
+    <li><strong>Upper-middle section:</strong> Main electronics (ESP32-S3, LoRa module, voltage regulators) mounted on perfboard, secured to the strut assembly</li>
+    <li><strong>Top plate:</strong> GPS and LoRa antenna mount, facing upward for optimal signal reception</li>
+</ul>
+<p>The outer cylindrical shell provides structural protection, while three vertical struts connect the top and bottom plates, creating a rigid internal frame.</p>
 
 <h4>Mechanical Drawings</h4>
-<div class="image-placeholder">
-    [TODO: Insert 3D CAD model views - isometric, top, side views with dimensions]
+<div style="text-align: center;">
+    <img src="CanSatAssembly.PNG" alt="CanSat Assembly - 3D CAD model view" style="max-width: 100%; height: auto;">
+    <p style="font-size: 9pt; color: #666; margin-top: 0.5em;"><em>Figure: CanSat assembly - 3D CAD model view</em></p>
 </div>
 
 <h4>Component List</h4>
@@ -422,29 +429,44 @@
         <th>Purpose</th>
     </tr>
     <tr>
-        <td class="todo">[TODO: Main body]</td>
-        <td class="todo">[TODO]</td>
-        <td class="todo">[TODO]</td>
+        <td>OuterShell</td>
+        <td>ABS</td>
+        <td>Main cylindrical body with hexagonal honeycomb ventilation pattern for SPS30 airflow</td>
     </tr>
     <tr>
-        <td class="todo">[TODO: Top cap]</td>
-        <td class="todo">[TODO]</td>
-        <td class="todo">[TODO]</td>
+        <td>TopPlate</td>
+        <td>ABS</td>
+        <td>Upper cover, antenna mounting surface</td>
     </tr>
     <tr>
-        <td class="todo">[TODO: Bottom cap]</td>
-        <td class="todo">[TODO]</td>
-        <td class="todo">[TODO]</td>
+        <td>BottomPlate</td>
+        <td>ABS</td>
+        <td>Lower cover, structural base</td>
     </tr>
     <tr>
-        <td class="todo">[TODO: Sensor mount]</td>
-        <td class="todo">[TODO]</td>
-        <td class="todo">[TODO]</td>
+        <td>StrutAssembly (x3)</td>
+        <td>ABS + foam</td>
+        <td>Sliding shock absorbers - cylindrical guides with foam cushioning at bottom for landing impact dampening</td>
     </tr>
     <tr>
-        <td class="todo">[TODO: Battery holder]</td>
-        <td class="todo">[TODO]</td>
-        <td class="todo">[TODO]</td>
+        <td>Case</td>
+        <td>ABS</td>
+        <td>Internal electronics housing</td>
+    </tr>
+    <tr>
+        <td>Battery holders (x2)</td>
+        <td>ABS</td>
+        <td>Cylindrical holders for 18650 Li-Ion cells</td>
+    </tr>
+    <tr>
+        <td>AntennaMount</td>
+        <td>ABS</td>
+        <td>GPS and LoRa antenna bracket</td>
+    </tr>
+    <tr>
+        <td>SPS30 mount</td>
+        <td>ABS + foam</td>
+        <td>Sensor holder with foam padding underneath for vibration isolation</td>
     </tr>
 </table>
 
@@ -543,52 +565,18 @@
 
 <h4>Power System</h4>
 <ul>
-    <li><strong>Battery:</strong> Cellevia CL-18650-29E/1S1P (Li-Ion 18650 cell)</li>
+    <li><strong>Battery:</strong> 2x Cellevia CL-18650-29E (Li-Ion 18650 cells, parallel configuration)</li>
     <li><strong>Nominal Voltage:</strong> 3.7V</li>
-    <li><strong>Capacity:</strong> 2670 mAh (2.67 Ah)</li>
-    <li><strong>Energy:</strong> 9.75 Wh</li>
+    <li><strong>Capacity:</strong> 5340 mAh (5.34 Ah)</li>
+    <li><strong>Energy:</strong> 19.5 Wh</li>
     <li><strong>Voltage Regulator:</strong> 3.3V LDO for MCU and most sensors, 5V boost converter for SPS30</li>
 </ul>
 
 <h4>GPS Navigation Module</h4>
-<p>Navigation is handled by the <strong>HGLRC M100_MINI</strong> GPS module, selected for its compact form factor and performance characteristics suitable for high-altitude applications.</p>
+<p>Navigation is handled by the <strong>HGLRC M100_MINI</strong> GPS module (10 Hz update rate, UBX protocol at 115200 baud). Its specifications (50 km altitude, 500 m/s velocity limits) exceed CanSat requirements. The ceramic patch antenna faces upward, clear of metal components.</p>
 
-<p><strong>System Architecture:</strong></p>
-<ul>
-    <li><strong>Processing Speed:</strong> The ESP32-S3 dual-core @ 240 MHz effortlessly manages the GPS module's high 10 Hz update rate alongside concurrent data acquisition tasks.</li>
-    <li><strong>Hardware UART:</strong> Dedicated hardware serial ports (HardwareSerial) enable stable communication with the GPS module without software-induced overhead.</li>
-    <li><strong>Space Efficiency:</strong> Manual integration allowed for flexible component placement within the cylindrical chassis, optimizing the Center of Gravity (CoG).</li>
-</ul>
-
-<p><strong>Hardware Integration:</strong></p>
-<p>The system was implemented using point-to-point wiring (perfboard) rather than a custom PCB. While this approach facilitated rapid prototyping and iteration, it demanded heightened attention to mechanical protection.</p>
-
-<p><strong>Assembly and Vibration Proofing:</strong></p>
-<ul>
-    <li><strong>Wiring:</strong> Multi-stranded silicone wires were used instead of solid-core wires to prevent fatigue-induced snapping.</li>
-    <li><strong>Insulation:</strong> All solder joints are insulated with heat-shrink tubing to prevent short circuits.</li>
-    <li><strong>Securing Components:</strong> Modules and wire harnesses are secured to the CanSat internal frame using hot glue or cable ties for effective strain relief.</li>
-</ul>
-
-<p><strong>Software Implementation (ESP32-S3 Specific):</strong></p>
-<ul>
-    <li><strong>Protocol:</strong> UBX binary protocol (u-blox proprietary) for efficient, low-overhead communication</li>
-    <li><strong>Baud Rate:</strong> Serial port initialized at 115,200 bps, matching the GPS module's default configuration</li>
-    <li><strong>Data Buffering:</strong> The ESP32-S3's ample SRAM allows for buffering UBX messages without data loss</li>
-</ul>
-
-<p><strong>Flight Profile and Operating Environment:</strong></p>
-<p>The HGLRC M100_MINI's specifications (50 km altitude, 500 m/s velocity limits) comfortably exceed the CanSat competition requirements. The primary concern for manual soldering is the mechanical load (G-forces) during liftoff.</p>
-<ul>
-    <li><strong>Testing Procedure:</strong> A rigorous "Shake Test" is performed to verify that solder joints remain intact and the GPS fix is not lost due to intermittent connector movement.</li>
-</ul>
-
-<p><strong>Pre-Flight Checklist:</strong></p>
-<ul>
-    <li><strong>Antenna Orientation:</strong> The ceramic patch antenna faces upward, clear of metal components or the ESP32's EMI shield.</li>
-    <li><strong>Cable Management:</strong> Wires are neatly routed and secured, ensuring no interference with the parachute deployment mechanism.</li>
-    <li><strong>LED Status:</strong> Upon power-up, the ESP32 status LED and the GPS PPS LED (blinking blue/green) must confirm a successful boot-up and a 3D Fix.</li>
-</ul>
+<h4>Hardware Integration</h4>
+<p>The system uses point-to-point wiring (perfboard) with multi-stranded silicone wires and heat-shrink insulation on all solder joints. Components are secured with hot glue and cable ties for vibration resistance. A "Shake Test" verifies mechanical integrity before flight.</p>
 
 <h3 class="page-break">2.4. Software design</h3>
 
@@ -870,13 +858,13 @@
     </tr>
     <tr>
         <td>Li-Ion Battery (Cellevia CL-18650-29E)</td>
-        <td>1</td>
+        <td>2</td>
         <td>7.59</td>
-        <td>7.59</td>
+        <td>15.18</td>
         <td>No</td>
     </tr>
     <tr>
-        <td>3D Printing Filament (TPU/PETG)</td>
+        <td>3D Printing Filament (ABS)</td>
         <td>-</td>
         <td class="todo">[TODO]</td>
         <td class="todo">[TODO]</td>
@@ -900,21 +888,24 @@
         <td><strong>Electronics subtotal</strong></td>
         <td></td>
         <td></td>
-        <td><strong>116.27</strong></td>
+        <td><strong>123.86</strong></td>
         <td></td>
     </tr>
     <tr>
         <td><strong>TOTAL (with other materials)</strong></td>
         <td></td>
         <td></td>
-        <td class="todo"><strong>~130-150 EUR (estimated)</strong></td>
+        <td class="todo"><strong>~140-160 EUR (estimated)</strong></td>
         <td></td>
     </tr>
 </table>
 
 <h4>3.2.2. External support</h4>
 
-<div class="todo">[TODO: List sponsors, supporting institutions, facilities access, etc.]</div>
+<p><strong>Sponsors:</strong></p>
+<ul>
+    <li><a href="https://szonar.com" target="_blank">Szonár</a> - <a href="https://szonar.com">https://szonar.com</a></li>
+</ul>
 
 <h4>3.2.3. Test plan</h4>
 
@@ -1048,7 +1039,7 @@
         <td>Power consumption</td>
         <td>~251 mA avg / ~1.25W</td>
         <td>4+ hours operation</td>
-        <td>Yes (~8.5 hours)</td>
+        <td>Yes (~17 hours)</td>
     </tr>
     <tr>
         <td>Total cost</td>
@@ -1132,28 +1123,18 @@
 </table>
 
 <h4>Battery Life Calculation</h4>
-<p><strong>Battery:</strong> Cellevia CL-18650-29E/1S1P</p>
+<p><strong>Battery:</strong> 2x Cellevia CL-18650-29E (parallel configuration)</p>
 <ul>
-    <li><strong>Capacity:</strong> 2670 mAh</li>
-    <li><strong>Energy:</strong> 9.75 Wh</li>
+    <li><strong>Capacity:</strong> 5340 mAh</li>
+    <li><strong>Energy:</strong> 19.5 Wh</li>
     <li><strong>Nominal voltage:</strong> 3.7V</li>
 </ul>
 
-<p><strong>Power consumption analysis:</strong></p>
-<ul>
-    <li>Total system power (from table above): ~1250 mW peak</li>
-    <li>Average power (considering LoRa TX duty cycle ~10%): ~930 mW</li>
-    <li>Average current at 3.7V: 930 mW / 3.7V = <strong>~251 mA</strong></li>
-</ul>
+<p><strong>Power consumption:</strong> ~930 mW average (251 mA at 3.7V)</p>
 
-<p><strong>Estimated runtime:</strong></p>
-<ul>
-    <li>Runtime = Capacity / Average current</li>
-    <li>Runtime = 2670 mAh / 251 mA = <strong>~10.6 hours</strong></li>
-    <li>With 80% efficiency margin: <strong>~8.5 hours</strong></li>
-</ul>
+<p><strong>Estimated runtime:</strong> 5340 mAh / 251 mA = <strong>~21.3 hours</strong> (with 80% efficiency: <strong>~17 hours</strong>)</p>
 
-<p><strong>Conclusion:</strong> The battery provides more than double the required 4-hour minimum operating time, ensuring sufficient margin for the mission and post-landing recovery operations.</p>
+<p><strong>Conclusion:</strong> The dual-battery configuration provides over 4x the required 4-hour minimum operating time.</p>
 
 <hr>
 
