@@ -377,7 +377,7 @@
 
 <h3>2.1. Overview of the mission</h3>
 
-<p>The AstroLink CanSat will be launched on a rocket to an altitude of approximately 1 km, where it will be ejected and descend under a parachute system at a rate of 8-11 m/s. During descent, it will continuously measure atmospheric parameters using its sensor suite and transmit data to the ground station via LoRa radio link while simultaneously storing all data onboard. The satellite will remain active for at least 4 hours after landing to facilitate recovery.</p>
+<p>The AstroLink CanSat will be launched on a rocket to an altitude of approximately 1 km, where it will be ejected and descend under a parachute system at a rate of approximately 5-6 m/s. During descent, it will continuously measure atmospheric parameters using its sensor suite and transmit data to the ground station via LoRa radio link while simultaneously storing all data onboard. The satellite will remain active for at least 4 hours after landing to facilitate recovery.</p>
 
 <h4>Critical Components and Systems</h4>
 <ul>
@@ -718,7 +718,7 @@
 
 <h3>2.5. Recovery system</h3>
 
-<p>The recovery system ensures safe descent and landing of the CanSat while meeting the required descent rate of 8-11 m/s.</p>
+<p>The recovery system ensures safe descent and landing of the CanSat while meeting the required descent rate of 5-12 m/s (8-11 m/s recommended).</p>
 
 <h4>Parachute Specifications</h4>
 <ul>
@@ -819,14 +819,14 @@
         <td>1</td>
         <td>10.50</td>
         <td>10.50</td>
-        <td>Yes (MSZC)</td>
+        <td>Yes (Kandó)</td>
     </tr>
     <tr>
         <td>BNO085 IMU</td>
         <td>1</td>
         <td>21.91</td>
         <td>21.91</td>
-        <td>Yes (MSZC)</td>
+        <td>Yes (Kandó)</td>
     </tr>
     <tr>
         <td>BMP585 Pressure Sensor</td>
@@ -840,7 +840,7 @@
         <td>1</td>
         <td>10.90</td>
         <td>10.90</td>
-        <td>Yes (MSZC)</td>
+        <td>Yes (Kandó)</td>
     </tr>
     <tr>
         <td>QMC5883L Magnetometer</td>
@@ -854,21 +854,21 @@
         <td>1</td>
         <td>26.58</td>
         <td>26.58</td>
-        <td>Yes (MSZC)</td>
+        <td>Yes (Szonár)</td>
     </tr>
     <tr>
         <td>M100-Pro HGLRC GPS</td>
         <td>1</td>
         <td>17.51</td>
         <td>17.51</td>
-        <td>Yes (MSZC)</td>
+        <td>Yes (Mentor)</td>
     </tr>
     <tr>
         <td>LoRa Module (SX1278)</td>
         <td>2</td>
         <td>3.06</td>
         <td>6.12</td>
-        <td>Yes (MSZC)</td>
+        <td>Yes (Mentor)</td>
     </tr>
     <tr>
         <td>Li-Ion Battery (Cellevia CL-18650-29E)</td>
@@ -918,8 +918,10 @@
 
 <p><strong>Sponsors:</strong></p>
 <ul>
-    <li><strong>Miskolci Szakképzési Centrum</strong> (<a href="https://www.miskolci-szc.hu/">https://www.miskolci-szc.hu/</a>) - Primary sponsor, funding all electronic components and materials</li>
-    <li><a href="https://szonar.com" target="_blank">Szonár Kft.</a> - <a href="https://szonar.com">https://szonar.com</a></li>
+    <li><strong>Miskolci Szakképzési Centrum</strong> (<a href="https://www.miskolci-szc.hu/">https://www.miskolci-szc.hu/</a>) - Primary sponsor, funding materials (ABS filament, parachute, batteries, magnetometer, BMP585)</li>
+    <li><strong>MSZC Kandó Kálmán Informatikai Technikum</strong> - Sponsored ESP32-S3, BNO085 IMU, and SCD40 sensors</li>
+    <li><strong>Szonár Kft.</strong> (<a href="https://szonar.com">https://szonar.com</a>) - Sponsored SPS30 particulate sensor and wiring/connectors</li>
+    <li><strong>Sándor Péter</strong> (Mentor, <a href="https://sprendezveny.hu">https://sprendezveny.hu</a>) - Sponsored GPS module and LoRa modules</li>
 </ul>
 
 <h4>3.2.3. Test plan</h4>
@@ -1010,9 +1012,9 @@
     </tr>
     <tr>
         <td>Height of the CanSat</td>
-        <td class="todo">[TODO] mm</td>
+        <td>114.8 mm</td>
         <td>≤ 115 mm</td>
-        <td class="todo">[TODO]</td>
+        <td>Yes</td>
     </tr>
     <tr>
         <td>Mass of the CanSat</td>
