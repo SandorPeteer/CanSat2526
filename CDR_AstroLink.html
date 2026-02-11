@@ -7,7 +7,7 @@
     <style>
         @page {
             size: A4;
-            margin: 2.5cm 2cm 2.5cm 2cm;
+            margin: 2cm 1.8cm 2cm 1.8cm;
         }
 
         * {
@@ -17,11 +17,11 @@
         body {
             font-family: Verdana, Geneva, sans-serif;
             font-size: 11pt;
-            line-height: 1.5;
+            line-height: 1.4;
             color: #000;
             max-width: 21cm;
             margin: 0 auto;
-            padding: 2cm;
+            padding: 1.5cm;
             background: #fff;
         }
 
@@ -34,8 +34,8 @@
 
         h2 {
             font-size: 14pt;
-            margin-top: 1.5em;
-            margin-bottom: 0.5em;
+            margin-top: 1em;
+            margin-bottom: 0.4em;
             border-bottom: 1px solid #333;
             padding-bottom: 0.2em;
             page-break-after: avoid;
@@ -43,44 +43,44 @@
 
         h3 {
             font-size: 12pt;
-            margin-top: 1.2em;
-            margin-bottom: 0.4em;
+            margin-top: 0.8em;
+            margin-bottom: 0.3em;
             page-break-after: avoid;
         }
 
         h4 {
             font-size: 11pt;
             font-style: italic;
-            margin-top: 1em;
-            margin-bottom: 0.3em;
+            margin-top: 0.6em;
+            margin-bottom: 0.2em;
             page-break-after: avoid;
         }
 
         p {
-            margin: 0.5em 0;
+            margin: 0.3em 0;
             text-align: justify;
         }
 
         ul, ol {
-            margin: 0.5em 0;
+            margin: 0.3em 0;
             padding-left: 2em;
         }
 
         li {
-            margin: 0.3em 0;
+            margin: 0.15em 0;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 1em 0;
+            margin: 0.5em 0;
             font-size: 10pt;
             page-break-inside: avoid;
         }
 
         th, td {
             border: 1px solid #333;
-            padding: 6px 8px;
+            padding: 4px 6px;
             text-align: left;
         }
 
@@ -92,7 +92,7 @@
         .cover-page {
             text-align: center;
             page-break-after: always;
-            padding-top: 2cm;
+            padding-top: 1cm;
         }
 
         .cover-page h1 {
@@ -107,7 +107,7 @@
         }
 
         .cover-info {
-            margin-top: 4cm;
+            margin-top: 2cm;
             text-align: left;
             font-size: 12pt;
         }
@@ -118,7 +118,7 @@
         }
 
         .toc {
-            page-break-after: always;
+            /* removed page-break-after to save space */
         }
 
         .toc h2 {
@@ -132,7 +132,7 @@
         }
 
         .toc > ul > li {
-            margin: 0.8em 0;
+            margin: 0.4em 0;
             font-weight: bold;
         }
 
@@ -142,7 +142,7 @@
         }
 
         .toc ul ul li {
-            margin: 0.4em 0;
+            margin: 0.2em 0;
         }
 
         .toc li {
@@ -354,47 +354,30 @@
 <p>Measure atmospheric temperature and pressure during descent to calculate altitude and descent rate.</p>
 
 <h4>Secondary Mission</h4>
-<p>Investigate the vertical distribution of airborne particulate matter (PM1.0, PM2.5, PM4.0, PM10) using the Sensirion SPS30 sensor. This data will help understand how air pollution varies with altitude and can provide insights into:</p>
-<ul>
-    <li>Particulate matter concentration gradients in the lower atmosphere</li>
-    <li>The relationship between altitude and air quality</li>
-    <li>Potential sources of pollution at different atmospheric layers</li>
-    <li>Correlation between meteorological conditions (temperature, humidity) and particle distribution</li>
-</ul>
+<p>Investigate vertical distribution of airborne particulate matter (PM1.0, PM2.5, PM4.0, PM10) using the Sensirion SPS30 sensor. This data provides insights into PM concentration gradients, altitude-air quality relationships, and meteorological correlations.</p>
 
 <h4>Success Criteria</h4>
 <ul>
-    <li>Successfully deploy from the launch vehicle and descend under parachute</li>
-    <li>Collect continuous sensor data throughout the flight (temperature, pressure, particulate matter, GPS position)</li>
-    <li>Transmit real-time telemetry to the ground station via LoRa</li>
-    <li>Store all flight data onboard for post-flight analysis</li>
-    <li>Safely land and be recovered intact</li>
-    <li>Remain operational for at least 4 hours after landing</li>
+    <li>Deploy from rocket and descend under parachute</li>
+    <li>Collect continuous sensor data (temp, pressure, PM, GPS) and transmit via LoRa</li>
+    <li>Store all flight data onboard, safely land and remain operational 4+ hours</li>
 </ul>
 
 <!-- 2. CANSAT DESCRIPTION -->
-<h2 class="page-break">2. CANSAT DESCRIPTION</h2>
+<h2>2. CANSAT DESCRIPTION</h2>
 
 <h3>2.1. Overview of the mission</h3>
 
 <p>The AstroLink CanSat will be launched on a rocket to an altitude of approximately 1 km, where it will be ejected and descend under a parachute system at a rate of approximately 5-6 m/s. During descent, it will continuously measure atmospheric parameters using its sensor suite and transmit data to the ground station via LoRa radio link while simultaneously storing all data onboard. The satellite will remain active for at least 4 hours after landing to facilitate recovery.</p>
 
-<h4>Critical Components and Systems</h4>
-<ul>
-    <li><strong>Microcontroller:</strong> ESP32-S3 (dual-core, WiFi capable)</li>
-    <li><strong>Primary sensors:</strong> BMP585 (pressure/temperature), GPS module (M100-Pro HGLRC)</li>
-    <li><strong>Secondary mission sensor:</strong> SPS30 particulate matter sensor</li>
-    <li><strong>Supporting sensors:</strong> BNO085 IMU (orientation), SCD40 (CO2/humidity), QMC5883L (magnetometer)</li>
-    <li><strong>Communication:</strong> LoRa radio (E22-900M30S at 868 MHz ISM band)</li>
-    <li><strong>Power:</strong> LiPo battery with voltage regulation</li>
-    <li><strong>Recovery:</strong> Parachute system</li>
-</ul>
+<h4>Critical Components</h4>
+<p><strong>MCU:</strong> ESP32-S3 | <strong>Sensors:</strong> BMP585, M100-Pro GPS, SPS30, BNO085, SCD40, QMC5883L | <strong>Communication:</strong> E22-900M30S LoRa (868 MHz) | <strong>Power:</strong> 2x Li-Ion + boost converter | <strong>Recovery:</strong> Parachute</p>
 
 <h4>System Block Diagram</h4>
-<div style="text-align: center; margin: 1em 0;">
+<div style="text-align: center; margin: 0.3em 0;">
     <div class="mxgraph" style="max-width:100%;border:1px solid #ccc;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;xml&quot;:&quot;&lt;mxfile host=\&quot;app.diagrams.net\&quot;&gt;&lt;diagram name=\&quot;1 oldal\&quot; id=\&quot;vHl38z38AX6xv8_jfIYL\&quot;&gt;&lt;mxGraphModel grid=\&quot;1\&quot; page=\&quot;1\&quot; gridSize=\&quot;10\&quot; guides=\&quot;1\&quot; tooltips=\&quot;1\&quot; connect=\&quot;1\&quot; arrows=\&quot;1\&quot; fold=\&quot;1\&quot; pageScale=\&quot;1\&quot; pageWidth=\&quot;827\&quot; pageHeight=\&quot;1169\&quot; math=\&quot;0\&quot; shadow=\&quot;0\&quot;&gt;&lt;root&gt;&lt;mxCell id=\&quot;0\&quot;/&gt;&lt;mxCell id=\&quot;1\&quot; parent=\&quot;0\&quot;/&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-20\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-1\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#a20025;strokeColor=#6F0000;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-6\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;380\&quot; y=\&quot;210\&quot;/&gt;&lt;mxPoint x=\&quot;485\&quot; y=\&quot;210\&quot;/&gt;&lt;mxPoint x=\&quot;485\&quot; y=\&quot;120\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-21\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-1\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#6d8764;strokeColor=#3A5431;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-2\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;380\&quot; y=\&quot;260\&quot;/&gt;&lt;mxPoint x=\&quot;510\&quot; y=\&quot;260\&quot;/&gt;&lt;mxPoint x=\&quot;510\&quot; y=\&quot;220\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-23\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-1\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#fad9d5;strokeColor=#ae4132;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-3\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;380\&quot; y=\&quot;310\&quot;/&gt;&lt;mxPoint x=\&quot;460\&quot; y=\&quot;310\&quot;/&gt;&lt;mxPoint x=\&quot;460\&quot; y=\&quot;500\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-26\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-1\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#fad7ac;strokeColor=#b46504;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-4\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-27\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-1\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#fad7ac;strokeColor=#b46504;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-5\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;420\&quot; y=\&quot;382\&quot;/&gt;&lt;mxPoint x=\&quot;420\&quot; y=\&quot;600\&quot;/&gt;&lt;/Array&gt;&lt;mxPoint x=\&quot;420\&quot; y=\&quot;599.9999999999998\&quot; as=\&quot;targetPoint\&quot;/&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-1\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#76608a;fontColor=#ffffff;strokeColor=#432D57;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;ESP32-S3&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;N16R8 (16MB /8MB PSRAM)&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;Interfaces:&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;SPI1: GPIO 5,6,7,15&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;background-color: transparent;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;SPI2: GPIO 35-42&amp;lt;/font&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;I2C: GPIO 8,9&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;UART1: GPIO 17,18&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;UART2: GPIO 13,14&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;LED: GPIO 48&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;WiFi: Built-in&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;270\&quot; width=\&quot;220\&quot; x=\&quot;160\&quot; y=\&quot;180\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-18\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-2\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fillColor=#6d8764;strokeColor=#3A5431;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-8\&quot; value=\&quot;\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-2\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#6D8764;fontColor=#ffffff;strokeColor=#3A5431;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;E22-900M30S&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;LoRa (SPI2) | 3.3V | 120mA&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;250\&quot; x=\&quot;540\&quot; y=\&quot;190\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-3\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fad9d5;strokeColor=#ae4132;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;BMP585&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;Pressure (I2C) | 5V | 0.5mA&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;250\&quot; x=\&quot;540\&quot; y=\&quot;470\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-4\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fad7ac;strokeColor=#b46504;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;M100-Pro GPS&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;GNSS (UART1) | 5V | 25mA&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;250\&quot; x=\&quot;540\&quot; y=\&quot;670\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-5\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fad7ac;strokeColor=#b46504;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 16px;&amp;quot;&amp;gt;SPS30&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 16px;&amp;quot;&amp;gt;PM Sensor (UART2) | 5V | 25mA&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;250\&quot; x=\&quot;540\&quot; y=\&quot;570\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-6\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#a20025;strokeColor=#6F0000;fontColor=#ffffff;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;BNO085 IMU&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;9-DoF (SPI1) |3.3V | 12mA&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;250\&quot; x=\&quot;540\&quot; y=\&quot;90\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-7\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fad9d5;strokeColor=#ae4132;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;SCD40&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;CO2 (I2C) | 3.3V |15mA&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;250\&quot; x=\&quot;540\&quot; y=\&quot;280\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-8\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#6d8764;fontColor=#ffffff;strokeColor=#3A5431;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 19px;&amp;quot;&amp;gt;Antenna&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 19px;&amp;quot;&amp;gt;433MHz&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;80\&quot; width=\&quot;93\&quot; x=\&quot;890\&quot; y=\&quot;180\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-28\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-9\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-16\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-9\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#e3c800;fontColor=#000000;strokeColor=#B09500;\&quot; value=\&quot;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;POWER&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;320\&quot; width=\&quot;210\&quot; x=\&quot;-90\&quot; y=\&quot;130\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-10\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;18650 Li-ion&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;3.7V | 2670mAh&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;180\&quot; x=\&quot;-75\&quot; y=\&quot;200\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-12\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 19px;&amp;quot;&amp;gt;Booster Board&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 19px;&amp;quot;&amp;gt;3.7V -&amp;amp;gt;5V + Charger&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;180\&quot; x=\&quot;-75\&quot; y=\&quot;285\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-31\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-13\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;fillColor=#ffcd28;strokeColor=#d79b00;gradientColor=#ffa500;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-1\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-13\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;3.3V&amp;lt;/font&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;60\&quot; x=\&quot;45\&quot; y=\&quot;370\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-14\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;5V&amp;lt;/font&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;60\&quot; x=\&quot;-75\&quot; y=\&quot;370\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-32\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-16\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fillColor=#e51400;strokeColor=#B20000;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-4\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;15\&quot; y=\&quot;800\&quot;/&gt;&lt;mxPoint x=\&quot;810\&quot; y=\&quot;800\&quot;/&gt;&lt;mxPoint x=\&quot;810\&quot; y=\&quot;700\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-16\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 16px;&amp;quot;&amp;gt;Power Summary&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 16px;&amp;quot;&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 16px;&amp;quot;&amp;gt;Peak: ~1,25W&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 16px;&amp;quot;&amp;gt;Avg: ~930mW (~251mA)&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div style=&amp;quot;text-align: left;&amp;quot;&amp;gt;&amp;lt;font style=&amp;quot;font-size: 16px;&amp;quot;&amp;gt;Runtime: ~8.5 hours&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;110\&quot; width=\&quot;180\&quot; x=\&quot;-75\&quot; y=\&quot;500\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-17\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fad9d5;strokeColor=#ae4132;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;QMC5883L&amp;lt;/font&amp;gt;&amp;lt;div&amp;gt;&amp;lt;font style=&amp;quot;font-size: 18px;&amp;quot;&amp;gt;Mag (I2C) | 3.3V | 2mA&amp;lt;/font&amp;gt;&amp;lt;/div&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;60\&quot; width=\&quot;250\&quot; x=\&quot;540\&quot; y=\&quot;370\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-24\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; style=\&quot;endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#fad9d5;strokeColor=#ae4132;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-7\&quot; value=\&quot;\&quot;&gt;&lt;mxGeometry height=\&quot;50\&quot; relative=\&quot;1\&quot; width=\&quot;50\&quot; as=\&quot;geometry\&quot;&gt;&lt;mxPoint x=\&quot;460\&quot; y=\&quot;310\&quot; as=\&quot;sourcePoint\&quot;/&gt;&lt;mxPoint x=\&quot;440\&quot; y=\&quot;390\&quot; as=\&quot;targetPoint\&quot;/&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-25\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; style=\&quot;endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#fad9d5;strokeColor=#ae4132;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-17\&quot; value=\&quot;\&quot;&gt;&lt;mxGeometry height=\&quot;50\&quot; relative=\&quot;1\&quot; width=\&quot;50\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;/&gt;&lt;mxPoint x=\&quot;460\&quot; y=\&quot;400\&quot; as=\&quot;sourcePoint\&quot;/&gt;&lt;mxPoint x=\&quot;380\&quot; y=\&quot;260\&quot; as=\&quot;targetPoint\&quot;/&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-29\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-12\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.59;entryY=0.024;entryDx=0;entryDy=0;entryPerimeter=0;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-13\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-30\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;4bCOH2ubgLZRLtsFq08N-12\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.448;entryY=0.04;entryDx=0;entryDy=0;entryPerimeter=0;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-14\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-33\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; style=\&quot;endArrow=classic;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fillColor=#e51400;strokeColor=#B20000;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-5\&quot; value=\&quot;\&quot;&gt;&lt;mxGeometry height=\&quot;50\&quot; relative=\&quot;1\&quot; width=\&quot;50\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;810\&quot; y=\&quot;600\&quot;/&gt;&lt;/Array&gt;&lt;mxPoint x=\&quot;810\&quot; y=\&quot;700\&quot; as=\&quot;sourcePoint\&quot;/&gt;&lt;mxPoint x=\&quot;470\&quot; y=\&quot;750\&quot; as=\&quot;targetPoint\&quot;/&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-34\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; style=\&quot;endArrow=classic;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fillColor=#e51400;strokeColor=#B20000;\&quot; target=\&quot;4bCOH2ubgLZRLtsFq08N-3\&quot; value=\&quot;\&quot;&gt;&lt;mxGeometry height=\&quot;50\&quot; relative=\&quot;1\&quot; width=\&quot;50\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;810\&quot; y=\&quot;500\&quot;/&gt;&lt;/Array&gt;&lt;mxPoint x=\&quot;810\&quot; y=\&quot;600\&quot; as=\&quot;sourcePoint\&quot;/&gt;&lt;mxPoint x=\&quot;660\&quot; y=\&quot;630\&quot; as=\&quot;targetPoint\&quot;/&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-35\&quot; parent=\&quot;1\&quot; style=\&quot;text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;SPI1&amp;lt;/font&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;40\&quot; width=\&quot;56\&quot; x=\&quot;414\&quot; y=\&quot;180\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-36\&quot; parent=\&quot;1\&quot; style=\&quot;text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;SPI2&amp;lt;/font&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;40\&quot; width=\&quot;56\&quot; x=\&quot;414\&quot; y=\&quot;230\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-37\&quot; parent=\&quot;1\&quot; style=\&quot;text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;I2C&amp;lt;/font&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;35\&quot; width=\&quot;46\&quot; x=\&quot;414\&quot; y=\&quot;280\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-38\&quot; parent=\&quot;1\&quot; style=\&quot;text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;UART1&amp;lt;/font&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;40\&quot; width=\&quot;80\&quot; x=\&quot;440\&quot; y=\&quot;570\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-39\&quot; parent=\&quot;1\&quot; style=\&quot;text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;UART2&amp;lt;/font&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;40\&quot; width=\&quot;80\&quot; x=\&quot;440\&quot; y=\&quot;670\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-40\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 20px;&amp;quot;&amp;gt;5V&amp;lt;/font&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;30\&quot; width=\&quot;60\&quot; x=\&quot;440\&quot; y=\&quot;770\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;4bCOH2ubgLZRLtsFq08N-41\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 17px;&amp;quot;&amp;gt;3.3V&amp;lt;/font&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;30\&quot; width=\&quot;60\&quot; x=\&quot;110\&quot; y=\&quot;360\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;/root&gt;&lt;/mxGraphModel&gt;&lt;/diagram&gt;&lt;/mxfile&gt;&quot;}"></div>
     <script type="text/javascript" src="https://viewer.diagrams.net/js/viewer-static.min.js"></script>
-    <p style="font-size: 9pt; color: #666; margin-top: 0.5em;"><em>Figure: System block diagram showing all components and connections</em></p>
+    <p style="font-size: 8pt; color: #666;"><em>System block diagram</em></p>
 </div>
 
 <h3>2.2. Mechanical/structural design</h3>
@@ -407,31 +390,20 @@
 </ul>
 
 <h4>Structural Layout</h4>
-<p>The internal layout is organized in a modular vertical structure supported by three struts:</p>
-<ul>
-    <li><strong>Bottom section:</strong> SPS30 particulate sensor with vibration dampeners and hexagonal ventilation grille for airflow</li>
-    <li><strong>Lower-middle section:</strong> 2x Li-Ion 18650 batteries mounted vertically in dedicated cylindrical holders</li>
-    <li><strong>Upper-middle section:</strong> Main electronics (ESP32-S3, LoRa module, voltage regulators) mounted on perfboard, secured to the strut assembly</li>
-    <li><strong>Top plate:</strong> GPS and LoRa antenna mount, facing upward for optimal signal reception</li>
-</ul>
-<p>The outer cylindrical shell provides structural protection, while three vertical struts connect the top and bottom plates, creating a rigid internal frame.</p>
+<p>Modular vertical structure with three struts: <strong>Bottom:</strong> SPS30 sensor with hex ventilation | <strong>Middle:</strong> 2x Li-Ion batteries + main electronics (ESP32-S3, LoRa, regulators) | <strong>Top:</strong> GPS and LoRa antenna mount. Outer cylindrical shell provides protection.</p>
 
-<h4>Landing Impact Dampening System</h4>
-<p>Our CanSat features a custom-designed shock absorption system to protect sensitive electronics during landing impact. Each of the three strut assemblies incorporates a sliding piston mechanism:</p>
-<ul>
-    <li><strong>Design:</strong> An inner cylinder slides freely within an outer housing</li>
-    <li><strong>Cushioning:</strong> Foam pads at the bottom of each strut absorb the kinetic energy upon ground contact</li>
-    <li><strong>Protection:</strong> The system reduces peak G-forces transmitted to the electronics and sensors, minimizing the risk of damage or data loss</li>
-</ul>
-<div style="text-align: center;">
-    <img src="StrutAssembly.PNG" alt="Strut Assembly - Shock absorber mechanism" style="max-width: 45%; height: auto;">
-    <p style="font-size: 9pt; color: #666; margin-top: 0.5em;"><em>Figure: StrutAssembly - sliding shock absorber with foam cushioning</em></p>
-</div>
-
+<h4>Landing Impact Dampening</h4>
+<p>Custom shock absorption system: three strut assemblies with sliding piston mechanism and foam pads absorb landing impact, reducing peak G-forces on electronics.</p>
 <h4>Mechanical Drawings</h4>
-<div style="text-align: center;">
-    <img src="CanSatAssembly.PNG" alt="CanSat Assembly - 3D CAD model view" style="max-width: 70%; height: auto;">
-    <p style="font-size: 9pt; color: #666; margin-top: 0.5em;"><em>Figure: CanSat assembly - 3D CAD model view</em></p>
+<div style="display: flex; justify-content: space-around; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
+    <div style="text-align: center; flex: 1; min-width: 200px;">
+        <img src="StrutAssembly.PNG" alt="Strut Assembly" style="max-width: 100%; max-height: 180px;">
+        <p style="font-size: 8pt; color: #666;"><em>StrutAssembly - shock absorber</em></p>
+    </div>
+    <div style="text-align: center; flex: 2; min-width: 300px;">
+        <img src="CanSatAssembly.PNG" alt="CanSat Assembly" style="max-width: 100%; max-height: 250px;">
+        <p style="font-size: 8pt; color: #666;"><em>CanSat assembly - 3D CAD model</em></p>
+    </div>
 </div>
 
 <h4>Component List</h4>
@@ -579,9 +551,9 @@
     <li><strong>Ground station antenna:</strong> Handmade QFH (Quadrifilar Helix) antenna tuned to 869.5 MHz. Multiple designs were built and tested with a NanoVNA; the one with the best impedance match at the target frequency will be used for the mission.</li>
     <li><strong>Estimated range (Line-of-Sight):</strong> &gt; 5 km (with 500 mW and SF10 settings)</li>
 </ul>
-<div style="text-align: center; margin: 1em 0;">
-    <img src="20260211_214035.jpg" alt="QFH Antenna Prototypes" style="max-width: 150px; border: 1px solid #ccc;">
-    <p style="font-size: 9pt; color: #666; margin-top: 0.5em;"><em>Figure: QFH antenna prototypes for ground station</em></p>
+<div style="text-align: center; margin: 0.5em 0;">
+    <img src="20260211_214035.jpg" alt="QFH Antenna Prototypes" style="max-width: 120px; border: 1px solid #ccc;">
+    <p style="font-size: 8pt; color: #666;"><em>QFH antenna prototypes</em></p>
 </div>
 
 <p><strong>LoRa Module (EBYTE E22-900M30S) SPI2 Connection:</strong></p>
@@ -609,24 +581,10 @@
 
 <h4>Power System</h4>
 <ul>
-    <li><strong>Battery:</strong> 2x Cellevia CL-18650-29E (Li-Ion 18650 cells, parallel configuration)</li>
-    <li><strong>Nominal Voltage:</strong> 3.7V</li>
-    <li><strong>Capacity:</strong> 5340 mAh (5.34 Ah)</li>
-    <li><strong>Energy:</strong> 19.5 Wh</li>
-    <li><strong>Power Management Module:</strong> TP4056-based charging and boost converter module</li>
+    <li><strong>Battery:</strong> 2x Cellevia CL-18650-29E (Li-Ion, parallel) — 3.7V nominal, 5340 mAh, 19.5 Wh</li>
+    <li><strong>Power Management:</strong> TP4056 charger + boost converter module (5V/1.4A output, overcharge protection)</li>
+    <li><strong>Voltage rails:</strong> 5V powers SPS30, 3.3V LDO on ESP32-S3 DevKit powers MCU and I2C sensors</li>
 </ul>
-
-<h4>Power Management Module (TP4056 + Boost Converter)</h4>
-<p>The system uses an integrated charging and voltage regulation module with the following specifications:</p>
-<ul>
-    <li><strong>Charging voltage:</strong> 4.2V (Li-Ion standard)</li>
-    <li><strong>Charging current:</strong> Max 1A</li>
-    <li><strong>Output voltage:</strong> 5V (adjustable, set to 5V for our application)</li>
-    <li><strong>Output current:</strong> Max 1.4A at 5V (sufficient for all components)</li>
-    <li><strong>Protection:</strong> Overcharge protection, 2V low-voltage boost cutoff</li>
-    <li><strong>Module size:</strong> 33 × 23 × 9 mm</li>
-</ul>
-<p>The 5V output powers the SPS30 particulate sensor directly, while a 3.3V LDO regulator on the ESP32-S3 DevKit provides power to the MCU and I2C sensors.</p>
 
 <h4>GPS Navigation Module</h4>
 <p>Navigation is handled by the <strong>HGLRC M100_MINI</strong> GPS module (10 Hz update rate, UBX protocol at 115200 baud). Its specifications (50 km altitude, 500 m/s velocity limits) exceed CanSat requirements. The ceramic patch antenna faces upward, clear of metal components.</p>
@@ -639,12 +597,7 @@
 <p>The CanSat firmware is developed using the ESP-IDF framework with FreeRTOS for real-time task management. The software architecture is designed for reliability, modularity, and efficient data handling.</p>
 
 <h4>Development Environment</h4>
-<ul>
-    <li><strong>Framework:</strong> ESP-IDF (Espressif IoT Development Framework)</li>
-    <li><strong>Build System:</strong> PlatformIO</li>
-    <li><strong>Programming Language:</strong> C/C++</li>
-    <li><strong>RTOS:</strong> FreeRTOS</li>
-</ul>
+<p><strong>Framework:</strong> ESP-IDF with FreeRTOS | <strong>Build System:</strong> PlatformIO | <strong>Language:</strong> C/C++</p>
 
 <h4>Software Architecture</h4>
 <p>The firmware uses a multi-task architecture where each sensor has its own dedicated task running at an appropriate priority and frequency:</p>
@@ -695,7 +648,7 @@
 </table>
 
 <h4>Program Flow Diagram</h4>
-<div style="text-align: center; margin: 1em 0;">
+<div style="text-align: center; margin: 0.3em 0;">
     <div class="mxgraph" style="max-width:100%;border:1px solid #ccc;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;xml&quot;:&quot;&lt;mxfile host=\&quot;app.diagrams.net\&quot;&gt;&lt;diagram name=\&quot;Program Flow\&quot; id=\&quot;program-flow-diagram\&quot;&gt;&lt;mxGraphModel dx=\&quot;1200\&quot; dy=\&quot;800\&quot; grid=\&quot;1\&quot; gridSize=\&quot;10\&quot; guides=\&quot;1\&quot; tooltips=\&quot;1\&quot; connect=\&quot;1\&quot; arrows=\&quot;1\&quot; fold=\&quot;1\&quot; page=\&quot;1\&quot; pageScale=\&quot;1\&quot; pageWidth=\&quot;1169\&quot; pageHeight=\&quot;827\&quot; math=\&quot;0\&quot; shadow=\&quot;0\&quot;&gt;&lt;root&gt;&lt;mxCell id=\&quot;0\&quot;/&gt;&lt;mxCell id=\&quot;1\&quot; parent=\&quot;0\&quot;/&gt;&lt;mxCell id=\&quot;title\&quot; value=\&quot;AstroLink CanSat - Program Flow Diagram\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;400\&quot; y=\&quot;20\&quot; width=\&quot;400\&quot; height=\&quot;40\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;init-group\&quot; value=\&quot;1. Initialization Sequence\&quot; style=\&quot;swimlane;horizontal=1;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;fontStyle=1\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;40\&quot; y=\&quot;80\&quot; width=\&quot;280\&quot; height=\&quot;420\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;start\&quot; value=\&quot;Power ON\&quot; style=\&quot;ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1\&quot; vertex=\&quot;1\&quot; parent=\&quot;init-group\&quot;&gt;&lt;mxGeometry x=\&quot;90\&quot; y=\&quot;45\&quot; width=\&quot;100\&quot; height=\&quot;40\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;init-hw\&quot; value=\&quot;Initialize Hardware&amp;#xa;(GPIO, UART, SPI, I2C)\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11\&quot; vertex=\&quot;1\&quot; parent=\&quot;init-group\&quot;&gt;&lt;mxGeometry x=\&quot;65\&quot; y=\&quot;100\&quot; width=\&quot;150\&quot; height=\&quot;45\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;init-sensors\&quot; value=\&quot;Initialize Sensors&amp;#xa;(BNO085, BMP585, SCD40,&amp;#xa;QMC5883L, SPS30, GPS)\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11\&quot; vertex=\&quot;1\&quot; parent=\&quot;init-group\&quot;&gt;&lt;mxGeometry x=\&quot;65\&quot; y=\&quot;160\&quot; width=\&quot;150\&quot; height=\&quot;55\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;init-storage\&quot; value=\&quot;Initialize Storage&amp;#xa;(LittleFS, PSRAM buffer)\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11\&quot; vertex=\&quot;1\&quot; parent=\&quot;init-group\&quot;&gt;&lt;mxGeometry x=\&quot;65\&quot; y=\&quot;230\&quot; width=\&quot;150\&quot; height=\&quot;45\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;init-lora\&quot; value=\&quot;Initialize LoRa&amp;#xa;(SX1278, 433.2 MHz)\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11\&quot; vertex=\&quot;1\&quot; parent=\&quot;init-group\&quot;&gt;&lt;mxGeometry x=\&quot;65\&quot; y=\&quot;290\&quot; width=\&quot;150\&quot; height=\&quot;45\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;init-wifi\&quot; value=\&quot;Initialize WiFi AP&amp;#xa;+ HTTP Server\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11\&quot; vertex=\&quot;1\&quot; parent=\&quot;init-group\&quot;&gt;&lt;mxGeometry x=\&quot;65\&quot; y=\&quot;350\&quot; width=\&quot;150\&quot; height=\&quot;45\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;arr1\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;\&quot; edge=\&quot;1\&quot; parent=\&quot;init-group\&quot; source=\&quot;start\&quot; target=\&quot;init-hw\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;arr2\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;\&quot; edge=\&quot;1\&quot; parent=\&quot;init-group\&quot; source=\&quot;init-hw\&quot; target=\&quot;init-sensors\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;arr3\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;\&quot; edge=\&quot;1\&quot; parent=\&quot;init-group\&quot; source=\&quot;init-sensors\&quot; target=\&quot;init-storage\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;arr4\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;\&quot; edge=\&quot;1\&quot; parent=\&quot;init-group\&quot; source=\&quot;init-storage\&quot; target=\&quot;init-lora\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;arr5\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;\&quot; edge=\&quot;1\&quot; parent=\&quot;init-group\&quot; source=\&quot;init-lora\&quot; target=\&quot;init-wifi\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;tasks-group\&quot; value=\&quot;2. FreeRTOS Sensor Tasks (Parallel)\&quot; style=\&quot;swimlane;horizontal=1;startSize=30;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;340\&quot; y=\&quot;80\&quot; width=\&quot;500\&quot; height=\&quot;200\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;task-gps\&quot; value=\&quot;gps_task&amp;#xa;Priority: 8&amp;#xa;~10 Hz (UBX)\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10\&quot; vertex=\&quot;1\&quot; parent=\&quot;tasks-group\&quot;&gt;&lt;mxGeometry x=\&quot;20\&quot; y=\&quot;45\&quot; width=\&quot;85\&quot; height=\&quot;60\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;task-imu\&quot; value=\&quot;bno085_task&amp;#xa;Priority: 5&amp;#xa;~100 Hz\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10\&quot; vertex=\&quot;1\&quot; parent=\&quot;tasks-group\&quot;&gt;&lt;mxGeometry x=\&quot;115\&quot; y=\&quot;45\&quot; width=\&quot;85\&quot; height=\&quot;60\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;task-baro\&quot; value=\&quot;bmp585_task&amp;#xa;Priority: 6&amp;#xa;~50 Hz\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10\&quot; vertex=\&quot;1\&quot; parent=\&quot;tasks-group\&quot;&gt;&lt;mxGeometry x=\&quot;210\&quot; y=\&quot;45\&quot; width=\&quot;85\&quot; height=\&quot;60\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;task-sps\&quot; value=\&quot;sps30_task&amp;#xa;Priority: 10&amp;#xa;~1 Hz\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10\&quot; vertex=\&quot;1\&quot; parent=\&quot;tasks-group\&quot;&gt;&lt;mxGeometry x=\&quot;305\&quot; y=\&quot;45\&quot; width=\&quot;85\&quot; height=\&quot;60\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;task-co2\&quot; value=\&quot;scd40_task&amp;#xa;Priority: 7&amp;#xa;~0.2 Hz\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10\&quot; vertex=\&quot;1\&quot; parent=\&quot;tasks-group\&quot;&gt;&lt;mxGeometry x=\&quot;400\&quot; y=\&quot;45\&quot; width=\&quot;85\&quot; height=\&quot;60\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;task-lora\&quot; value=\&quot;lora_task&amp;#xa;Priority: 9&amp;#xa;~1 Hz TX\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10\&quot; vertex=\&quot;1\&quot; parent=\&quot;tasks-group\&quot;&gt;&lt;mxGeometry x=\&quot;115\&quot; y=\&quot;125\&quot; width=\&quot;85\&quot; height=\&quot;60\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;task-storage\&quot; value=\&quot;storage_task&amp;#xa;Priority: 4&amp;#xa;~1 Hz\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10\&quot; vertex=\&quot;1\&quot; parent=\&quot;tasks-group\&quot;&gt;&lt;mxGeometry x=\&quot;210\&quot; y=\&quot;125\&quot; width=\&quot;85\&quot; height=\&quot;60\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;task-led\&quot; value=\&quot;led_task&amp;#xa;Priority: 3&amp;#xa;Status LED\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10\&quot; vertex=\&quot;1\&quot; parent=\&quot;tasks-group\&quot;&gt;&lt;mxGeometry x=\&quot;305\&quot; y=\&quot;125\&quot; width=\&quot;85\&quot; height=\&quot;60\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;data-group\&quot; value=\&quot;3. Data Collection &amp;amp; Storage\&quot; style=\&quot;swimlane;horizontal=1;startSize=30;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;fontStyle=1\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;340\&quot; y=\&quot;300\&quot; width=\&quot;300\&quot; height=\&quot;200\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;sensor-data\&quot; value=\&quot;Sensor Data&amp;#xa;(64-byte record)\&quot; style=\&quot;shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11\&quot; vertex=\&quot;1\&quot; parent=\&quot;data-group\&quot;&gt;&lt;mxGeometry x=\&quot;100\&quot; y=\&quot;40\&quot; width=\&quot;100\&quot; height=\&quot;50\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;psram\&quot; value=\&quot;PSRAM Ring Buffer&amp;#xa;(86,400 records)\&quot; style=\&quot;shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10\&quot; vertex=\&quot;1\&quot; parent=\&quot;data-group\&quot;&gt;&lt;mxGeometry x=\&quot;30\&quot; y=\&quot;110\&quot; width=\&quot;100\&quot; height=\&quot;70\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;littlefs\&quot; value=\&quot;LittleFS&amp;#xa;(Binary files)\&quot; style=\&quot;shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10\&quot; vertex=\&quot;1\&quot; parent=\&quot;data-group\&quot;&gt;&lt;mxGeometry x=\&quot;170\&quot; y=\&quot;110\&quot; width=\&quot;100\&quot; height=\&quot;70\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;arr-psram\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;\&quot; edge=\&quot;1\&quot; parent=\&quot;data-group\&quot; source=\&quot;sensor-data\&quot; target=\&quot;psram\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;arr-lfs\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;\&quot; edge=\&quot;1\&quot; parent=\&quot;data-group\&quot; source=\&quot;sensor-data\&quot; target=\&quot;littlefs\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;lora-group\&quot; value=\&quot;4. LoRa Transmission\&quot; style=\&quot;swimlane;horizontal=1;startSize=30;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;fontStyle=1\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;660\&quot; y=\&quot;300\&quot; width=\&quot;200\&quot; height=\&quot;200\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;lora-packet\&quot; value=\&quot;Build Telemetry&amp;#xa;Packet\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11\&quot; vertex=\&quot;1\&quot; parent=\&quot;lora-group\&quot;&gt;&lt;mxGeometry x=\&quot;50\&quot; y=\&quot;40\&quot; width=\&quot;100\&quot; height=\&quot;40\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;lora-tx\&quot; value=\&quot;LoRa TX&amp;#xa;(433.2 MHz)\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11\&quot; vertex=\&quot;1\&quot; parent=\&quot;lora-group\&quot;&gt;&lt;mxGeometry x=\&quot;50\&quot; y=\&quot;100\&quot; width=\&quot;100\&quot; height=\&quot;40\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;ground\&quot; value=\&quot;Ground Station\&quot; style=\&quot;ellipse;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11\&quot; vertex=\&quot;1\&quot; parent=\&quot;lora-group\&quot;&gt;&lt;mxGeometry x=\&quot;50\&quot; y=\&quot;155\&quot; width=\&quot;100\&quot; height=\&quot;35\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;arr-lora1\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;\&quot; edge=\&quot;1\&quot; parent=\&quot;lora-group\&quot; source=\&quot;lora-packet\&quot; target=\&quot;lora-tx\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;arr-lora2\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;\&quot; edge=\&quot;1\&quot; parent=\&quot;lora-group\&quot; source=\&quot;lora-tx\&quot; target=\&quot;ground\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;fsm-group\&quot; value=\&quot;5. Flight State Machine\&quot; style=\&quot;swimlane;horizontal=1;startSize=30;fillColor=#f8cecc;strokeColor=#b85450;fontSize=14;fontStyle=1\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;40\&quot; y=\&quot;520\&quot; width=\&quot;820\&quot; height=\&quot;180\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;state-preflight\&quot; value=\&quot;PRE-FLIGHT&amp;#xa;&amp;#xa;• Waiting on ground&amp;#xa;• GPS fix acquisition&amp;#xa;• System checks&amp;#xa;• WiFi AP active\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=left;spacingLeft=5\&quot; vertex=\&quot;1\&quot; parent=\&quot;fsm-group\&quot;&gt;&lt;mxGeometry x=\&quot;30\&quot; y=\&quot;45\&quot; width=\&quot;150\&quot; height=\&quot;110\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;state-flight\&quot; value=\&quot;FLIGHT&amp;#xa;&amp;#xa;• Altitude increasing&amp;#xa;• High-rate data logging&amp;#xa;• LoRa TX active&amp;#xa;• All sensors running\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=left;spacingLeft=5\&quot; vertex=\&quot;1\&quot; parent=\&quot;fsm-group\&quot;&gt;&lt;mxGeometry x=\&quot;250\&quot; y=\&quot;45\&quot; width=\&quot;150\&quot; height=\&quot;110\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;state-descent\&quot; value=\&quot;DESCENT&amp;#xa;&amp;#xa;• Altitude decreasing&amp;#xa;• Parachute deployed&amp;#xa;• Continuous logging&amp;#xa;• Recovery beacon\&quot; style=\&quot quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;align=left;spacingLeft=5\&quot; vertex=\&quot;1\&quot; parent=\&quot;fsm-group\&quot;&gt;&lt;mxGeometry x=\&quot;470\&quot; y=\&quot;45\&quot; width=\&quot;150\&quot; height=\&quot;110\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;state-landed\&quot; value=\&quot;LANDED&amp;#xa;&amp;#xa;• Altitude stable&amp;#xa;• Save flight data&amp;#xa;• WiFi AP for download&amp;#xa;• GPS beacon active\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;align=left;spacingLeft=5\&quot; vertex=\&quot;1\&quot; parent=\&quot;fsm-group\&quot;&gt;&lt;mxGeometry x=\&quot;690\&quot; y=\&quot;45\&quot; width=\&quot;110\&quot; height=\&quot;110\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;trans1\&quot; value=\&quot;Launch&amp;#xa;detected\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=9\&quot; edge=\&quot;1\&quot; parent=\&quot;fsm-group\&quot; source=\&quot;state-preflight\&quot; target=\&quot;state-flight\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;trans2\&quot; value=\&quot;Apogee&amp;#xa;reached\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=9\&quot; edge=\&quot;1\&quot; parent=\&quot;fsm-group\&quot; source=\&quot;state-flight\&quot; target=\&quot;state-descent\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;trans3\&quot; value=\&quot;Ground&amp;#xa;contact\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=9\&quot; edge=\&quot;1\&quot; parent=\&quot;fsm-group\&quot; source=\&quot;state-descent\&quot; target=\&quot;state-landed\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;main-flow1\&quot; value=\&quot;Start Tasks\&quot; style=\&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;init-wifi\&quot; target=\&quot;tasks-group\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;320\&quot; y=\&quot;475\&quot;/&gt;&lt;mxPoint x=\&quot;320\&quot; y=\&quot;180\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;/root&gt;&lt;/mxGraphModel&gt;&lt;/diagram&gt;&lt;/mxfile&gt;&quot;}"></div>
     <script type="text/javascript" src="https://viewer.diagrams.net/js/viewer-static.min.js"></script>
     <p style="font-size: 9pt; color: #666; margin-top: 0.5em;"><em>Figure: Program flow diagram showing initialization, tasks, data handling, and flight states</em></p>
@@ -753,11 +706,7 @@
 </table>
 
 <h4>Data Storage</h4>
-<ul>
-    <li><strong>PSRAM buffer:</strong> Up to 86,400 records (24 hours at 1 Hz) in ring buffer</li>
-    <li><strong>LittleFS:</strong> Persistent storage of flight recordings as binary files</li>
-    <li><strong>Estimated data per flight:</strong> ~64 bytes × 120 seconds = ~7.5 KB (descent only), plus pre/post flight data</li>
-</ul>
+<p><strong>PSRAM buffer:</strong> 86,400 records (24h at 1Hz) | <strong>LittleFS:</strong> Persistent binary files | <strong>Per flight:</strong> ~7.5 KB descent data</p>
 
 <h3>2.5. Recovery system</h3>
 
@@ -765,58 +714,28 @@
 
 <h4>Parachute Specifications</h4>
 <ul>
-    <li><strong>Type:</strong> Round parachute with central vent hole</li>
-    <li><strong>Color:</strong> Pink (high visibility for aerial and ground recovery)</li>
-    <li><strong>Material:</strong> Handcrafted fabric, custom cut and sewn</li>
-    <li><strong>Suspension lines:</strong> Shoelaces (durable and elastic), equal length (500 mm) for balanced load distribution</li>
-    <li><strong>Design feature:</strong> Central vent hole allows excess air to escape, preventing oscillation and ensuring stable descent even in windy conditions</li>
+    <li><strong>Type:</strong> Round parachute with central vent hole (pink, high visibility)</li>
+    <li><strong>Material:</strong> Handcrafted fabric with shoelace suspension lines (500 mm)</li>
+    <li><strong>Vent hole:</strong> Prevents oscillation, ensures stable descent</li>
 </ul>
 
 <h4>Descent Rate Calculation</h4>
-<p><strong>Target descent rate:</strong> ~5.6 m/s (calculated), within requirement range of 5-12 m/s</p>
-<ul>
-    <li><strong>CanSat mass:</strong> 316 g (within 300-350g target)</li>
-    <li><strong>Parachute diameter:</strong> 550 mm (with 100 mm central vent hole)</li>
-    <li><strong>Parachute effective area:</strong> 0.23 m² (accounting for vent hole)</li>
-    <li><strong>Drag coefficient (Cd):</strong> ~0.70 (reduced due to central vent)</li>
-</ul>
-
-<h4>Estimated Descent Duration</h4>
-<p>From 1000 m altitude at 5.6 m/s descent rate: approximately 179 seconds (~3 minutes).</p>
-
-<h4>Recovery System Diagram</h4>
-<div class="image-placeholder">
-    [TODO: Insert diagram/photo of parachute attachment and deployment mechanism]
-</div>
-
-<h4>Testing Results</h4>
-<div class="todo">[TODO: Add any drop test results if already performed]</div>
+<p><strong>Target:</strong> ~5.6 m/s (within 5-12 m/s requirement) | <strong>Mass:</strong> 316 g | <strong>Parachute:</strong> 550 mm dia, 100 mm vent, 0.23 m² effective area, Cd ~0.70</p>
+<p><strong>Descent duration:</strong> From 1000 m at 5.6 m/s ≈ 179 seconds (~3 minutes)</p>
 
 <h3>2.6. Ground station</h3>
 
 <p>The ground station receives telemetry data from the CanSat via LoRa radio link and provides real-time visualization and data logging capabilities.</p>
 
 <h4>Hardware Components</h4>
-<ul>
-    <li><strong>Receiver:</strong> LoRa module (E22-900M30S, SX1262) connected to laptop/computer</li>
-    <li><strong>Antenna:</strong> Handmade QFH (Quadrifilar Helix) antenna tuned to 868 MHz ISM band</li>
-    <li><strong>Computer:</strong> Laptop running ground station software</li>
-</ul>
+<p><strong>Receiver:</strong> E22-900M30S LoRa module | <strong>Antenna:</strong> Handmade QFH tuned to 868 MHz | <strong>Computer:</strong> Laptop with ground station software</p>
 
 <h4>Ground Station Software</h4>
-<p>The ground station features a web-based interface providing:</p>
-<ul>
-    <li>Real-time GPS position tracking and map display</li>
-    <li>Live sensor data visualization (temperature, pressure, altitude, particulate matter)</li>
-    <li>3D orientation display from IMU data</li>
-    <li>Data logging to file for post-flight analysis</li>
-    <li>Flight data playback and charting</li>
-    <li>Connection status and signal quality indicators</li>
-</ul>
+<p>Web-based interface providing: real-time GPS tracking, live sensor visualization, 3D orientation display, data logging, flight playback with charting, and connection status indicators.</p>
 
-<div style="text-align: center; margin: 1em 0;">
-    <img src="FlightViewer_CanSat.png" alt="Flight Data Viewer Interface" style="max-width: 70%; border: 1px solid #ccc;">
-    <p style="font-size: 9pt; color: #666; margin-top: 0.5em;"><em>Figure: Flight Data Viewer - Web-based interface for reviewing recorded flight data</em></p>
+<div style="text-align: center; margin: 0.3em 0;">
+    <img src="FlightViewer_CanSat.png" alt="Flight Data Viewer Interface" style="max-width: 50%; border: 1px solid #ccc;">
+    <p style="font-size: 8pt; color: #666;"><em>Flight Data Viewer interface</em></p>
 </div>
 
 <h4>Radio Frequency</h4>
@@ -1020,62 +939,15 @@
 </ul>
 
 <h4>3.2.3. Test plan</h4>
-
 <table>
-    <tr>
-        <th>Test</th>
-        <th>Purpose</th>
-        <th>Method</th>
-        <th>Status</th>
-    </tr>
-    <tr>
-        <td>Sensor validation</td>
-        <td>Verify all sensors provide accurate readings</td>
-        <td>Compare with reference instruments</td>
-        <td class="todo">[TODO]</td>
-    </tr>
-    <tr>
-        <td>LoRa range test</td>
-        <td>Verify communication range exceeds 1 km</td>
-        <td>Ground-level distance test with RSSI logging</td>
-        <td class="todo">[TODO]</td>
-    </tr>
-    <tr>
-        <td>Power endurance</td>
-        <td>Verify 4+ hour battery life</td>
-        <td>Full system operation until battery depletion</td>
-        <td class="todo">[TODO]</td>
-    </tr>
-    <tr>
-        <td>Vibration test</td>
-        <td>Verify structural integrity under launch conditions</td>
-        <td>Shake test / vibration table</td>
-        <td class="todo">[TODO]</td>
-    </tr>
-    <tr>
-        <td>Drop test</td>
-        <td>Verify parachute deployment and descent rate</td>
-        <td>Drop from height with full system active</td>
-        <td class="todo">[TODO]</td>
-    </tr>
-    <tr>
-        <td>Impact test</td>
-        <td>Verify survival of landing impact</td>
-        <td>Drop onto various surfaces at expected velocity</td>
-        <td class="todo">[TODO]</td>
-    </tr>
-    <tr>
-        <td>Cold test</td>
-        <td>Verify operation at low temperatures</td>
-        <td>Operation in freezer at -10°C</td>
-        <td class="todo">[TODO]</td>
-    </tr>
-    <tr>
-        <td>Integration test</td>
-        <td>Full system functional verification</td>
-        <td>Complete mission simulation</td>
-        <td class="todo">[TODO]</td>
-    </tr>
+    <tr><th>Test</th><th>Purpose</th><th>Method</th><th>Status</th></tr>
+    <tr><td>Sensor validation</td><td>Verify sensor accuracy</td><td>Compare with reference instruments</td><td>Planned</td></tr>
+    <tr><td>LoRa range test</td><td>Verify &gt;1 km range</td><td>Distance test with RSSI logging</td><td>Planned</td></tr>
+    <tr><td>Power endurance</td><td>Verify 4+ hour battery life</td><td>Full system operation test</td><td>Planned</td></tr>
+    <tr><td>Vibration / Shake test</td><td>Verify structural integrity</td><td>Manual shake test</td><td>Planned</td></tr>
+    <tr><td>Drop / Impact test</td><td>Verify parachute and landing</td><td>Drop from height, various surfaces</td><td>Planned</td></tr>
+    <tr><td>Cold test</td><td>Verify low-temp operation</td><td>Freezer test at -10°C</td><td>Planned</td></tr>
+    <tr><td>Integration test</td><td>Full system verification</td><td>Complete mission simulation</td><td>Planned</td></tr>
 </table>
 
 <!-- 4. OUTREACH PROGRAMME -->
@@ -1245,18 +1117,9 @@
 </table>
 
 <h4>Battery Life Calculation</h4>
-<p><strong>Battery:</strong> 2x Cellevia CL-18650-29E (parallel configuration)</p>
-<ul>
-    <li><strong>Capacity:</strong> 5340 mAh</li>
-    <li><strong>Energy:</strong> 19.5 Wh</li>
-    <li><strong>Nominal voltage:</strong> 3.7V</li>
-</ul>
-
-<p><strong>Power consumption:</strong> ~930 mW average (251 mA at 3.7V)</p>
-
-<p><strong>Estimated runtime:</strong> 5340 mAh / 251 mA = <strong>~21.3 hours</strong> (with 80% efficiency: <strong>~17 hours</strong>)</p>
-
-<p><strong>Conclusion:</strong> The dual-battery configuration provides over 4x the required 4-hour minimum operating time.</p>
+<p><strong>Battery:</strong> 2x Cellevia CL-18650-29E (parallel) — 5340 mAh, 19.5 Wh, 3.7V nominal</p>
+<p><strong>Power consumption:</strong> ~930 mW average (251 mA at 3.7V) | <strong>Estimated runtime:</strong> 5340 mAh / 251 mA = ~21.3 hours (with 80% efficiency: ~17 hours)</p>
+<p><strong>Conclusion:</strong> The dual-battery configuration provides over 4x the required 4-hour minimum.</p>
 
 <hr>
 
