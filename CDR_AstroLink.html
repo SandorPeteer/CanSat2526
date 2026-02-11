@@ -385,7 +385,7 @@
     <li><strong>Primary sensors:</strong> BMP585 (pressure/temperature), GPS module (M100-Pro HGLRC)</li>
     <li><strong>Secondary mission sensor:</strong> SPS30 particulate matter sensor</li>
     <li><strong>Supporting sensors:</strong> BNO085 IMU (orientation), SCD40 (CO2/humidity), QMC5883L (magnetometer)</li>
-    <li><strong>Communication:</strong> LoRa radio (SX1278 at 433.2 MHz, with option for 868 MHz ISM band)</li>
+    <li><strong>Communication:</strong> LoRa radio (E22-900M30S at 868 MHz ISM band)</li>
     <li><strong>Power:</strong> LiPo battery with voltage regulation</li>
     <li><strong>Recovery:</strong> Parachute system</li>
 </ul>
@@ -549,7 +549,40 @@
 </table>
 
 <h4>LoRa Communication</h4>
-<p>The current design uses an SX1278-based LoRa module operating at 433.2 MHz. The system is designed to allow module replacement if required to comply with Hungarian ISM band regulations (868 MHz band). The E22-900M30S (SX1262, 915 MHz) module is available as an alternative.</p>
+<p>The CanSat uses the industrial-grade <strong>EBYTE E22-900M30S</strong> LoRa modem for long-distance telemetry.</p>
+
+<p><strong>Module Specifications:</strong></p>
+<ul>
+    <li><strong>Manufacturer:</strong> Chengdu Ebyte Electronic Technology Co., Ltd.</li>
+    <li><strong>Type:</strong> E22-900M30S</li>
+    <li><strong>RF Chip:</strong> Semtech SX1262 (LoRa)</li>
+    <li><strong>Built-in hardware:</strong> PA (Power Amplifier) + LNA (Low Noise Amplifier) for high sensitivity (-147 dBm)</li>
+</ul>
+
+<p><strong>Frequency Compliance:</strong></p>
+<p>The system is compliant with NMHH (Hungary) and CEPT (EU) approved high-power SRD h1.5 sub-band. Although the hardware supports 30 dBm (1000 mW) output power, software configuration limits it to the regulatory maximum.</p>
+<ul>
+    <li><strong>Frequency:</strong> 869.500 MHz (SRD h1.5 band: 869.40–869.65 MHz)</li>
+    <li><strong>Configured TX power:</strong> 27 dBm (500 mW ERP)</li>
+    <li><strong>Duty cycle:</strong> &lt; 10%</li>
+    <li><strong>Legal reference:</strong>
+        <ul>
+            <li>NMHH National Frequency Allocation Decree (NFFF) Annex 3, section 11.1</li>
+            <li>CEPT ERC Recommendation 70-03 (Annex 1, band h1.5)</li>
+        </ul>
+    </li>
+</ul>
+
+<p><strong>Antenna and Range:</strong></p>
+<ul>
+    <li><strong>CanSat antenna:</strong> TX915-FPC-4510 flexible PCB antenna</li>
+    <li><strong>Ground station antenna:</strong> Handmade QFH (Quadrifilar Helix) antenna tuned to 869.5 MHz. Multiple designs were built and tested with a NanoVNA; the one with the best impedance match at the target frequency will be used for the mission.</li>
+    <li><strong>Estimated range (Line-of-Sight):</strong> &gt; 5 km (with 500 mW and SF10 settings)</li>
+</ul>
+<div style="text-align: center; margin: 1em 0;">
+    <img src="20260211_214035.jpg" alt="QFH Antenna Prototypes" style="max-width: 150px; border: 1px solid #ccc;">
+    <p style="font-size: 9pt; color: #666; margin-top: 0.5em;"><em>Figure: QFH antenna prototypes for ground station</em></p>
+</div>
 
 <p><strong>LoRa Module (EBYTE E22-900M30S) SPI2 Connection:</strong></p>
 <table>
@@ -571,10 +604,8 @@
     <tr><td>GND (1-5,11,12,20,22)</td><td>Ground</td><td>GND</td></tr>
 </table>
 
-<h4>Circuit Diagram</h4>
-<div class="image-placeholder">
-    [TODO: Insert circuit/wiring diagram showing all connections]
-</div>
+<h4>Wiring</h4>
+<p>Since the system is built from off-the-shelf modules connected to the ESP32-S3, no custom PCB or traditional circuit schematic is required. All connections are documented in the pin assignment tables above and in the system block diagram.</p>
 
 <h4>Power System</h4>
 <ul>
@@ -582,8 +613,20 @@
     <li><strong>Nominal Voltage:</strong> 3.7V</li>
     <li><strong>Capacity:</strong> 5340 mAh (5.34 Ah)</li>
     <li><strong>Energy:</strong> 19.5 Wh</li>
-    <li><strong>Voltage Regulator:</strong> 3.3V LDO for MCU and most sensors, 5V boost converter for SPS30</li>
+    <li><strong>Power Management Module:</strong> TP4056-based charging and boost converter module</li>
 </ul>
+
+<h4>Power Management Module (TP4056 + Boost Converter)</h4>
+<p>The system uses an integrated charging and voltage regulation module with the following specifications:</p>
+<ul>
+    <li><strong>Charging voltage:</strong> 4.2V (Li-Ion standard)</li>
+    <li><strong>Charging current:</strong> Max 1A</li>
+    <li><strong>Output voltage:</strong> 5V (adjustable, set to 5V for our application)</li>
+    <li><strong>Output current:</strong> Max 1.4A at 5V (sufficient for all components)</li>
+    <li><strong>Protection:</strong> Overcharge protection, 2V low-voltage boost cutoff</li>
+    <li><strong>Module size:</strong> 33 × 23 × 9 mm</li>
+</ul>
+<p>The 5V output powers the SPS30 particulate sensor directly, while a 3.3V LDO regulator on the ESP32-S3 DevKit provides power to the MCU and I2C sensors.</p>
 
 <h4>GPS Navigation Module</h4>
 <p>Navigation is handled by the <strong>HGLRC M100_MINI</strong> GPS module (10 Hz update rate, UBX protocol at 115200 baud). Its specifications (50 km altitude, 500 m/s velocity limits) exceed CanSat requirements. The ceramic patch antenna faces upward, clear of metal components.</p>
@@ -755,8 +798,8 @@
 
 <h4>Hardware Components</h4>
 <ul>
-    <li><strong>Receiver:</strong> LoRa module (SX1278/SX1262) connected to laptop/computer</li>
-    <li><strong>Antenna:</strong> <span class="todo">[TODO: Specify antenna type and gain]</span></li>
+    <li><strong>Receiver:</strong> LoRa module (E22-900M30S, SX1262) connected to laptop/computer</li>
+    <li><strong>Antenna:</strong> Handmade QFH (Quadrifilar Helix) antenna tuned to 868 MHz ISM band</li>
     <li><strong>Computer:</strong> Laptop running ground station software</li>
 </ul>
 
@@ -777,9 +820,8 @@
 </div>
 
 <h4>Radio Frequency</h4>
-<p><strong>Preferred frequency band:</strong> 433 MHz ISM band (current testing at 433.2 MHz)</p>
-<p><strong>Alternative:</strong> 868 MHz ISM band (compliant with Hungarian amateur radio regulations)</p>
-<p>The system is designed to allow frequency changes via software configuration, even on the day of the launch event.</p>
+<p><strong>Frequency:</strong> 869.500 MHz (SRD h1.5 band: 869.40–869.65 MHz)</p>
+<p><strong>Compliance:</strong> NMHH (Hungary) / CEPT ERC 70-03 (Annex 1, band h1.5) - max 500 mW ERP, &lt;10% duty cycle, no license required.</p>
 
 <!-- 3. PROJECT PLANNING -->
 <h2>3. PROJECT PLANNING</h2>
@@ -864,7 +906,7 @@
         <td>Yes (Mentor)</td>
     </tr>
     <tr>
-        <td>LoRa Module (SX1278)</td>
+        <td>LoRa Module (E22-900M30S)</td>
         <td>2</td>
         <td>3.06</td>
         <td>6.12</td>
@@ -875,6 +917,13 @@
         <td>2</td>
         <td>7.59</td>
         <td>15.18</td>
+        <td>Yes (Mentor)</td>
+    </tr>
+    <tr>
+        <td>TP4056 Charger + Boost Module</td>
+        <td>1</td>
+        <td>~2</td>
+        <td>~2</td>
         <td>Yes (MSZC)</td>
     </tr>
     <tr>
@@ -902,14 +951,14 @@
         <td><strong>Electronics subtotal</strong></td>
         <td></td>
         <td></td>
-        <td><strong>123.86</strong></td>
+        <td><strong>~126 EUR</strong></td>
         <td></td>
     </tr>
     <tr>
         <td><strong>TOTAL</strong></td>
         <td></td>
         <td></td>
-        <td><strong>~169 EUR</strong></td>
+        <td><strong>~171 EUR</strong></td>
         <td></td>
     </tr>
 </table>
@@ -921,7 +970,7 @@
     <li><strong>Miskolci Szakképzési Centrum</strong> (<a href="https://www.miskolci-szc.hu/">https://www.miskolci-szc.hu/</a>) - Primary sponsor, funding materials (ABS filament, parachute, batteries, magnetometer, BMP585)</li>
     <li><strong>MSZC Kandó Kálmán Informatikai Technikum</strong> - Sponsored ESP32-S3, BNO085 IMU, and SCD40 sensors</li>
     <li><strong>Szonár Kft.</strong> (<a href="https://szonar.com">https://szonar.com</a>) - Sponsored SPS30 particulate sensor and wiring/connectors</li>
-    <li><strong>Sándor Péter</strong> (Mentor, <a href="https://sprendezveny.hu">https://sprendezveny.hu</a>) - Sponsored GPS module and LoRa modules</li>
+    <li><strong>Sándor Péter</strong> (Mentor, <a href="https://sprendezveny.hu">https://sprendezveny.hu</a>) - Sponsored GPS module, LoRa modules, and Li-Ion batteries</li>
 </ul>
 
 <h4>3.2.3. Test plan</h4>
@@ -1048,8 +1097,8 @@
     </tr>
     <tr>
         <td>Radio frequency used</td>
-        <td>433.2 MHz / 868 MHz</td>
-        <td>Hungarian amateur regulations</td>
+        <td>869.4–869.65 MHz</td>
+        <td>European SRD (≤500mW, ≤10% duty)</td>
         <td>Yes</td>
     </tr>
     <tr>
@@ -1120,7 +1169,7 @@
         <td>125</td>
     </tr>
     <tr>
-        <td>LoRa Module (SX1278)</td>
+        <td>LoRa Module (E22-900M30S)</td>
         <td>3.3</td>
         <td>120 (TX)</td>
         <td>396</td>
