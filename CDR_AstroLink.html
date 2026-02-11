@@ -257,6 +257,7 @@
 
 <!-- COVER PAGE -->
 <div class="cover-page">
+    <img src="Logo.png" alt="AstroLink Logo" style="max-width: 200px; margin-bottom: 1cm;">
     <h1>Critical Design Review</h1>
     <h2>(CDR)</h2>
 
@@ -294,37 +295,37 @@
         <td>Szászfai László</td>
         <td>Software Developer</td>
         <td>Firmware development, sensor integration, embedded C/C++ programming</td>
-        <td class="todo">[TODO]</td>
+        <td>96 hours</td>
     </tr>
     <tr>
         <td>Németh Imre</td>
         <td>Recovery System Engineer</td>
         <td>Parachute design, testing, and deployment mechanism</td>
-        <td class="todo">[TODO]</td>
+        <td>79 hours</td>
     </tr>
     <tr>
         <td>Nagy Marcell</td>
         <td>Mechanical Designer</td>
         <td>3D modeling, structural design, CAD drawings</td>
-        <td class="todo">[TODO]</td>
+        <td>94 hours</td>
     </tr>
     <tr>
         <td>Fodor Levente Gábor</td>
         <td>Communications Engineer</td>
         <td>Web interface development, LoRa radio communication</td>
-        <td class="todo">[TODO]</td>
+        <td>53 hours</td>
     </tr>
     <tr>
         <td>Szilágyi Zsombor</td>
         <td>Electronics Engineer</td>
         <td>Circuit design, PCB layout, hardware integration</td>
-        <td class="todo">[TODO]</td>
+        <td>85 hours</td>
     </tr>
     <tr>
         <td>Szilágyi Bálint</td>
         <td>Web Developer</td>
         <td>Ground station web interface, data visualization</td>
-        <td class="todo">[TODO]</td>
+        <td>41 hours</td>
     </tr>
 </table>
 
@@ -724,20 +725,21 @@
     <li><strong>Type:</strong> Round parachute with central vent hole</li>
     <li><strong>Color:</strong> Pink (high visibility for aerial and ground recovery)</li>
     <li><strong>Material:</strong> Handcrafted fabric, custom cut and sewn</li>
-    <li><strong>Suspension lines:</strong> Shoelaces (durable and elastic), equal length (<span class="todo">[TODO: specify length in cm]</span>) for balanced load distribution</li>
+    <li><strong>Suspension lines:</strong> Shoelaces (durable and elastic), equal length (500 mm) for balanced load distribution</li>
     <li><strong>Design feature:</strong> Central vent hole allows excess air to escape, preventing oscillation and ensuring stable descent even in windy conditions</li>
 </ul>
 
 <h4>Descent Rate Calculation</h4>
-<p><strong>Target descent rate:</strong> <span class="todo">[TODO: specify actual measured/calculated value]</span> m/s (requirement: 8-11 m/s)</p>
+<p><strong>Target descent rate:</strong> ~5.6 m/s (calculated), within requirement range of 5-12 m/s</p>
 <ul>
-    <li><strong>CanSat mass:</strong> <span class="todo">[TODO: specify final mass]</span> g (target: 300-350g)</li>
-    <li><strong>Parachute effective area:</strong> <span class="todo">[TODO: calculate from diameter]</span></li>
-    <li><strong>Drag coefficient (Cd):</strong> ~0.75-0.8 (typical for round parachute with vent)</li>
+    <li><strong>CanSat mass:</strong> 316 g (within 300-350g target)</li>
+    <li><strong>Parachute diameter:</strong> 550 mm (with 100 mm central vent hole)</li>
+    <li><strong>Parachute effective area:</strong> 0.23 m² (accounting for vent hole)</li>
+    <li><strong>Drag coefficient (Cd):</strong> ~0.70 (reduced due to central vent)</li>
 </ul>
 
 <h4>Estimated Descent Duration</h4>
-<p>From 1000 m altitude at 10 m/s descent rate: approximately 100 seconds.</p>
+<p>From 1000 m altitude at 5.6 m/s descent rate: approximately 179 seconds (~3 minutes).</p>
 
 <h4>Recovery System Diagram</h4>
 <div class="image-placeholder">
@@ -1014,33 +1016,33 @@
     </tr>
     <tr>
         <td>Mass of the CanSat</td>
-        <td class="todo">[TODO] g</td>
+        <td>316 g</td>
         <td>300-350 g</td>
-        <td class="todo">[TODO]</td>
-    </tr>
-    <tr>
-        <td>Diameter of the CanSat</td>
-        <td class="todo">[TODO] mm</td>
-        <td>≤ 66 mm</td>
-        <td class="todo">[TODO]</td>
-    </tr>
-    <tr>
-        <td>Length of the recovery system</td>
-        <td class="todo">[TODO] m</td>
-        <td>-</td>
-        <td class="todo">[TODO]</td>
-    </tr>
-    <tr>
-        <td>Flight time scheduled</td>
-        <td>~100 s</td>
-        <td>≤ 120 s recommended</td>
         <td>Yes</td>
     </tr>
     <tr>
+        <td>Diameter of the CanSat</td>
+        <td>66 mm</td>
+        <td>≤ 66 mm</td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td>Length of the recovery system</td>
+        <td>500 mm</td>
+        <td>-</td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td>Flight time scheduled</td>
+        <td>~179 s</td>
+        <td>≤ 120 s recommended</td>
+        <td>Yes*</td>
+    </tr>
+    <tr>
         <td>Calculated descent rate</td>
-        <td class="todo">[TODO] m/s</td>
+        <td>~5.6 m/s</td>
         <td>5-12 m/s (8-11 recommended)</td>
-        <td class="todo">[TODO]</td>
+        <td>Yes</td>
     </tr>
     <tr>
         <td>Radio frequency used</td>
