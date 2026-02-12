@@ -75,7 +75,7 @@
             border-collapse: collapse;
             margin: 0.5em 0;
             font-size: 10pt;
-            page-break-inside: avoid;
+            /* Allow tables to break across pages to avoid half-empty pages */
         }
 
         th, td {
@@ -195,7 +195,7 @@
         }
 
         .section {
-            page-break-inside: avoid;
+            /* Removed page-break-inside: avoid to prevent half-empty pages */
         }
 
         .page-break {
@@ -254,6 +254,21 @@
             text-align: center;
             font-style: italic;
             margin-top: 0.2em;
+        }
+
+        /* Small tables should not break */
+        .no-break {
+            page-break-inside: avoid;
+        }
+
+        /* Keep heading with following content */
+        h3, h4 {
+            page-break-after: avoid;
+        }
+
+        /* Prevent orphan rows at page breaks */
+        tr {
+            page-break-inside: avoid;
         }
 
         /* Page numbers for print - footer style */
